@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D 精進花園 ｜ 中台禪寺精舍虛擬蓮池</title>
+  
+  <!-- 字體引入 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- 樣式引入 -->
+  <link rel="stylesheet" href="css/garden3d.css">
+  
+  <!-- Three.js 與 OrbitControls 引擎 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body class="garden-3d-body">
+
+  <!-- 3D 渲染畫布容器 -->
+  <div id="canvas-container"></div>
+
+  <!-- 頂部 HUD 操作列 -->
+  <div class="hud-top-bar">
+    <div class="hud-brand">
+      <a href="index.html">← 返回首頁修持單</a>
+      <span style="opacity: 0.35;">｜</span>
+      <span class="hud-title-text" id="hudGardenTitle">3D 智慧蓮池</span>
+    </div>
+
+    <!-- 園主/同修資訊卡 (他人花園嚴格隱私過濾：學號與真實姓名隱藏) -->
+    <div class="hud-owner-badge" id="hudOwnerBadge">
+      <span class="owner-class-tag" id="hudOwnerClass">日高</span>
+      <span class="owner-dharma-name" id="hudOwnerDharma">傳心</span>
+      <span class="owner-privacy-shield" title="安全隱私保護：本花園僅公開班級與法名，學號及真實姓名已受到嚴格加密防護">
+        🛡️ 隱私防護已啟用
+      </span>
+    </div>
+
+    <!-- 環境光影與音效控制工具列 -->
+    <div class="hud-env-controls">
+      <button class="hud-icon-btn" id="btnZenSound" title="播放/暫停空靈頌缽清音">🔔 頌缽清音：開</button>
+      <button class="hud-icon-btn" data-mode="morning" title="晨曦破曉">🌅 晨曦</button>
+      <button class="hud-icon-btn" data-mode="noon" title="正午光明">☀️ 正午</button>
+      <button class="hud-icon-btn active" data-mode="sunset" title="落日晚霞">🌇 晚霞</button>
+      <button class="hud-icon-btn" data-mode="night" title="清月禪夜">🌙 禪月</button>
+    </div>
+  </div>
+
+  <!-- 右側互動面板：隨喜讚嘆 (參觀他人花園時顯示) -->
+  <div class="hud-interactive-panel">
+    <div class="rejoice-btn-card" id="hudRejoiceCard" style="display: none;">
+      <div class="rejoice-count-text" id="hudRejoiceCount">0</div>
+      <div class="rejoice-label">位同修隨喜合掌</div>
+      <button class="btn-rejoice-action" id="btnDoRejoice">
+        <span>🙏</span> 隨喜功德
+      </button>
+    </div>
+  </div>
+
+  <!-- 底部 HUD：修持蓮花成長階段 -->
+  <div class="hud-bottom-bar">
+    <div class="growth-level-indicator">
+      <div class="level-icon-glow">🪷</div>
+      <div class="level-details">
+        <h3 id="hudLevelName">三階：微放清芬（正念現前）</h3>
+        <p id="hudCheckinCount">累積精進 15 次</p>
+      </div>
+    </div>
+
+    <!-- 5 階段切換按鈕 (可供點擊互動預覽) -->
+    <div class="growth-step-dots">
+      <div class="step-dot" data-step="1">
+        <div class="step-dot-circle"></div>
+        <div class="step-dot-name">一階・初芽</div>
+      </div>
+      <div class="step-dot" data-step="2">
+        <div class="step-dot-circle"></div>
+        <div class="step-dot-name">二階・含苞</div>
+      </div>
+      <div class="step-dot active" data-step="3">
+        <div class="step-dot-circle"></div>
+        <div class="step-dot-name">三階・清芬</div>
+      </div>
+      <div class="step-dot" data-step="4">
+        <div class="step-dot-circle"></div>
+        <div class="step-dot-name">四階・芙蕖</div>
+      </div>
+      <div class="step-dot" data-step="5">
+        <div class="step-dot-circle"></div>
+        <div class="step-dot-name">五階・金蓮</div>
+      </div>
+    </div>
+
+    <div class="camera-guide-hint">
+      <span>🖱️ 左鍵拖曳旋轉 ｜ 滾輪縮放視角 ｜ 右鍵平移</span>
+    </div>
+  </div>
+
+  <!-- 核心腳本引入 -->
+  <script src="js/quotes.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/garden3d.js"></script>
+</body>
+</html>

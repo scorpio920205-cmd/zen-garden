@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>精進花園 ｜ 中台禪寺精舍修持花園暨每日打卡平台</title>
+  
+  <!-- 典雅宋體字型引入 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- 核心樣式引入 -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       1. 登入 / 註冊入口門檻 (未登入者僅能見此畫面)
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="login-gate-screen" id="loginRegisterGate">
+    <div class="login-gate-card">
+      <div class="gate-symbol-icon">🪷</div>
+      <h2 class="gate-title">精進花園 · 修持登入</h2>
+      <p class="gate-subtitle">中台禪寺精舍 ｜ 日高班 ＆ 夜高班 專修平台</p>
+
+      <div id="gateErrorMsg" style="display:none; background:#ffebee; border:1px solid #ef5350; border-radius:8px; padding:0.6rem 0.9rem; color:#c62828; font-size:0.88rem; margin-bottom:1.2rem; font-weight:600;"></div>
+
+      <form id="gateForm" onsubmit="handleLoginOrRegister(event)">
+        <!-- 學號 (非必填) -->
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="gateStudentNo">
+            <span>學號</span>
+            <span style="font-size: 0.78rem; color: var(--ink-faint); font-weight: normal;">非必填 · 隱私保護</span>
+          </label>
+          <input type="text" id="gateStudentNo" class="form-control" placeholder="例如：2026001（選填）" autocomplete="off">
+        </div>
+
+        <!-- 班級 (必選：日高 / 夜高) -->
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="gateClassType">
+            <span>班級 <strong style="color: var(--vermilion);">*</strong></span>
+            <span style="font-size: 0.78rem; color: var(--gold-bronze); font-weight: normal;">日高 或 夜高</span>
+          </label>
+          <select id="gateClassType" class="form-control" required>
+            <option value="">-- 請選擇您的班級 --</option>
+            <option value="日高">日高班</option>
+            <option value="夜高">夜高班</option>
+          </select>
+        </div>
+
+        <!-- 組別 (必選：第 1 ~ 12 組) -->
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="gateGroupName">
+            <span>組別 <strong style="color: var(--vermilion);">*</strong></span>
+          </label>
+          <select id="gateGroupName" class="form-control" required>
+            <option value="">-- 請選擇組別 --</option>
+            <option value="第 1 組">第 1 組</option>
+            <option value="第 2 組">第 2 組</option>
+            <option value="第 3 組">第 3 組</option>
+            <option value="第 4 組">第 4 組</option>
+            <option value="第 5 組">第 5 組</option>
+            <option value="第 6 組">第 6 組</option>
+            <option value="第 7 組">第 7 組</option>
+            <option value="第 8 組">第 8 組</option>
+            <option value="第 9 組">第 9 組</option>
+            <option value="第 10 組">第 10 組</option>
+            <option value="第 11 組">第 11 組</option>
+            <option value="第 12 組">第 12 組</option>
+          </select>
+        </div>
+
+        <!-- 姓名 (真實姓名，嚴格安全隱私保護) -->
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="gateRealName">
+            <span>真實姓名 <strong style="color: var(--vermilion);">*</strong></span>
+            <span style="font-size: 0.76rem; color: var(--vermilion); font-weight: normal;">🔒 參觀時嚴格隱藏</span>
+          </label>
+          <input type="text" id="gateRealName" class="form-control" placeholder="請輸入本名（僅供師父後台查閱）" required autocomplete="off">
+        </div>
+
+        <!-- 法名 (同修參觀時公開顯示) -->
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="gateDharmaName">
+            <span>法名 <strong style="color: var(--vermilion);">*</strong></span>
+            <span style="font-size: 0.76rem; color: var(--pine-green); font-weight: normal;">🌸 參觀花園時公開顯示</span>
+          </label>
+          <input type="text" id="gateDharmaName" class="form-control" placeholder="例如：傳心、傳覺" required autocomplete="off">
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0.8rem; font-size: 1.05rem;">
+          <span>🌸</span> 進入精進花園
+        </button>
+      </form>
+
+      <div style="margin-top: 1.4rem; padding-top: 1rem; border-top: 1px dashed var(--border-light); font-size: 0.85rem;">
+        <a href="admin.html" style="color: var(--gold-bronze); text-decoration: none; font-weight: 600;">
+          🔒 師父後台管理入口
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       2. 主要應用介面 (登入後展開：頂部導覽 ＋ 花園 ＋ 精簡打卡)
+       ═══════════════════════════════════════════════════════════════ -->
+  <div id="mainAppInterface" style="display: none;">
+
+    <!-- 頂部導覽列 -->
+    <header class="app-header">
+      <div class="app-header-inner">
+        <a href="index.html" class="app-brand">
+          <div class="brand-icon-circle">蓮</div>
+          <div class="brand-name-group">
+            <h1>精進花園</h1>
+            <span>CHUNG TAI ZEN GARDEN</span>
+          </div>
+        </a>
+
+        <!-- 學員身分與累積打卡狀態 -->
+        <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.92rem;">
+            <span>👤</span>
+            <span id="navStudentTitle" style="font-weight: 700; color: var(--pine-green);">【日高】傳覺</span>
+            <span class="badge-class">打卡 <strong id="navCheckinCount">0</strong> 次</span>
+          </div>
+
+          <div class="app-nav-actions">
+            <button type="button" class="btn-secondary" onclick="toggleFriendsDrawer(true)">
+              <span>🌸</span> 參觀同修花園
+            </button>
+            <button type="button" class="btn-secondary" onclick="handleLogout()">
+              <span>🚪</span> 換人登入
+            </button>
+            <a href="admin.html" class="btn-secondary" style="color: var(--gold-bronze); border-color: var(--gold-bronze);">
+              <span>🔒</span> 師父管理
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 參觀他人花園頂部提示列 (參觀模式時動態浮現) -->
+    <div class="visitor-banner-strip" id="visitorNoticeBanner" style="display: none;">
+      <div style="display: flex; align-items: center; gap: 0.7rem;">
+        <span class="visitor-tag-pill">👀 參觀模式</span>
+        <strong id="visitorGardenTitle" style="font-size: 1.05rem;">正在參觀：【日高】傳心 的花園</strong>
+        <span style="font-size: 0.82rem; opacity: 0.85;">（安全隱私保護：學號與真實姓名已依法規隱藏）</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <button type="button" class="btn-secondary" style="background: #ffd54f; color: #212121; border: none; font-weight: 700;" onclick="handleRejoiceFriend()">
+          🙏 隨喜讚嘆合掌 (<span id="visitorRejoiceCount">0</span>)
+        </button>
+        <button type="button" class="btn-secondary" style="background: #ffffff; color: #1b332c;" onclick="exitVisitingMode()">
+          🌿 返回我的花園
+        </button>
+      </div>
+    </div>
+
+    <!-- 主內容區 (左右兩欄：花園畫布 ＋ 每日修持打卡) -->
+    <main class="main-garden-layout">
+
+      <!-- 左欄：2D 精進花園 (純淨無花底圖 ＋ 動態蓮池 ＋ 向陽太陽花 ＋ 老和尚木牌法語) -->
+      <section id="gardenViewArea" style="position: relative;">
+        <div class="garden-canvas-wrap" id="gardenCanvasWrap">
+          
+          <!-- 累積打卡次數徽章 -->
+          <div class="garden-counter-tag" id="gardenCheckinCounter">
+            累積修持：0 次打卡注入
+          </div>
+
+          <!-- A. 蓮池圖層 (依打卡次數注入甘露水，動態長出盛開蓮花) -->
+          <div id="zenPondWrap" class="zen-pond-container" title="蓮池：每日修持打卡注入甘露水，自性蓮花隨之綻放">
+            <svg id="pondFlowersLayer" class="pond-surface-svg" viewBox="0 0 220 180">
+              <defs>
+                <radialGradient id="goldenLotusGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#ffd54f" stop-opacity="0.9" />
+                  <stop offset="60%" stop-color="#ffb300" stop-opacity="0.4" />
+                  <stop offset="100%" stop-color="#ffb300" stop-opacity="0" />
+                </radialGradient>
+              </defs>
+            </svg>
+          </div>
+
+          <!-- B. 太陽花田圖層 (依打卡次數在肥沃土地上向陽生長太陽花) -->
+          <div id="sunflowerSoilLayer" class="sunflower-field-container" title="太陽花田：精進修持猶如向陽之花，破土成長開出芬芳太陽花"></div>
+
+          <!-- C. 木牌老和尚法語熱點 (中台月刊每日法語) -->
+          <div id="woodenSignHotspot" class="wooden-sign-hotspot" onclick="handleWoodenSignClick()" title="點擊恭讀惟覺老和尚法語開示">
+            <div class="sign-tooltip-preview">
+              📜 老和尚法語：<span id="woodenSignQuoteText">點擊恭讀開示</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 花園引導說明 -->
+        <div style="margin-top: 0.8rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--ink-muted);">
+          <span>🪷 蓮池與🌻太陽花完全依修持打卡數量動態注入與盛開</span>
+          <span onclick="handleWoodenSignClick()" style="cursor: pointer; color: var(--gold-bronze); font-weight: 600;">
+            📜 點擊木牌恭讀老和尚開示
+          </span>
+        </div>
+      </section>
+
+      <!-- 右欄：每日精進修持打卡面板 (精簡為：靜坐 ＋ 每日誦經，可補之前時間，無卷數、無持咒) -->
+      <section class="checkin-panel-card" id="dailyCheckinCard">
+        <div class="panel-header-row">
+          <h2><span>✍️</span> 每日精進修持打卡</h2>
+          <span style="font-size: 0.82rem; color: var(--gold-bronze);">自性自度 · 日日用功</span>
+        </div>
+
+        <!-- 打卡成功提示框 -->
+        <div id="checkinSuccessNotice" style="display: none; background: #e8f5e9; border: 1px solid #81c784; border-radius: 8px; padding: 0.8rem 1rem; margin-bottom: 1.2rem; color: #2e7d32; font-size: 0.92rem; line-height: 1.6;"></div>
+
+        <form id="dailyCheckinForm" onsubmit="handleCheckinSubmit(event)">
+          
+          <!-- 補填過往歷史時間開關 -->
+          <div class="backdate-toggle-box">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.88rem; color: var(--gold-bronze); font-weight: 600;">
+              <input type="checkbox" id="checkBackdate" onchange="toggleBackdateCheckin(this.checked)">
+              <span>補打卡之前時間（補填過往修持）</span>
+            </label>
+            <div id="backdatePickerWrap" style="display: none; width: 100%; margin-top: 0.5rem;">
+              <input type="datetime-local" id="formCheckinTime" class="form-control" style="width: 100%;">
+            </div>
+          </div>
+
+          <!-- 靜坐時間 -->
+          <div class="form-group">
+            <label class="form-label" for="formMeditationMins">
+              <span>🧘 靜坐時間</span>
+              <span style="font-size: 0.8rem; color: var(--ink-muted);">單位：分鐘</span>
+            </label>
+            <input type="number" id="formMeditationMins" class="form-control" min="0" step="5" placeholder="例如：30 分鐘（若今日未坐可填 0）" value="30">
+          </div>
+
+          <!-- 每日誦經 (金剛經、藥師經、普門品、自訂填寫；無卷數) -->
+          <div class="form-group">
+            <label class="form-label" for="formSutraSelect">
+              <span>📖 每日誦經</span>
+              <span style="font-size: 0.8rem; color: var(--pine-green);">經典選擇</span>
+            </label>
+            <select id="formSutraSelect" class="form-control" onchange="handleSutraSelectChange(this.value)">
+              <option value="">-- 請選擇今日持誦經典 --</option>
+              <option value="金剛經" selected>金剛般若波羅蜜經（金剛經）</option>
+              <option value="藥師經">藥師琉璃光如來本願功德經（藥師經）</option>
+              <option value="普門品">觀世音菩薩普門品</option>
+              <option value="自訂經典">自訂其他經典……</option>
+            </select>
+            <input type="text" id="formCustomSutra" class="form-control" placeholder="請填寫您自訂持誦的經典名稱" style="display: none; margin-top: 0.5rem;">
+          </div>
+
+          <!-- 用功隨感 / 迴向心得 (選填) -->
+          <div class="form-group">
+            <label class="form-label" for="formPracticeNote">
+              <span>💭 用功隨感 / 迴向</span>
+              <span style="font-size: 0.8rem; color: var(--ink-faint);">選填</span>
+            </label>
+            <textarea id="formPracticeNote" class="form-control" rows="3" placeholder="今日修持體會、法喜隨喜，或發心迴向法界眾生……"></textarea>
+          </div>
+
+          <!-- 送出打卡按鈕 -->
+          <button type="submit" id="btnSubmitCheckin" class="btn-primary" style="width: 100%; margin-top: 0.5rem;">
+            <span>🪷</span> 功德注入蓮池 · 完成今日修持
+          </button>
+        </form>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       3. 彈窗與抽屜元件
+       ═══════════════════════════════════════════════════════════════ -->
+
+  <!-- 蓮池海會 · 同修名錄抽屜 (參觀他人花園，嚴格過濾隱藏學號與真實姓名) -->
+  <div class="friends-drawer-backdrop" id="friendsDrawerModal" onclick="if(event.target===this) toggleFriendsDrawer(false)">
+    <div class="friends-drawer-content">
+      <div class="drawer-top-banner">
+        <div>
+          <h3 style="font-size: 1.15rem; font-weight: 700;">🌸 蓮池海會 · 同修花園</h3>
+          <p style="font-size: 0.75rem; opacity: 0.85; margin-top: 2px;">
+            🔒 隱私保護：僅公開班級與法名，姓名學號絕對隱藏
+          </p>
+        </div>
+        <button type="button" onclick="toggleFriendsDrawer(false)" style="background: none; border: none; color: #ffffff; font-size: 1.6rem; cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+
+      <!-- 班級快速篩選 -->
+      <div style="display: flex; gap: 0.5rem; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-light); background: #fbfbfb;">
+        <button type="button" class="btn-secondary" style="padding: 0.25rem 0.8rem; font-size: 0.82rem;" onclick="loadFriendsList('')">全部同修</button>
+        <button type="button" class="btn-secondary" style="padding: 0.25rem 0.8rem; font-size: 0.82rem;" onclick="loadFriendsList('日高')">日高班</button>
+        <button type="button" class="btn-secondary" style="padding: 0.25rem 0.8rem; font-size: 0.82rem;" onclick="loadFriendsList('夜高')">夜高班</button>
+      </div>
+
+      <!-- 同修名錄列表容器 -->
+      <div id="friendsDrawerList" style="flex: 1; overflow-y: auto; padding: 1rem;">
+        <div style="text-align: center; padding: 2rem; color: #888;">連線蓮池海會名錄……</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 惟覺安公老和尚《中台月刊》開示法語彈窗 -->
+  <div class="zen-quote-overlay" id="woodenQuoteModal" onclick="if(event.target===this) closeWoodenQuoteModal()">
+    <div class="zen-quote-dialog">
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 0.8rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.4rem;">📜</span>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--ink-deep);">惟覺安公老和尚法語開示</h3>
+        </div>
+        <button type="button" onclick="closeWoodenQuoteModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--ink-muted); cursor: pointer;">&times;</button>
+      </div>
+
+      <div id="woodenQuoteModalText" style="font-size: 1.15rem; line-height: 1.9; color: var(--ink-deep); margin: 1.5rem 0; font-weight: 500;">
+        「人在哪裡，心在哪裡。一念清淨，即是自性花開。」
+      </div>
+
+      <div id="woodenQuoteSource" style="text-align: right; font-size: 0.85rem; color: var(--gold-bronze); font-style: italic; margin-bottom: 1.5rem;">
+        ——《中台月刊》老和尚法語開示
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
+        <button type="button" class="btn-secondary" onclick="handleWoodenSignClick()">
+          🔄 換一則開示
+        </button>
+        <button type="button" class="btn-primary" onclick="closeWoodenQuoteModal()" style="padding: 0.45rem 1.4rem; font-size: 0.95rem;">
+          🙏 合掌感恩
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 核心腳本載入 -->
+  <script src="js/quotes.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

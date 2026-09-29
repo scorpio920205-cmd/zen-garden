@@ -1,0 +1,369 @@
+@charset "UTF-8";
+/* ═══════════════════════════════════════════════════════════════
+   3D 精進花園專屬視圖樣式表 (garden3d.css)
+   沉浸式 3D 空間、HUD 介面、日夜光影調控、隨喜合掌互動
+   ═══════════════════════════════════════════════════════════════ */
+
+body.garden-3d-body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  background: #0d1311;
+  font-family: 'Noto Serif TC', serif;
+  user-select: none;
+}
+
+#canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* ════════════════════════════════
+   3D 頂部 HUD 控制列
+   ════════════════════════════════ */
+.hud-top-bar {
+  position: absolute;
+  top: 1.2rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.hud-top-bar > * {
+  pointer-events: auto;
+}
+
+.hud-brand {
+  background: rgba(22, 27, 24, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  padding: 0.5rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: #f7f5f0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.hud-brand a {
+  color: #c49a45;
+  text-decoration: none;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.2s ease;
+}
+
+.hud-brand a:hover {
+  color: #ffffff;
+}
+
+.hud-title-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+/* 訪客/主人狀態卡 (嚴格隱私過濾：他人花園只顯示班級與法名) */
+.hud-owner-badge {
+  background: rgba(30, 48, 40, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(196, 154, 69, 0.4);
+  border-radius: 9999px;
+  padding: 0.55rem 1.6rem;
+  color: #f7f5f0;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+.owner-class-tag {
+  background: #c49a45;
+  color: #172c26;
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+}
+
+.owner-dharma-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #fff;
+}
+
+.owner-privacy-shield {
+  font-size: 0.75rem;
+  color: #a8cfbe;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+}
+
+/* ════════════════════════════════
+   環境與光影工具列 (右上)
+   ════════════════════════════════ */
+.hud-env-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.hud-icon-btn {
+  background: rgba(22, 27, 24, 0.75);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f7f5f0;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.hud-icon-btn:hover {
+  background: rgba(45, 76, 66, 0.85);
+  border-color: #c49a45;
+  transform: translateY(-2px);
+}
+
+.hud-icon-btn.active {
+  background: #c49a45;
+  color: #1a221f;
+  border-color: #c49a45;
+  font-weight: 600;
+}
+
+/* ════════════════════════════════
+   右側隨喜與互動面板
+   ════════════════════════════════ */
+.hud-interactive-panel {
+  position: absolute;
+  top: 5.5rem;
+  right: 1.5rem;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  pointer-events: none;
+}
+
+.hud-interactive-panel > * {
+  pointer-events: auto;
+}
+
+.rejoice-btn-card {
+  background: rgba(30, 24, 26, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(216, 125, 138, 0.4);
+  border-radius: 16px;
+  padding: 1.2rem;
+  color: #ffffff;
+  width: 200px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  transition: all 0.3s ease;
+}
+
+.rejoice-btn-card:hover {
+  border-color: #e8a598;
+  transform: scale(1.02);
+}
+
+.rejoice-count-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #e8a598;
+  margin-bottom: 0.2rem;
+}
+
+.rejoice-label {
+  font-size: 0.8rem;
+  color: #d1b8bc;
+  margin-bottom: 0.8rem;
+}
+
+.btn-rejoice-action {
+  background: linear-gradient(135deg, #b84a5a 0%, #8e382d 100%);
+  color: #ffffff;
+  border: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  box-shadow: 0 4px 15px rgba(184, 74, 90, 0.4);
+  transition: all 0.2s ease;
+}
+
+.btn-rejoice-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(184, 74, 90, 0.6);
+}
+
+/* ════════════════════════════════
+   底部 HUD：蓮花修持成長進度
+   ════════════════════════════════ */
+.hud-bottom-bar {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  width: calc(100% - 3rem);
+  max-width: 860px;
+  background: rgba(22, 27, 24, 0.82);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 1.1rem 1.8rem;
+  color: #f7f5f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+.growth-level-indicator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.level-icon-glow {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196, 154, 69, 0.4) 0%, rgba(45, 76, 66, 0.2) 70%);
+  border: 1px solid rgba(196, 154, 69, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  box-shadow: 0 0 20px rgba(196, 154, 69, 0.3);
+  animation: pulseAura 4s infinite alternate ease-in-out;
+}
+
+@keyframes pulseAura {
+  from { box-shadow: 0 0 15px rgba(196, 154, 69, 0.2); }
+  to { box-shadow: 0 0 30px rgba(196, 154, 69, 0.6); }
+}
+
+.level-details h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+}
+
+.level-details p {
+  font-size: 0.85rem;
+  color: #c49a45;
+  margin-top: 0.15rem;
+}
+
+.growth-step-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.step-dot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.step-dot:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.step-dot-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  transition: all 0.25s ease;
+}
+
+.step-dot.active .step-dot-circle {
+  background: #c49a45;
+  border-color: #ffe699;
+  box-shadow: 0 0 10px #c49a45;
+  transform: scale(1.2);
+}
+
+.step-dot-name {
+  font-size: 0.72rem;
+  color: #a0a8a4;
+}
+
+.step-dot.active .step-dot-name {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.camera-guide-hint {
+  font-size: 0.8rem;
+  color: #8fa099;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* 隨喜飄花飄金動畫 */
+.floating-petal-effect {
+  position: absolute;
+  pointer-events: none;
+  font-size: 1.6rem;
+  z-index: 100;
+  animation: floatUp 2s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.6) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-160px) scale(1.3) rotate(360deg);
+  }
+}

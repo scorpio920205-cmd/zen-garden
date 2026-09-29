@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>精舍法師管理後台 ｜ 精進花園最高權限名錄</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .admin-stat-card {
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1.4rem;
+      text-align: center;
+      box-shadow: var(--shadow-soft);
+    }
+    .admin-stat-card .val {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--pine-green);
+    }
+    .admin-stat-card .lbl {
+      font-size: 0.82rem;
+      color: var(--ink-muted);
+      margin-top: 0.2rem;
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.92rem;
+    }
+    .admin-table th {
+      background: var(--bg-card-sub);
+      color: var(--ink-deep);
+      text-align: left;
+      padding: 0.85rem 1rem;
+      font-weight: 600;
+      border-bottom: 2px solid rgba(52, 48, 44, 0.1);
+    }
+    .admin-table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: middle;
+    }
+    .admin-table tr:hover {
+      background: #faf8f5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部導覽列 -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="brand-wrap">
+        <div class="brand-symbol">印</div>
+        <div class="brand-text">
+          <h1>精進花園 · 師父管理端</h1>
+          <span>Highest Permission Portal</span>
+        </div>
+      </a>
+
+      <div style="display: flex; gap: 0.8rem; align-items: center;">
+        <a href="index.html" class="btn-secondary" style="padding: 0.45rem 1.1rem; font-size: 0.88rem;">
+          ← 返回學員打卡頁
+        </a>
+        <a href="garden2d.html" class="btn-primary" style="padding: 0.45rem 1.1rem; font-size: 0.88rem;">
+          🌸 開心花園 (2D)
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container" style="padding-top: 2.5rem;">
+
+    <!-- ════ 鎖定登入畫面 ════ -->
+    <div id="adminLockScreen" style="max-width: 520px; margin: 3rem auto;">
+      <div class="zen-card" style="text-align: center; border-top: 5px solid var(--gold-bronze);">
+        <div style="font-size: 2.8rem; margin-bottom: 0.5rem;">🔒</div>
+        <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--ink-deep); margin-bottom: 0.4rem;">
+          指導法師最高權限登入
+        </h2>
+        <p style="font-size: 0.9rem; color: var(--ink-muted); margin-bottom: 1.8rem; line-height: 1.8;">
+          本專區為最高權限管理員專屬，具備完整名錄（含真實姓名與學號）檢閱、法語線上批註及修持資料管理權限。
+        </p>
+
+        <form onsubmit="handleAdminLogin(event)">
+          <div class="form-group" style="text-align: left; margin-bottom: 1.2rem;">
+            <label class="form-label" for="adminPassword">
+              <span>最高權限密碼</span>
+              <span class="required">（高安全防護）</span>
+            </label>
+            <input type="password" id="adminPassword" class="form-control" placeholder="請輸入管理密碼" required autofocus />
+            <div style="font-size: 0.78rem; color: var(--ink-faint); margin-top: 0.4rem;">
+              預設高強度金鑰：<code>ZhongTai#ZenGarden2026!</code>（部署上線後可於 Cloudflare Variables 自訂）
+            </div>
+          </div>
+
+          <div id="adminAuthError" style="display: none; padding: 0.6rem; border-radius: var(--radius-sm); background: var(--vermilion-pale); font-size: 0.88rem; margin-bottom: 1.2rem;"></div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1.05rem;">
+            🔑 驗證並解鎖管理權限
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ════ 管理主面板 (解鎖後顯示) ════ -->
+    <div id="adminDashboard" style="display: none;">
+      
+      <!-- 統計數據卡片 -->
+      <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+          <div class="val" id="statTotalStudents">0</div>
+          <div class="lbl">精進學員總人數</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="val" id="statDayStudents" style="color: var(--gold-bronze);">0</div>
+          <div class="lbl">日高班學員</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="val" id="statNightStudents" style="color: var(--pine-soft);">0</div>
+          <div class="lbl">夜高班學員</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="val" id="statTotalCheckins">0</div>
+          <div class="lbl">累積打卡修持次數</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="val" id="statTotalMeditation" style="color: var(--vermilion);">0</div>
+          <div class="lbl">累積禪坐分鐘數</div>
+        </div>
+      </div>
+
+      <!-- 操作工具列 -->
+      <div class="zen-card">
+        <div class="card-heading">
+          <div class="card-title-group">
+            <h2><span>📋</span> 全班完整修持名錄（最高權限未脫敏檢閱）</h2>
+            <p>包含學員真實姓名、學號、打卡次數與 3D 花園巡視。</p>
+          </div>
+          <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+            <button type="button" class="btn-secondary" style="font-size: 0.88rem;" onclick="exportAllDataJSON()">
+              📥 匯出資料備份 (JSON)
+            </button>
+            <button type="button" class="btn-secondary" style="font-size: 0.88rem; border-color: var(--vermilion); color: var(--vermilion);" onclick="handleAdminLogout()">
+              🔒 鎖定退出
+            </button>
+          </div>
+        </div>
+
+        <!-- 班級篩選 -->
+        <div class="garden-filter-bar">
+          <div class="filter-pills">
+            <button type="button" class="pill-option active admin-filter-btn" onclick="filterAdminClass('', this)">全部班級</button>
+            <button type="button" class="pill-option admin-filter-btn" onclick="filterAdminClass('日高', this)">日高班</button>
+            <button type="button" class="pill-option admin-filter-btn" onclick="filterAdminClass('夜高', this)">夜高班</button>
+          </div>
+        </div>
+
+        <!-- 學員清單表格 -->
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>班別</th>
+                <th>組別</th>
+                <th>學號（保密）</th>
+                <th>真實姓名</th>
+                <th>法名</th>
+                <th>累積打卡</th>
+                <th>禪坐時長</th>
+                <th>3D 花園</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTableBody">
+              <!-- 由 admin.js 動態渲染 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 修持打卡串流與法師批註開示區 -->
+      <div class="zen-card" style="margin-top: 2rem;">
+        <div class="card-heading">
+          <div class="card-title-group">
+            <h2><span>✍️</span> 學員修持心得串流 ＆ 法師線上慈悲批註</h2>
+            <p>點擊每筆修持心得下方的開示輸入框，即可直接儲存批註，學員在個人專區即可同步檢閱開示。</p>
+          </div>
+        </div>
+
+        <div id="adminCheckinStream">
+          <!-- 由 admin.js 動態渲染 -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-dharma">對上以敬 ｜ 對下以慈 ｜ 對人以和 ｜ 對事以真</div>
+    <p>中台禪寺精舍 · 高級禪修班（日高 / 夜高） 最高權限管理端</p>
+  </footer>
+
+  <script src="js/quotes.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
