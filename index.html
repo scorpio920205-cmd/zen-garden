@@ -21,80 +21,75 @@
   <div class="login-gate-screen" id="loginRegisterGate">
     <div class="login-gate-card">
       <div class="gate-symbol-icon">🪷</div>
-      <h2 class="gate-title">精進花園 · 修持登入</h2>
-      <p class="gate-subtitle">中台禪寺精舍 ｜ 日高班 ＆ 夜高班 專修平台</p>
+      <h2 class="gate-title">精進花園 · 活動登入</h2>
+      <p class="gate-subtitle">普慶精舍 ｜ 禪修班</p>
 
-      <div id="gateErrorMsg" style="display:none; background:#ffebee; border:1px solid #ef5350; border-radius:8px; padding:0.6rem 0.9rem; color:#c62828; font-size:0.88rem; margin-bottom:1.2rem; font-weight:600;"></div>
+      <div id="gateErrorMsg" style="display:none; background:#ffebee; border:1px solid #ef5350; border-radius:8px; padding:0.5rem 0.8rem; color:#c62828; font-size:0.86rem; margin-bottom:0.8rem; font-weight:600;"></div>
 
       <form id="gateForm" onsubmit="handleLoginOrRegister(event)">
         <!-- 學號 (非必填) -->
-        <div class="form-group" style="text-align: left;">
+        <div class="form-group gate-compact-group" style="text-align: left;">
           <label class="form-label" for="gateStudentNo">
             <span>學號</span>
-            <span style="font-size: 0.78rem; color: var(--ink-faint); font-weight: normal;">非必填 · 隱私保護</span>
+            <span style="font-size: 0.76rem; color: var(--ink-faint); font-weight: normal;">非必填 · 隱私保護</span>
           </label>
           <input type="text" id="gateStudentNo" class="form-control" placeholder="例如：2026001（選填）" autocomplete="off">
         </div>
 
-        <!-- 班級 (必選：日高 / 夜高) -->
-        <div class="form-group" style="text-align: left;">
-          <label class="form-label" for="gateClassType">
-            <span>班級 <strong style="color: var(--vermilion);">*</strong></span>
-            <span style="font-size: 0.78rem; color: var(--gold-bronze); font-weight: normal;">日高 或 夜高</span>
-          </label>
-          <select id="gateClassType" class="form-control" required>
-            <option value="">-- 請選擇您的班級 --</option>
-            <option value="日高">日高班</option>
-            <option value="夜高">夜高班</option>
-          </select>
+        <!-- 班級 ＆ 組別（橫向雙欄，緊湊美觀） -->
+        <div class="gate-form-row">
+          <div class="form-group gate-compact-group" style="text-align: left;">
+            <label class="form-label" for="gateClassType">
+              <span>班級 <strong style="color: var(--vermilion);">*</strong></span>
+            </label>
+            <select id="gateClassType" class="form-control" required>
+              <option value="">-- 班級 --</option>
+              <option value="日高">日高班</option>
+              <option value="夜高">夜高班</option>
+            </select>
+          </div>
+
+          <div class="form-group gate-compact-group" style="text-align: left;">
+            <label class="form-label" for="gateGroupName">
+              <span>組別 <strong style="color: var(--vermilion);">*</strong></span>
+            </label>
+            <select id="gateGroupName" class="form-control" required>
+              <option value="">-- 組別 --</option>
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+              <option value="B3">B3</option>
+              <option value="B4">B4</option>
+            </select>
+          </div>
         </div>
 
-        <!-- 組別 (必選：第 1 ~ 12 組) -->
-        <div class="form-group" style="text-align: left;">
-          <label class="form-label" for="gateGroupName">
-            <span>組別 <strong style="color: var(--vermilion);">*</strong></span>
-          </label>
-          <select id="gateGroupName" class="form-control" required>
-            <option value="">-- 請選擇組別 --</option>
-            <option value="第 1 組">第 1 組</option>
-            <option value="第 2 組">第 2 組</option>
-            <option value="第 3 組">第 3 組</option>
-            <option value="第 4 組">第 4 組</option>
-            <option value="第 5 組">第 5 組</option>
-            <option value="第 6 組">第 6 組</option>
-            <option value="第 7 組">第 7 組</option>
-            <option value="第 8 組">第 8 組</option>
-            <option value="第 9 組">第 9 組</option>
-            <option value="第 10 組">第 10 組</option>
-            <option value="第 11 組">第 11 組</option>
-            <option value="第 12 組">第 12 組</option>
-          </select>
+        <!-- 真實姓名 ＆ 法名（橫向雙欄，緊湊美觀） -->
+        <div class="gate-form-row">
+          <div class="form-group gate-compact-group" style="text-align: left;">
+            <label class="form-label" for="gateRealName">
+              <span>姓名 <strong style="color: var(--vermilion);">*</strong></span>
+              <span style="font-size: 0.72rem; color: var(--vermilion); font-weight: normal;">🔒 嚴格隱藏</span>
+            </label>
+            <input type="text" id="gateRealName" class="form-control" placeholder="真實姓名（師父查閱）" required autocomplete="off">
+          </div>
+
+          <div class="form-group gate-compact-group" style="text-align: left;">
+            <label class="form-label" for="gateDharmaName">
+              <span>法名 <strong style="color: var(--vermilion);">*</strong></span>
+              <span style="font-size: 0.72rem; color: var(--pine-green); font-weight: normal;">🌸 參觀顯示</span>
+            </label>
+            <input type="text" id="gateDharmaName" class="form-control" placeholder="例如：傳心" required autocomplete="off">
+          </div>
         </div>
 
-        <!-- 姓名 (真實姓名，嚴格安全隱私保護) -->
-        <div class="form-group" style="text-align: left;">
-          <label class="form-label" for="gateRealName">
-            <span>真實姓名 <strong style="color: var(--vermilion);">*</strong></span>
-            <span style="font-size: 0.76rem; color: var(--vermilion); font-weight: normal;">🔒 參觀時嚴格隱藏</span>
-          </label>
-          <input type="text" id="gateRealName" class="form-control" placeholder="請輸入本名（僅供師父後台查閱）" required autocomplete="off">
-        </div>
-
-        <!-- 法名 (同修參觀時公開顯示) -->
-        <div class="form-group" style="text-align: left;">
-          <label class="form-label" for="gateDharmaName">
-            <span>法名 <strong style="color: var(--vermilion);">*</strong></span>
-            <span style="font-size: 0.76rem; color: var(--pine-green); font-weight: normal;">🌸 參觀花園時公開顯示</span>
-          </label>
-          <input type="text" id="gateDharmaName" class="form-control" placeholder="例如：傳心、傳覺" required autocomplete="off">
-        </div>
-
-        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0.8rem; font-size: 1.05rem;">
+        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 0.68rem 1.5rem; font-size: 1rem;">
           <span>🌸</span> 進入精進花園
         </button>
       </form>
 
-      <div style="margin-top: 1.4rem; padding-top: 1rem; border-top: 1px dashed var(--border-light); font-size: 0.85rem;">
+      <div style="margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px dashed var(--border-light); font-size: 0.82rem;">
         <a href="admin.html" style="color: var(--gold-bronze); text-decoration: none; font-weight: 600;">
           🔒 師父後台管理入口
         </a>

@@ -81,48 +81,81 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 1rem;
+  overflow-y: auto;
 }
 
 .login-gate-card {
   background: #ffffff;
   border-radius: var(--radius-lg);
-  max-width: 520px;
+  max-width: 480px;
   width: 100%;
-  padding: 2.4rem 2.6rem;
-  box-shadow: 0 16px 50px rgba(30, 27, 24, 0.15);
+  padding: 1.4rem 1.8rem;
+  margin: auto;
+  box-shadow: 0 14px 45px rgba(30, 27, 24, 0.14);
   border: 1px solid var(--border-light);
-  border-top: 6px solid var(--pine-green);
+  border-top: 5px solid var(--pine-green);
   text-align: center;
 }
 
 .gate-symbol-icon {
-  width: 58px;
-  height: 58px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--pine-green) 0%, #172c26 100%);
   color: #f7f5f0;
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.8rem;
-  box-shadow: 0 4px 14px rgba(45, 76, 66, 0.3);
+  margin-bottom: 0.4rem;
+  box-shadow: 0 3px 10px rgba(45, 76, 66, 0.25);
 }
 
 .gate-title {
-  font-size: 1.65rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--ink-deep);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
+  line-height: 1.25;
 }
 
 .gate-subtitle {
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   color: var(--gold-bronze);
-  margin-top: 0.2rem;
-  margin-bottom: 1.4rem;
+  margin-top: 0.15rem;
+  margin-bottom: 1rem;
   letter-spacing: 0.05em;
+}
+
+.gate-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.gate-compact-group {
+  margin-bottom: 0.75rem !important;
+}
+
+.gate-compact-group .form-label {
+  font-size: 0.86rem;
+  margin-bottom: 0.2rem;
+}
+
+.gate-compact-group .form-control {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.92rem;
+}
+
+@media (max-width: 460px) {
+  .gate-form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .login-gate-card {
+    padding: 1.2rem 1.2rem;
+  }
 }
 
 /* ════════════════════════════════
