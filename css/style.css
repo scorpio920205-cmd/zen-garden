@@ -377,33 +377,40 @@ body::before {
   bottom: 85px;
   left: 50%;
   transform: translateX(-50%);
+.sign-tooltip-preview {
+  position: absolute;
+  bottom: 80px;
+  right: -20px;
   background: rgba(255, 252, 242, 0.95);
   border: 1px solid #c49a45;
   border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.76rem;
+  padding: 5px 10px;
+  font-size: 0.74rem;
   color: #5c441b;
   font-weight: 600;
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
   pointer-events: none;
   animation: floatSign 3s infinite ease-in-out;
 }
 
 @keyframes floatSign {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(-4px); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
 /* ════════════════════════════════
-   A. 蓮池圖層 (Lotus Pond Area)
+   A. 蓮池圖層 (Lotus Pond Area) - 位於左側澄澈水池中
    ════════════════════════════════ */
 .zen-pond-container {
   position: absolute;
-  top: 22%;
-  left: 6%;
-  width: 210px;
-  height: 150px;
+  top: 36%;
+  left: 10%;
+  width: 24%;
+  height: 26%;
   z-index: 8;
   pointer-events: auto;
   cursor: pointer;
@@ -417,7 +424,7 @@ body::before {
 .pond-surface-svg {
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25));
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
 }
 
 .lotus-flower-bloom {
@@ -431,22 +438,23 @@ body::before {
 }
 
 /* ════════════════════════════════
-   B. 太陽花田圖層 (Sunflower Plots Area)
+   B. 太陽花草皮圖層 (Sunflowers in Grass Lawn) - 生長於綠茵草皮上 (無泥土)
    ════════════════════════════════ */
 .sunflower-field-container {
   position: absolute;
-  top: 38%;
-  left: 36%;
-  width: 250px;
-  height: 140px;
+  top: 40%;
+  left: 45%;
+  width: 28%;
+  height: 26%;
   z-index: 9;
   pointer-events: auto;
+  background: transparent !important;
 }
 
 .sunflower-item {
   position: absolute;
   transform-origin: bottom center;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25));
 }
 
 .sunflower-bloom-anim {

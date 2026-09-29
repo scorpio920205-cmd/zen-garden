@@ -275,79 +275,137 @@ function updateUserHeaderUI(student) {
   }
 }
 
-// 3. 根據打卡數量「動態生長與盛開蓮花＋太陽花」
+// ═══════════════════════════════════════════════════════════════
+// 等差線性成長背景階段設定 (基準 49 天，每張圖多 12 天)
+// 第 1 張：維持 49 天
+// 第 2 張：61 天（累積 110 天）
+// 第 3 張：73 天（累積 183 天）
+// 第 4 張：85 天（累積 268 天）
+// 第 5 張：97 天（累積 365 天）
+// ═══════════════════════════════════════════════════════════════
+const PROGRESSION_STAGES = [
+  { stage: 1, duration: 49, cumulative: 49, name: "第 1 張圖：維持 49 天 (草皮池塘 · 種子萌發)", bg: "assets/images/stage_1_seed.jpg" },
+  { stage: 2, duration: 61, cumulative: 110, name: "第 2 張圖：61 天 (累積 110 天 · 破土萌發)", bg: "assets/images/stage_2_sprout.jpg" },
+  { stage: 3, duration: 73, cumulative: 183, name: "第 3 張圖：73 天 (累積 183 天 · 繁花盛開)", bg: "assets/images/stage_3_bloom.jpg" },
+  { stage: 4, duration: 85, cumulative: 268, name: "第 4 張圖：85 天 (累積 268 天 · 菩提成林)", bg: "assets/images/stage_4_forest.jpg" },
+  { stage: 5, duration: 97, cumulative: 365, name: "第 5 張圖：97 天 (累積 365 天 · 萬善圓滿)", bg: "assets/images/season_autumn.jpg" }
+];
+
+function getBackgroundStage(days) {
+  const d = Math.max(1, days || 1);
+  if (d <= 49) return PROGRESSION_STAGES[0];
+  if (d <= 110) return PROGRESSION_STAGES[1];
+  if (d <= 183) return PROGRESSION_STAGES[2];
+  if (d <= 268) return PROGRESSION_STAGES[3];
+  return PROGRESSION_STAGES[4];
+}
+
+// 切換靜坐與誦經勾選
+function toggleMeditationOption(checked) {
+  const wrap = document.getElementById('wrapMeditationMins');
+  if (wrap) wrap.style.display = checked ? 'block' : 'none';
+}
+
+function toggleSutraOption(checked) {
+  const wrap = document.getElementById('wrapSutraSelect');
+  if (wrap) wrap.style.display = checked ? 'block' : 'none';
+}
+
+// 3. 根據打卡天數「換背景 (5段等差線性成長)」與「動態長出池中蓮花＋草皮太陽花 (3階段：種子、發芽、花開)」
 function renderGardenFlowers(checkinCount) {
   const pondWater = document.getElementById('pondFlowersLayer');
   const sunflowerSoil = document.getElementById('sunflowerSoilLayer');
   const countBadge = document.getElementById('gardenCheckinCounter');
+  const gardenCanvas = document.getElementById('gardenCanvasWrap');
+  const stageEl = document.getElementById('statCardStage');
 
-  if (countBadge) {
-    countBadge.textContent = `累積修持：${checkinCount} 次打卡注入`;
+  // A. 5 段等差背景切換
+  const currentStage = getBackgroundStage(checkinCount);
+  if (gardenCanvas) {
+    gardenCanvas.style.backgroundImage = `url('${currentStage.bg}')`;
   }
 
-  // ════════════════════════════════
-  // A. 蓮池中的蓮花 (依打卡數動態生成)
-  // ════════════════════════════════
+  if (countBadge) {
+    countBadge.textContent = `累積修持：${checkinCount} 天 ｜ ${currentStage.name}`;
+  }
+
+  if (stageEl) {
+    stageEl.textContent = currentStage.name;
+  }
+
+  // B. 蓮池中的蓮花 (蓮花生在池塘裡，依 3 階段演化：第 1 天種子、第 2 天發芽、第 3 天花開)
   if (pondWater) {
     let lotusHTML = '';
-    // 荷葉基底 (始終有清淨綠荷)
+    // 池中浮萍與清淨綠荷基底
     lotusHTML += `
-      <ellipse cx="65" cy="115" rx="36" ry="18" fill="#2d6e35" stroke="#1d4d23" stroke-width="1.5" opacity="0.9"/>
+      <ellipse cx="70" cy="115" rx="36" ry="18" fill="#2d6e35" stroke="#1d4d23" stroke-width="1.5" opacity="0.9"/>
       <ellipse cx="150" cy="120" rx="40" ry="20" fill="#2d6e35" stroke="#1d4d23" stroke-width="1.5" opacity="0.9"/>
       <ellipse cx="110" cy="140" rx="34" ry="16" fill="#388e3c" stroke="#1d4d23" stroke-width="1.5" opacity="0.95"/>
     `;
 
-    if (checkinCount >= 1) {
-      // 1 次打卡：冒出第一朵含苞初露的蓮花
-      lotusHTML += createLotusSVG(105, 95, 0.9, 'bud');
-    }
-    if (checkinCount >= 2) {
-      // 2 次打卡：左側綻放一朵粉紅蓮花
+    if (checkinCount <= 1) {
+      // 第 1 天｜種子：初發碧綠小荷苞苗
+      lotusHTML += createLotusSVG(105, 105, 0.7, 'bud');
+    } else if (checkinCount === 2) {
+      // 第 2 天｜發芽：水面亭亭長出蓮花花苞
+      lotusHTML += createLotusSVG(105, 90, 0.95, 'bud');
+      lotusHTML += createLotusSVG(65, 100, 0.8, 'bud');
+    } else {
+      // 第 3 天以上｜花開：蓮花盛開！
       lotusHTML += createLotusSVG(65, 80, 1.0, 'bloom');
-    }
-    if (checkinCount >= 4) {
-      // 4 次打卡：右側綻放盛開芙蕖
       lotusHTML += createLotusSVG(150, 75, 1.1, 'bloom');
-    }
-    if (checkinCount >= 7) {
-      // 7 次打卡：後方增添一朵微放清芬的白粉蓮花
-      lotusHTML += createLotusSVG(110, 55, 0.85, 'bloom');
-    }
-    if (checkinCount >= 10) {
-      // 10 次以上：中央盛開【七寶金光大祥蓮】，自帶金芒光暈
-      lotusHTML += `
-        <!-- 金光祥雲光暈 -->
-        <circle cx="108" cy="85" r="48" fill="url(#goldenLotusGlow)" opacity="0.6"/>
-        ${createLotusSVG(108, 85, 1.35, 'golden')}
-      `;
+
+      if (checkinCount >= 6) {
+        lotusHTML += createLotusSVG(110, 60, 0.85, 'bloom');
+      }
+      if (checkinCount >= 10) {
+        // 10 天以上：中央盛開【七寶金光大祥蓮】
+        lotusHTML += `
+          <circle cx="108" cy="85" r="48" fill="url(#goldenLotusGlow)" opacity="0.6"/>
+          ${createLotusSVG(108, 85, 1.35, 'golden')}
+        `;
+      }
     }
 
     pondWater.innerHTML = lotusHTML;
   }
 
-  // ════════════════════════════════
-  // B. 土地上的太陽花 (依打卡數動態生長)
-  // ════════════════════════════════
+  // C. 草皮上的太陽花 (太陽花生在草皮裡，無泥土，依 3 階段演化：第 1 天種子、第 2 天發芽、第 3 天花開)
   if (sunflowerSoil) {
     let sunflowerHTML = '';
 
     if (checkinCount === 0) {
-      // 尚未打卡：肥沃深褐土地，金色菩提種子破土前
       sunflowerHTML = `
-        <div style="text-align: center; color: #ffd54f; font-weight: 600; font-size: 0.82rem; padding-top: 55px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">
-          🌱 每日修持打卡，善法甘露注入此地<br>將孕育出盛開的向陽太陽花！
+        <div style="text-align: center; color: #2e7d32; font-weight: 700; font-size: 0.82rem; padding-top: 50px; text-shadow: 0 1px 3px rgba(255,255,255,0.9);">
+          🌱 每日修持打卡，善法甘露注入<br>綠茵草皮將向陽盛開燦爛太陽花！
+        </div>
+      `;
+    } else if (checkinCount === 1) {
+      // 第 1 天｜種子：綠葉嫩芽破土萌發
+      sunflowerHTML = `
+        <div class="sunflower-item" style="left:50%; bottom:20px; transform:translateX(-50%) scale(0.9);">
+          ${createSunflowerSVG('sprout')}
+        </div>
+      `;
+    } else if (checkinCount === 2) {
+      // 第 2 天｜發芽：翠綠挺立花苞
+      sunflowerHTML = `
+        <div class="sunflower-item" style="left:38%; bottom:20px; transform:translateX(-50%) scale(0.9);">
+          ${createSunflowerSVG('sprout')}
+        </div>
+        <div class="sunflower-item" style="left:62%; bottom:22px; transform:translateX(-50%) scale(0.95);">
+          ${createSunflowerSVG('bud')}
         </div>
       `;
     } else {
-      // 打卡 1 次以上：向日葵生長
+      // 第 3 天以上｜花開：燦爛向陽花金黃朵朵盛開
       const flowerCount = Math.min(5, Math.max(1, Math.floor((checkinCount + 1) / 2)));
-      
       const positions = [
-        { left: '48%', bottom: '25px', scale: 1.0, stage: checkinCount >= 3 ? 'bloom' : 'sprout' },
-        { left: '26%', bottom: '15px', scale: 0.85, stage: checkinCount >= 4 ? 'bloom' : 'bud' },
-        { left: '70%', bottom: '20px', scale: 0.9, stage: checkinCount >= 6 ? 'bloom' : 'bud' },
-        { left: '38%', bottom: '45px', scale: 0.8, stage: checkinCount >= 8 ? 'bloom' : 'sprout' },
-        { left: '60%', bottom: '48px', scale: 0.85, stage: checkinCount >= 10 ? 'bloom' : 'bud' }
+        { left: '50%', bottom: '22px', scale: 1.0, stage: 'bloom' },
+        { left: '26%', bottom: '15px', scale: 0.88, stage: checkinCount >= 4 ? 'bloom' : 'bud' },
+        { left: '72%', bottom: '18px', scale: 0.92, stage: checkinCount >= 6 ? 'bloom' : 'bud' },
+        { left: '38%', bottom: '42px', scale: 0.82, stage: checkinCount >= 8 ? 'bloom' : 'sprout' },
+        { left: '60%', bottom: '45px', scale: 0.85, stage: checkinCount >= 10 ? 'bloom' : 'bud' }
       ];
 
       for (let i = 0; i < flowerCount; i++) {
@@ -518,14 +576,39 @@ async function handleCheckinSubmit(e) {
     recordTime = recordTime.replace('T', ' ');
   }
 
-  const meditationMins = parseInt(document.getElementById('formMeditationMins')?.value) || 0;
-  
+  const isMeditationChecked = document.getElementById('checkMeditation')?.checked;
+  const isSutraChecked = document.getElementById('checkSutra')?.checked;
+
+  if (!isMeditationChecked && !isSutraChecked) {
+    alert("請至少勾選一項修持定課（靜坐調心 或 每日誦經）！");
+    return;
+  }
+
+  let meditationMins = 0;
+  if (isMeditationChecked) {
+    meditationMins = parseInt(document.getElementById('formMeditationMins')?.value) || 0;
+    if (meditationMins <= 0) meditationMins = 30;
+  }
+
   // 經典選擇
-  const sutraSelect = document.getElementById('formSutraSelect')?.value || '';
-  const customSutra = document.getElementById('formCustomSutra')?.value.trim() || '';
-  let finalSutra = sutraSelect;
-  if (sutraSelect === '自訂經典') {
-    finalSutra = customSutra || '大乘經典';
+  let finalSutra = '';
+  if (isSutraChecked) {
+    const sutraSelect = document.getElementById('formSutraSelect')?.value || '';
+    const customSutra = document.getElementById('formCustomSutra')?.value.trim() || '';
+    if (sutraSelect === '自訂經典') {
+      finalSutra = customSutra || '大乘經典';
+    } else {
+      finalSutra = sutraSelect || '金剛經';
+    }
+  }
+
+  let practiceItemName = '';
+  if (isMeditationChecked && isSutraChecked) {
+    practiceItemName = '靜坐與誦經';
+  } else if (isMeditationChecked) {
+    practiceItemName = '靜坐調心';
+  } else {
+    practiceItemName = '每日誦經';
   }
 
   const note = document.getElementById('formPracticeNote')?.value.trim() || '';
@@ -537,7 +620,7 @@ async function handleCheckinSubmit(e) {
     real_name: currentStudent.real_name,
     dharma_name: currentStudent.dharma_name,
     record_time: recordTime,
-    practice_item: meditationMins > 0 ? (finalSutra ? '靜坐與誦經' : '禪坐靜坐') : '每日誦經',
+    practice_item: practiceItemName,
     meditation_minutes: meditationMins,
     sutra_name: finalSutra,
     sutra_count: 0, // 無卷數

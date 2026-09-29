@@ -229,11 +229,11 @@
           
           <!-- 累積打卡次數徽章 -->
           <div class="garden-counter-tag" id="gardenCheckinCounter">
-            累積修持：0 次打卡注入
+            累積修持：0 天 ｜ 第 1 張圖 (維持 49 天)
           </div>
 
-          <!-- A. 蓮池圖層 (依打卡次數注入甘露水，動態長出盛開蓮花) -->
-          <div id="zenPondWrap" class="zen-pond-container" title="蓮池：每日修持打卡注入甘露水，自性蓮花隨之綻放">
+          <!-- A. 蓮池圖層 (蓮花生在池塘裡，依打卡數動態盛開) -->
+          <div id="zenPondWrap" class="zen-pond-container" title="蓮池：蓮花盛開於澄澈池塘中，打卡注入甘露水自性花開">
             <svg id="pondFlowersLayer" class="pond-surface-svg" viewBox="0 0 220 180">
               <defs>
                 <radialGradient id="goldenLotusGlow" cx="50%" cy="50%" r="50%">
@@ -245,13 +245,13 @@
             </svg>
           </div>
 
-          <!-- B. 太陽花田圖層 (依打卡次數在肥沃土地上向陽生長太陽花) -->
-          <div id="sunflowerSoilLayer" class="sunflower-field-container" title="太陽花田：精進修持猶如向陽之花，破土成長開出芬芳太陽花"></div>
+          <!-- B. 太陽花草皮圖層 (太陽花生在草皮裡，無泥土) -->
+          <div id="sunflowerSoilLayer" class="sunflower-field-container" title="太陽花：生長於綠茵草皮上，向陽茁壯開出燦爛太陽花"></div>
 
           <!-- C. 木牌老和尚法語熱點 (中台月刊每日法語) -->
           <div id="woodenSignHotspot" class="wooden-sign-hotspot" onclick="handleWoodenSignClick()" title="點擊恭讀惟覺老和尚法語開示">
             <div class="sign-tooltip-preview">
-              📜 老和尚法語：<span id="woodenSignQuoteText">點擊恭讀開示</span>
+              📜 老和尚法語 (點擊)
             </div>
           </div>
 
@@ -259,14 +259,14 @@
 
         <!-- 花園引導說明 -->
         <div style="margin-top: 0.8rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--ink-muted);">
-          <span>🪷 蓮池與🌻太陽花完全依修持打卡數量動態注入與盛開</span>
+          <span>🪷 蓮花盛於池塘 · 🌻 太陽花向陽生於草皮 · 等差換景</span>
           <span onclick="handleWoodenSignClick()" style="cursor: pointer; color: var(--gold-bronze); font-weight: 600;">
             📜 點擊木牌恭讀老和尚開示
           </span>
         </div>
       </section>
 
-      <!-- 右欄：每日精進修持打卡面板 (精簡為：靜坐 ＋ 每日誦經，可補之前時間，無卷數、無持咒) -->
+      <!-- 右欄：每日精進修持打卡面板 (可只每日誦經或只有靜坐) -->
       <section class="checkin-panel-card" id="dailyCheckinCard">
         <div class="panel-header-row">
           <h2><span>✍️</span> 每日精進修持打卡</h2>
@@ -289,29 +289,44 @@
             </div>
           </div>
 
-          <!-- 靜坐時間 -->
-          <div class="form-group">
-            <label class="form-label" for="formMeditationMins">
-              <span>🧘 靜坐時間</span>
-              <span style="font-size: 0.8rem; color: var(--ink-muted);">單位：分鐘</span>
-            </label>
-            <input type="number" id="formMeditationMins" class="form-control" min="0" step="5" placeholder="例如：30 分鐘（若今日未坐可填 0）" value="30">
-          </div>
+          <!-- 修持定課勾選（自選：可只誦經或只有靜坐） -->
+          <div style="margin-bottom: 1.2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+              <span style="font-size: 0.92rem; font-weight: 700; color: var(--ink-deep);">修持項目自選</span>
+              <span style="font-size: 0.78rem; color: var(--gold-bronze);">可只誦經或只靜坐（至少選一項）</span>
+            </div>
 
-          <!-- 每日誦經 (金剛經、藥師經、普門品、自訂填寫；無卷數) -->
-          <div class="form-group">
-            <label class="form-label" for="formSutraSelect">
-              <span>📖 每日誦經</span>
-              <span style="font-size: 0.8rem; color: var(--pine-green);">經典選擇</span>
-            </label>
-            <select id="formSutraSelect" class="form-control" onchange="handleSutraSelectChange(this.value)">
-              <option value="">-- 請選擇今日持誦經典 --</option>
-              <option value="金剛經" selected>金剛般若波羅蜜經（金剛經）</option>
-              <option value="藥師經">藥師琉璃光如來本願功德經（藥師經）</option>
-              <option value="普門品">觀世音菩薩普門品</option>
-              <option value="自訂經典">自訂其他經典……</option>
-            </select>
-            <input type="text" id="formCustomSutra" class="form-control" placeholder="請填寫您自訂持誦的經典名稱" style="display: none; margin-top: 0.5rem;">
+            <!-- 1. 靜坐勾選項 -->
+            <div style="background: var(--bg-card-sub); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 0.75rem 1rem; margin-bottom: 0.75rem;">
+              <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-weight: 600; font-size: 0.92rem; color: var(--ink-deep);">
+                <input type="checkbox" id="checkMeditation" onchange="toggleMeditationOption(this.checked)" checked style="accent-color: var(--pine-green); transform: scale(1.15);">
+                <span>🧘 靜坐調心</span>
+              </label>
+              <div id="wrapMeditationMins" style="margin-top: 0.6rem; padding-left: 1.8rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <input type="number" id="formMeditationMins" class="form-control" min="5" step="5" value="30" placeholder="例如：30" style="width: 130px;">
+                  <span style="font-size: 0.85rem; color: var(--ink-muted);">分鐘</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. 每日誦經勾選項 -->
+            <div style="background: var(--bg-card-sub); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 0.75rem 1rem;">
+              <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-weight: 600; font-size: 0.92rem; color: var(--ink-deep);">
+                <input type="checkbox" id="checkSutra" onchange="toggleSutraOption(this.checked)" checked style="accent-color: var(--pine-green); transform: scale(1.15);">
+                <span>📖 每日誦經</span>
+              </label>
+              <div id="wrapSutraSelect" style="margin-top: 0.6rem; padding-left: 1.8rem;">
+                <select id="formSutraSelect" class="form-control" onchange="handleSutraSelectChange(this.value)">
+                  <option value="">-- 請選擇今日持誦經典 --</option>
+                  <option value="金剛經" selected>金剛般若波羅蜜經（金剛經）</option>
+                  <option value="藥師經">藥師琉璃光如來本願功德經（藥師經）</option>
+                  <option value="普門品">觀世音菩薩普門品</option>
+                  <option value="自訂經典">自訂其他經典……</option>
+                </select>
+                <input type="text" id="formCustomSutra" class="form-control" placeholder="請填寫您自訂持誦的經典名稱" style="display: none; margin-top: 0.5rem;">
+              </div>
+            </div>
           </div>
 
           <!-- 用功隨感 / 迴向心得 (選填) -->
