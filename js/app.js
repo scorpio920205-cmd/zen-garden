@@ -134,9 +134,9 @@ function showGateError(msg) {
   }
 }
 
-// 換人登入 / 登出
+// 登出系統
 function handleLogout() {
-  if (confirm("確定要登出並換下一位同修登入嗎？\n您的修持打卡與花園資料皆已妥善保存。")) {
+  if (confirm("確定要登出嗎？\n您的修持打卡與花園資料皆已妥善保存。")) {
     localStorage.removeItem(STORAGE_SESSION_KEY);
     currentStudent = null;
     isVisitingMode = false;
@@ -144,7 +144,7 @@ function handleLogout() {
   }
 }
 
-// 更新頂部登入者狀態
+// 更新頂部登入者狀態與統計數據看板
 function updateUserHeaderUI(student) {
   const nameEl = document.getElementById('navStudentTitle');
   const countEl = document.getElementById('navCheckinCount');
@@ -153,6 +153,52 @@ function updateUserHeaderUI(student) {
   }
   if (countEl) {
     countEl.textContent = student.total_checkins || 0;
+  }
+
+  // ════ 更新精進打卡數量統計看板 ════
+  const checkinsEl = document.getElementById('statCardCheckins');
+  const meditationEl = document.getElementById('statCardMeditation');
+  const sutrasEl = document.getElementById('statCardSutras');
+  const rejoicesEl = document.getElementById('statCardRejoices');
+  const stageEl = document.getElementById('statCardStage');
+  const studentLabelEl = document.getElementById('statStudentLabel');
+
+  const checkins = student.total_checkins || 0;
+  const meditation = student.total_meditation_mins || 0;
+  const rejoices = student.rejoice_count || 0;
+
+  if (checkinsEl) checkinsEl.textContent = checkins;
+  if (meditationEl) meditationEl.textContent = meditation;
+  if (rejoicesEl) rejoicesEl.textContent = rejoices;
+
+  // 計算持誦經典部數 (統計該學員在打卡紀錄中有填寫經典的次數)
+  try {
+    const allRecords = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.checkins) || '[]');
+    const studentRecords = allRecords.filter(r => 
+      (r.student_id && r.student_id === student.id) ||
+      (r.real_name === student.real_name && r.class_type === student.class_type)
+    );
+    const sutraCount = studentRecords.filter(r => r.sutra_name && r.sutra_name !== '').length;
+    if (sutrasEl) sutrasEl.textContent = sutraCount || checkins;
+  } catch (e) {
+    if (sutrasEl) sutrasEl.textContent = checkins;
+  }
+
+  // 計算自性花園生長境界階段
+  if (stageEl) {
+    if (checkins >= 10) {
+      stageEl.textContent = '成林 · 七寶祥蓮 (第4階)';
+    } else if (checkins >= 4) {
+      stageEl.textContent = '花開 · 繁花盛開 (第3階)';
+    } else if (checkins >= 2) {
+      stageEl.textContent = '發芽 · 菩提萌發 (第2階)';
+    } else {
+      stageEl.textContent = '種子 · 初發心田 (第1階)';
+    }
+  }
+
+  if (studentLabelEl) {
+    studentLabelEl.textContent = `· 【${student.class_type}】${student.group_name} ${student.dharma_name}`;
   }
 }
 

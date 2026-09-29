@@ -122,11 +122,14 @@
           </div>
 
           <div class="app-nav-actions">
+            <a href="garden2d.html" class="btn-primary" style="padding: 0.45rem 1.1rem; font-size: 0.88rem; text-decoration: none;">
+              <span>🌸</span> 進入 2D 開心花園
+            </a>
             <button type="button" class="btn-secondary" onclick="toggleFriendsDrawer(true)">
-              <span>🌸</span> 參觀同修花園
+              <span>🪷</span> 參觀同修花園
             </button>
             <button type="button" class="btn-secondary" onclick="handleLogout()">
-              <span>🚪</span> 換人登入
+              <span>🚪</span> 登出
             </button>
             <a href="admin.html" class="btn-secondary" style="color: var(--gold-bronze); border-color: var(--gold-bronze);">
               <span>🔒</span> 師父管理
@@ -152,6 +155,67 @@
         </button>
       </div>
     </div>
+
+    <!-- ════ 打卡修持數量統計看板 ════ -->
+    <section class="practice-stats-strip" id="practiceStatsSection">
+      <div class="stats-panel-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.25rem;">📊</span>
+          <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--ink-deep);">個人精進修持數據統計</h2>
+          <span id="statStudentLabel" style="font-size: 0.82rem; color: var(--gold-bronze);"></span>
+        </div>
+        <a href="garden2d.html" class="btn-secondary" style="padding: 0.35rem 0.95rem; font-size: 0.84rem; color: var(--pine-green); border-color: var(--pine-green); text-decoration: none;">
+          <span>🌸</span> 2D 開心花園獨立頁面 (四季與成林) ➔
+        </a>
+      </div>
+
+      <div class="stats-grid-row">
+        <!-- 1. 累積打卡次數 -->
+        <div class="stat-metric-card">
+          <div class="stat-metric-icon" style="background: #e8f5e9; color: #2e7d32;">🪷</div>
+          <div class="stat-metric-info">
+            <div class="stat-metric-num" id="statCardCheckins">0</div>
+            <div class="stat-metric-label">累積打卡修持次數</div>
+          </div>
+        </div>
+
+        <!-- 2. 靜坐總時長 -->
+        <div class="stat-metric-card">
+          <div class="stat-metric-icon" style="background: #fff8e1; color: #f57f17;">🧘</div>
+          <div class="stat-metric-info">
+            <div class="stat-metric-num"><span id="statCardMeditation">0</span> <small style="font-size:0.8rem; font-weight:normal;">分</small></div>
+            <div class="stat-metric-label">累積禪坐定境時長</div>
+          </div>
+        </div>
+
+        <!-- 3. 誦經修持部數 -->
+        <div class="stat-metric-card">
+          <div class="stat-metric-icon" style="background: #e1f5fe; color: #0288d1;">📖</div>
+          <div class="stat-metric-info">
+            <div class="stat-metric-num" id="statCardSutras">0</div>
+            <div class="stat-metric-label">每日誦經受持部數</div>
+          </div>
+        </div>
+
+        <!-- 4. 隨喜讚嘆數 -->
+        <div class="stat-metric-card">
+          <div class="stat-metric-icon" style="background: #fce4ec; color: #c2185b;">🙏</div>
+          <div class="stat-metric-info">
+            <div class="stat-metric-num" id="statCardRejoices">0</div>
+            <div class="stat-metric-label">同修合掌隨喜功德</div>
+          </div>
+        </div>
+
+        <!-- 5. 自性修持階段 -->
+        <div class="stat-metric-card" style="border-left: 4px solid var(--gold-bronze);">
+          <div class="stat-metric-icon" style="background: #f6efe2; color: #8f6f3a;">🌱</div>
+          <div class="stat-metric-info">
+            <div class="stat-metric-num" id="statCardStage" style="font-size: 1.05rem;">第 1 天｜種子</div>
+            <div class="stat-metric-label">自性花園生長境界</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- 主內容區 (左右兩欄：花園畫布 ＋ 每日修持打卡) -->
     <main class="main-garden-layout">

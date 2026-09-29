@@ -55,8 +55,8 @@
 
 ```text
 E:\精舍\2026_0928_精進花園\garden_app/
-├── index.html                 # 主入口：登入門檻 ＋ 2D 精進花園 ＋ 精簡打卡 ＋ 參觀抽屜
-├── garden2d.html              # 備選 2D 開心花園全景視圖 (含四季與階段展示)
+├── index.html                 # 主入口：登入門檻 ＋ 2D 精進花園 ＋ 打卡數量統計 ＋ 精簡打卡 ＋ 參觀抽屜
+├── garden2d.html              # 獨立 2D 開心花園 (四季秋收冬藏 ＋ 第1~4天生長成林 ＋ 互動道具列)
 ├── garden3d.html              # 備選 3D 智慧蓮池 (Three.js 視角)
 ├── admin.html                 # 師父後台管理 (密碼：ZhongTai#ZenGarden2026!)
 ├── css/

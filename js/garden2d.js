@@ -171,13 +171,27 @@ async function setupURLQuery() {
   isVisitor = false;
   if (visitIndicator) visitIndicator.style.display = 'none';
 
-  const currentStudentStr = localStorage.getItem(API_CONFIG.storageKeys.currentStudent);
+  const currentStudentStr = localStorage.getItem('zen_garden_logged_student_v2') || localStorage.getItem(API_CONFIG.storageKeys.currentStudent);
   if (currentStudentStr) {
     try {
       const s = JSON.parse(currentStudentStr);
       nameEl.textContent = s.dharma_name ? `${s.dharma_name} 的花園` : (s.real_name ? `${s.real_name} 的花園` : '我的花園');
-      classEl.textContent = s.class_type || '日高';
-      daysEl.textContent = s.total_checkins || 1;
+      classEl.textContent = s.class_type ? `${s.class_type} ${s.group_name || ''}` : '日高';
+      const checkinCount = s.total_checkins || 0;
+      daysEl.textContent = Math.max(1, checkinCount);
+
+      // 動態更新累積菩提功德金與可用甘露法水
+      const meritEl = document.getElementById('hudMeritPoints');
+      if (meritEl) meritEl.textContent = checkinCount * 100 + (s.total_meditation_mins || 0);
+      const dewEl = document.getElementById('hudDewDrops');
+      if (dewEl) dewEl.textContent = Math.max(3, checkinCount * 2);
+
+      // 依學員實際修持天數自動切換花園生長境界
+      if (checkinCount >= 10) currentStageKey = 4;
+      else if (checkinCount >= 4) currentStageKey = 3;
+      else if (checkinCount >= 2) currentStageKey = 2;
+      else currentStageKey = 1;
+
     } catch (e) {}
   } else {
     nameEl.textContent = '傳心 的花園';
@@ -511,4 +525,13 @@ function showFloatingEffect(targetEl, text) {
   }, 40);
 
   setTimeout(() => notice.remove(), 1500);
+}
+
+// 登出系統 (返回登入畫面)
+function handle2DLogout() {
+  if (confirm("確定要登出嗎？\n您的修持打卡與花園資料皆已妥善保存。")) {
+    localStorage.removeItem('zen_garden_logged_student_v2');
+    localStorage.removeItem(API_CONFIG.storageKeys.currentStudent);
+    window.location.href = 'index.html';
+  }
 }
