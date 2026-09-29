@@ -51,7 +51,7 @@ function checkLoginSession() {
   if (mainApp) mainApp.style.display = 'none';
 }
 
-// 2. 登入 / 註冊提交處理
+// 2. 登入 / 註冊提交處理（支援：已有學號者可直接單欄輸入學號一鍵登入）
 async function handleLoginOrRegister(e) {
   if (e) e.preventDefault();
 
@@ -62,6 +62,39 @@ async function handleLoginOrRegister(e) {
   const dharmaName = document.getElementById('gateDharmaName')?.value.trim() || '';
   const errEl = document.getElementById('gateErrorMsg');
 
+  // ════ 優先處理：學號直接登入 ════
+  if (studentNo) {
+    const existingByNo = await ZenAPI.getStudentByStudentNo(studentNo);
+    if (existingByNo) {
+      // 查得此學號，若有手動更新其他欄位則同步保存
+      if (classType) existingByNo.class_type = classType;
+      if (groupName) existingByNo.group_name = groupName;
+      if (realName) existingByNo.real_name = realName;
+      if (dharmaName) existingByNo.dharma_name = dharmaName;
+
+      // 更新儲存
+      const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
+      const idx = students.findIndex(item => item.id === existingByNo.id || (item.student_no && item.student_no.toLowerCase() === studentNo.toLowerCase()));
+      if (idx >= 0) {
+        students[idx] = existingByNo;
+      } else {
+        students.push(existingByNo);
+      }
+      localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
+
+      loginSuccess(existingByNo);
+      return;
+    } else {
+      // 學號查無紀錄且下方資料未填齊
+      if (!classType || !groupName || !realName || !dharmaName) {
+        showGateError(`系統查無學號【${studentNo}】的紀錄。若為初次建檔，請填寫下方班級、組別、真實姓名與法名完成首次建檔，往後即可直接以此學號一鍵登入！`);
+        if (!classType) document.getElementById('gateClassType')?.focus();
+        return;
+      }
+    }
+  }
+
+  // ════ 首次建檔或無學號者：驗證班級、組別、姓名、法名 ════
   if (!classType) {
     showGateError('請選擇您的班級（日高 或 夜高）');
     document.getElementById('gateClassType')?.focus();
@@ -102,28 +135,68 @@ async function handleLoginOrRegister(e) {
       created_at: new Date().toISOString().replace('T', ' ').substring(0, 19)
     };
     students.push(s);
-    localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
   } else {
     // 同步更新法名與學號
     s.dharma_name = dharmaName;
     if (studentNo) s.student_no = studentNo;
-    localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
   }
+  localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
 
-  // 儲存目前登入者
-  currentStudent = s;
-  localStorage.setItem(STORAGE_SESSION_KEY, JSON.stringify(s));
-  localStorage.setItem(API_CONFIG.storageKeys.currentStudent, JSON.stringify(s));
+  loginSuccess(s);
+}
 
+// 登入成功通用處理
+function loginSuccess(student) {
+  currentStudent = student;
+  localStorage.setItem(STORAGE_SESSION_KEY, JSON.stringify(student));
+  localStorage.setItem(API_CONFIG.storageKeys.currentStudent, JSON.stringify(student));
+
+  const errEl = document.getElementById('gateErrorMsg');
   if (errEl) errEl.style.display = 'none';
 
   // 進入花園
   document.getElementById('loginRegisterGate').style.display = 'none';
   document.getElementById('mainAppInterface').style.display = 'block';
 
-  updateUserHeaderUI(s);
-  renderGardenFlowers(s.total_checkins || 0);
+  updateUserHeaderUI(student);
+  renderGardenFlowers(student.total_checkins || 0);
   playChimeSound(432);
+}
+
+// 學號即時動態識別（輸入學號時若匹配舊生，自動帶入並提示可直接登入）
+async function handleStudentNoInput(val) {
+  const clean = (val || '').trim();
+  const badge = document.getElementById('gateStudentFoundBadge');
+  const badgeInfo = document.getElementById('gateFoundInfo');
+  const statusEl = document.getElementById('gateStudentNoStatus');
+  const errEl = document.getElementById('gateErrorMsg');
+
+  if (errEl) errEl.style.display = 'none';
+
+  if (!clean) {
+    if (badge) badge.style.display = 'none';
+    if (statusEl) statusEl.style.display = 'none';
+    return;
+  }
+
+  // 查詢本地或雲端
+  const s = await ZenAPI.getStudentByStudentNo(clean);
+  if (s) {
+    // 自動預填下方各欄位
+    if (document.getElementById('gateClassType')) document.getElementById('gateClassType').value = s.class_type || '';
+    if (document.getElementById('gateGroupName')) document.getElementById('gateGroupName').value = s.group_name || '';
+    if (document.getElementById('gateRealName')) document.getElementById('gateRealName').value = s.real_name || '';
+    if (document.getElementById('gateDharmaName')) document.getElementById('gateDharmaName').value = s.dharma_name || '';
+
+    if (statusEl) statusEl.style.display = 'inline';
+    if (badge && badgeInfo) {
+      badgeInfo.textContent = `【${s.class_type}】${s.group_name} · ${s.dharma_name}`;
+      badge.style.display = 'block';
+    }
+  } else {
+    if (badge) badge.style.display = 'none';
+    if (statusEl) statusEl.style.display = 'none';
+  }
 }
 
 function showGateError(msg) {

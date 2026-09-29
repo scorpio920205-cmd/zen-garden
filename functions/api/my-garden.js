@@ -5,12 +5,13 @@
 export async function onRequestGet({ request, env }) {
   try {
     const url = new URL(request.url);
+    const studentNo = url.searchParams.get('student_no');
     const classType = url.searchParams.get('class');
     const groupName = url.searchParams.get('group');
     const realName = url.searchParams.get('name');
 
-    if (!classType || !groupName || !realName) {
-      return new Response(JSON.stringify({ success: false, error: '缺少核驗參數（班級、組別或姓名）' }), {
+    if (!studentNo && (!classType || !groupName || !realName)) {
+      return new Response(JSON.stringify({ success: false, error: '缺少核驗參數（學號，或班級、組別與姓名）' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -24,9 +25,16 @@ export async function onRequestGet({ request, env }) {
       });
     }
 
-    const student = await db.prepare(
-      'SELECT * FROM students WHERE class_type = ? AND group_name = ? AND real_name = ?'
-    ).bind(classType, groupName, realName).first();
+    let student = null;
+    if (studentNo) {
+      student = await db.prepare(
+        'SELECT * FROM students WHERE LOWER(student_no) = LOWER(?)'
+      ).bind(studentNo.trim()).first();
+    } else {
+      student = await db.prepare(
+        'SELECT * FROM students WHERE class_type = ? AND group_name = ? AND real_name = ?'
+      ).bind(classType, groupName, realName).first();
+    }
 
     if (!student) {
       return new Response(JSON.stringify({ success: false, error: '查無此學員花園紀錄' }), {

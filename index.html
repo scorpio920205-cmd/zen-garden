@@ -27,13 +27,16 @@
       <div id="gateErrorMsg" style="display:none; background:#ffebee; border:1px solid #ef5350; border-radius:8px; padding:0.5rem 0.8rem; color:#c62828; font-size:0.86rem; margin-bottom:0.8rem; font-weight:600;"></div>
 
       <form id="gateForm" onsubmit="handleLoginOrRegister(event)">
-        <!-- 學號 (非必填) -->
+        <!-- 學號 (初次選填，日後可憑學號一鍵登入) -->
         <div class="form-group gate-compact-group" style="text-align: left;">
           <label class="form-label" for="gateStudentNo">
-            <span>學號</span>
-            <span style="font-size: 0.76rem; color: var(--ink-faint); font-weight: normal;">非必填 · 隱私保護</span>
+            <span>學號 <small style="font-weight: normal; color: var(--gold-bronze); font-size: 0.74rem;">（已有學號可直接輸入一鍵登入）</small></span>
+            <span id="gateStudentNoStatus" style="font-size: 0.74rem; color: #2e7d32; font-weight: 600; display: none;">✅ 已辨識舊生學號</span>
           </label>
-          <input type="text" id="gateStudentNo" class="form-control" placeholder="例如：2026001（選填）" autocomplete="off">
+          <input type="text" id="gateStudentNo" class="form-control" placeholder="輸入學號（若曾填過，僅需填此欄即可一鍵登入）" autocomplete="off" oninput="handleStudentNoInput(this.value)">
+          <div id="gateStudentFoundBadge" style="display: none; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 6px; padding: 4px 8px; margin-top: 4px; font-size: 0.78rem; color: #1b5e20;">
+            ✨ 已查得建檔紀錄：<strong id="gateFoundInfo"></strong>，可直接點擊進入！
+          </div>
         </div>
 
         <!-- 班級 ＆ 組別（橫向雙欄，緊湊美觀） -->
@@ -42,7 +45,7 @@
             <label class="form-label" for="gateClassType">
               <span>班級 <strong style="color: var(--vermilion);">*</strong></span>
             </label>
-            <select id="gateClassType" class="form-control" required>
+            <select id="gateClassType" class="form-control">
               <option value="">-- 班級 --</option>
               <option value="日高">日高班</option>
               <option value="夜高">夜高班</option>
@@ -53,7 +56,7 @@
             <label class="form-label" for="gateGroupName">
               <span>組別 <strong style="color: var(--vermilion);">*</strong></span>
             </label>
-            <select id="gateGroupName" class="form-control" required>
+            <select id="gateGroupName" class="form-control">
               <option value="">-- 組別 --</option>
               <option value="A1">A1</option>
               <option value="A2">A2</option>
@@ -72,7 +75,7 @@
               <span>姓名 <strong style="color: var(--vermilion);">*</strong></span>
               <span style="font-size: 0.72rem; color: var(--vermilion); font-weight: normal;">🔒 嚴格隱藏</span>
             </label>
-            <input type="text" id="gateRealName" class="form-control" placeholder="真實姓名（師父查閱）" required autocomplete="off">
+            <input type="text" id="gateRealName" class="form-control" placeholder="真實姓名（師父查閱）" autocomplete="off">
           </div>
 
           <div class="form-group gate-compact-group" style="text-align: left;">
@@ -80,7 +83,7 @@
               <span>法名 <strong style="color: var(--vermilion);">*</strong></span>
               <span style="font-size: 0.72rem; color: var(--pine-green); font-weight: normal;">🌸 參觀顯示</span>
             </label>
-            <input type="text" id="gateDharmaName" class="form-control" placeholder="例如：傳心" required autocomplete="off">
+            <input type="text" id="gateDharmaName" class="form-control" placeholder="例如：傳心" autocomplete="off">
           </div>
         </div>
 

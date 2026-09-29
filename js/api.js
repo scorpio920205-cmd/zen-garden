@@ -23,7 +23,7 @@ const INITIAL_DEMO_STUDENTS = [
     id: 101,
     student_no: "NT2026-008",
     class_type: "日高",
-    group_name: "第 3 組",
+    group_name: "A1",
     real_name: "陳靜芬", // 隱私遮蔽：公開參觀時絕對隱藏
     dharma_name: "傳覺",
     total_checkins: 42,
@@ -38,7 +38,7 @@ const INITIAL_DEMO_STUDENTS = [
     id: 102,
     student_no: "NT2026-015",
     class_type: "夜高",
-    group_name: "第 1 組",
+    group_name: "B1",
     real_name: "林崇禮", // 隱私遮蔽：公開參觀時絕對隱藏
     dharma_name: "傳心",
     total_checkins: 28,
@@ -53,7 +53,7 @@ const INITIAL_DEMO_STUDENTS = [
     id: 103,
     student_no: "NT2026-033",
     class_type: "日高",
-    group_name: "第 6 組",
+    group_name: "A2",
     real_name: "張雅惠", // 隱私遮蔽：公開參觀時絕對隱藏
     dharma_name: "傳道",
     total_checkins: 16,
@@ -68,7 +68,7 @@ const INITIAL_DEMO_STUDENTS = [
     id: 104,
     student_no: "NT2026-052",
     class_type: "夜高",
-    group_name: "第 4 組",
+    group_name: "B2",
     real_name: "王建弘", // 隱私遮蔽：公開參觀時絕對隱藏
     dharma_name: "傳智",
     total_checkins: 9,
@@ -273,6 +273,25 @@ const ZenAPI = {
       student: student,
       checkins: myCheckins
     };
+  },
+
+  // 2.1 依學號查詢學員資料（支援學號一鍵登入）
+  async getStudentByStudentNo(studentNo) {
+    if (!studentNo) return null;
+    const cleanNo = studentNo.trim();
+    const isCloud = await this.isCloudflareBackendAvailable();
+    if (isCloud) {
+      try {
+        const resp = await fetch(`/api/my-garden?student_no=${encodeURIComponent(cleanNo)}`);
+        const res = await resp.json();
+        if (res.success && res.student) return res.student;
+      } catch (e) {
+        console.warn('雲端學號查詢失敗，嘗試本地', e);
+      }
+    }
+
+    const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
+    return students.find(s => s.student_no && s.student_no.trim().toLowerCase() === cleanNo.toLowerCase()) || null;
   },
 
   // 3. 取得「參觀他人花園」清單（安全隱私模式：真實姓名與學號完全脫敏/過濾）
