@@ -11,19 +11,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 檢查目前是否已登入指導法師最高權限
 function checkAdminSession() {
-  const isMasterAuth = localStorage.getItem('zen_master_authenticated') === '1' && localStorage.getItem('zen_active_role') === 'master';
-  let token = sessionStorage.getItem(ADMIN_STORAGE_KEY);
-  
-  if (isMasterAuth && !token) {
-    token = 'ZhongTai#2026';
-    sessionStorage.setItem(ADMIN_STORAGE_KEY, token);
-  }
-
+  const isLoggedOut = localStorage.getItem('zen_logged_out') === '1' || sessionStorage.getItem('zen_logged_out') === '1';
   const lockScreen = document.getElementById('adminLockScreen');
   const mainDashboard = document.getElementById('adminDashboard');
   const headerActions = document.getElementById('adminHeaderActions');
 
-  if ((isMasterAuth || token) && token === 'ZhongTai#2026') {
+  if (isLoggedOut) {
+    if (lockScreen) lockScreen.style.display = 'block';
+    if (mainDashboard) mainDashboard.style.display = 'none';
+    if (headerActions) headerActions.style.display = 'none';
+    return;
+  }
+
+  const isMasterAuth = (localStorage.getItem('zen_master_authenticated') === '1' && localStorage.getItem('zen_active_role') === 'master');
+  let token = sessionStorage.getItem(ADMIN_STORAGE_KEY) || localStorage.getItem(ADMIN_STORAGE_KEY);
+  
+  if (isMasterAuth && !token) {
+    token = 'ZhongTai#2026';
+    localStorage.setItem(ADMIN_STORAGE_KEY, token);
+    sessionStorage.setItem(ADMIN_STORAGE_KEY, token);
+  }
+
+  if (isMasterAuth && token === 'ZhongTai#2026') {
+    localStorage.setItem(ADMIN_STORAGE_KEY, token);
+    sessionStorage.setItem(ADMIN_STORAGE_KEY, token);
     if (lockScreen) lockScreen.style.display = 'none';
     if (mainDashboard) mainDashboard.style.display = 'block';
     if (headerActions) headerActions.style.display = 'flex';
@@ -54,9 +65,11 @@ async function handleAdminLogin(e) {
 
   const res = await ZenAPI.verifyAdminPassword(pwd);
   if (res.success) {
-    // 密碼登入一次後永久保持最高權限，不需一直要求密碼
+    // 密碼登入一次後永久保持最高權限，新開分頁與各階段巡檢皆持久有效
     localStorage.setItem('zen_master_authenticated', '1');
     localStorage.setItem('zen_active_role', 'master');
+    localStorage.setItem(ADMIN_STORAGE_KEY, pwd);
+    localStorage.removeItem('zen_logged_out');
     sessionStorage.setItem(ADMIN_STORAGE_KEY, pwd);
     sessionStorage.removeItem('zen_logged_out');
     errEl.style.display = "none";
@@ -81,9 +94,13 @@ function handleAdminLogout() {
   if (!confirm("確定要退出指導法師管理後台嗎？\n退出後將立即鎖定畫面，需重新輸入管理密碼。")) return;
   localStorage.removeItem('zen_master_authenticated');
   localStorage.removeItem('zen_active_role');
+  localStorage.removeItem(ADMIN_STORAGE_KEY);
+  localStorage.removeItem('zen_garden_admin_token_v1');
+  localStorage.removeItem('zen_garden_admin_session_v1');
   sessionStorage.removeItem(ADMIN_STORAGE_KEY);
   sessionStorage.removeItem('zen_garden_admin_token_v1');
   sessionStorage.removeItem('zen_garden_admin_session_v1');
+  localStorage.setItem('zen_logged_out', '1');
   sessionStorage.setItem('zen_logged_out', '1');
   
   const lockScreen = document.getElementById('adminLockScreen');

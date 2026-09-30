@@ -98,6 +98,8 @@ function handleGateMasterLogin() {
     if (errEl) errEl.style.display = 'none';
     localStorage.setItem('zen_master_authenticated', '1');
     localStorage.setItem('zen_active_role', 'master');
+    localStorage.setItem('zen_garden_admin_token_v1', pwd);
+    localStorage.removeItem('zen_logged_out');
     sessionStorage.setItem('zen_garden_admin_token_v1', pwd);
     sessionStorage.setItem('zen_garden_admin_session_v1', pwd);
     sessionStorage.removeItem('zen_logged_out');

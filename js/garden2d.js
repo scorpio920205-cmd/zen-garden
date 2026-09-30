@@ -204,20 +204,30 @@ async function setupURLQuery() {
   const params = new URLSearchParams(window.location.search);
   const isVisitorParam = params.get('visitor') === '1';
   
-  // 嚴格資安防護：判定是否為已登入驗證之指導法師
-  const adminToken = sessionStorage.getItem(API_CONFIG.storageKeys.adminSession) || sessionStorage.getItem('zen_garden_admin_token_v1');
-  const isMasterAuthenticated = (localStorage.getItem('zen_master_authenticated') === '1' && 
+  // 嚴格資安防護：判定是否為已登入驗證之指導法師 (同時查詢 sessionStorage 與 localStorage)
+  const isLoggedOut = (sessionStorage.getItem('zen_logged_out') === '1') || (localStorage.getItem('zen_logged_out') === '1');
+  const adminToken = sessionStorage.getItem(API_CONFIG.storageKeys.adminSession) || 
+                     sessionStorage.getItem('zen_garden_admin_token_v1') ||
+                     localStorage.getItem(API_CONFIG.storageKeys.adminSession) ||
+                     localStorage.getItem('zen_garden_admin_token_v1');
+
+  const isMasterAuthenticated = !isLoggedOut && 
+                                (localStorage.getItem('zen_master_authenticated') === '1' && 
                                  localStorage.getItem('zen_active_role') === 'master') && 
                                 (adminToken === 'ZhongTai#2026');
 
   // 若使用者在 URL 帶有 admin=1：
   if (params.get('admin') === '1') {
     // 嚴格資安防護：必須已經通過密碼驗證！絕對不可單憑 URL 參數就自動授予管理員權限！
-    if (!isMasterAuthenticated && adminToken !== 'ZhongTai#2026') {
+    if (!isMasterAuthenticated) {
       alert("🔒 安全防護：尚未登入指導法師最高權限，請先由管理端輸入密碼登入！");
       window.location.href = 'admin.html';
       return;
     }
+    // 已通過密碼驗證：同步補齊該分頁之 sessionStorage，維持權限連貫
+    sessionStorage.setItem(API_CONFIG.storageKeys.adminSession, 'ZhongTai#2026');
+    sessionStorage.setItem('zen_garden_admin_token_v1', 'ZhongTai#2026');
+    sessionStorage.removeItem('zen_logged_out');
   }
 
   const isAdminParam = (params.get('admin') === '1' || isMasterAuthenticated) && (adminToken === 'ZhongTai#2026');
@@ -1038,7 +1048,12 @@ function closeZenDialog() {
 function setupStageDockListeners() {
   document.querySelectorAll('.stage-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const isMaster = localStorage.getItem('zen_master_authenticated') === '1' && localStorage.getItem('zen_active_role') === 'master';
+      const adminToken = sessionStorage.getItem(API_CONFIG.storageKeys.adminSession) || 
+                         sessionStorage.getItem('zen_garden_admin_token_v1') ||
+                         localStorage.getItem(API_CONFIG.storageKeys.adminSession) ||
+                         localStorage.getItem('zen_garden_admin_token_v1');
+      const isMaster = (localStorage.getItem('zen_master_authenticated') === '1' && localStorage.getItem('zen_active_role') === 'master') && 
+                       (adminToken === 'ZhongTai#2026');
       if (!isMaster) {
         alert("🔒 未到天數只能看到對應天數的圖。同學端依累積修持天數顯現對應境界，只有在登入畫面驗證通過之指導法師可自由檢閱全部圖！");
         return;
@@ -1238,7 +1253,10 @@ function showFloatingEffect(targetEl, text) {
 // 登出系統 (若為指導法師退出管理權限並鎖定 admin.html，若為學員清除登入並返回 index.html)
 function handle2DLogout() {
   const params = new URLSearchParams(window.location.search);
-  const adminToken = sessionStorage.getItem(API_CONFIG.storageKeys.adminSession) || sessionStorage.getItem('zen_garden_admin_token_v1');
+  const adminToken = sessionStorage.getItem(API_CONFIG.storageKeys.adminSession) || 
+                     sessionStorage.getItem('zen_garden_admin_token_v1') ||
+                     localStorage.getItem(API_CONFIG.storageKeys.adminSession) ||
+                     localStorage.getItem('zen_garden_admin_token_v1');
   const isAdmin = (params.get('admin') === '1') || 
                   localStorage.getItem('zen_master_authenticated') === '1' ||
                   localStorage.getItem('zen_active_role') === 'master' ||
@@ -1248,9 +1266,12 @@ function handle2DLogout() {
     if (confirm("確定要退出指導法師管理後台嗎？\n退出後將鎖定後台，需重新輸入管理密碼。")) {
       localStorage.removeItem('zen_master_authenticated');
       localStorage.removeItem('zen_active_role');
+      localStorage.removeItem(API_CONFIG.storageKeys.adminSession);
+      localStorage.removeItem('zen_garden_admin_token_v1');
       sessionStorage.removeItem(API_CONFIG.storageKeys.adminSession);
       sessionStorage.removeItem('zen_garden_admin_token_v1');
       sessionStorage.removeItem('zen_garden_admin_session_v1');
+      localStorage.setItem('zen_logged_out', '1');
       sessionStorage.setItem('zen_logged_out', '1');
       window.location.href = 'admin.html';
     }
