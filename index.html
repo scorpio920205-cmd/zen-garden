@@ -16,86 +16,100 @@
 <body>
 
   <!-- ═══════════════════════════════════════════════════════════════
-       1. 登入 / 註冊入口門檻 (未登入者僅能見此畫面)
+       1. 登入 / 註冊入口門檻 (採用全新典雅風格：深紫壇金頂部橫幅 ＋ 典雅白卡 ＋ 圓角按鈕 ＋ 手機響應)
        ═══════════════════════════════════════════════════════════════ -->
   <div class="login-gate-screen" id="loginRegisterGate">
-    <div class="login-gate-card">
-      <div class="gate-symbol-icon">🪷</div>
-      <h2 class="gate-title">精進花園 · 活動登入</h2>
-      <p class="gate-subtitle">普慶精舍 ｜ 禪修班</p>
+    <!-- 頂部沉穩紫金橫幅 (嚴格參照設計樣式) -->
+    <header class="gate-top-header">
+      <div class="gate-top-sub">普慶精舍 ｜ 禪修班</div>
+      <h1 class="gate-top-title">精進花園 · 活動登入</h1>
+    </header>
 
-      <div id="gateErrorMsg" style="display:none; background:#ffebee; border:1px solid #ef5350; border-radius:8px; padding:0.5rem 0.8rem; color:#c62828; font-size:0.86rem; margin-bottom:0.8rem; font-weight:600;"></div>
+    <!-- 主體內容區塊 (垂直置中、手機平順滾動) -->
+    <div class="gate-body-container">
+      <div class="login-gate-card">
+        
+        <!-- 象徵徽飾與標題 -->
+        <div class="gate-badge-wrap">
+          <div class="gate-badge-circle">🪷</div>
+        </div>
+        <h2 class="gate-card-title">學員修持打卡登入</h2>
+        <p class="gate-card-subtitle">靜中生慧 ｜ 以經照心 ｜ 自性花開</p>
 
-      <form id="gateForm" onsubmit="handleLoginOrRegister(event)">
-        <!-- 學號 (初次選填，日後可憑學號一鍵登入) -->
-        <div class="form-group gate-compact-group" style="text-align: left;">
-          <label class="form-label" for="gateStudentNo">
-            <span>學號 <small style="font-weight: normal; color: var(--gold-bronze); font-size: 0.74rem;">（已有學號可直接輸入一鍵登入）</small></span>
-            <span id="gateStudentNoStatus" style="font-size: 0.74rem; color: #2e7d32; font-weight: 600; display: none;">✅ 已辨識舊生學號</span>
-          </label>
-          <input type="text" id="gateStudentNo" class="form-control" placeholder="輸入學號（若曾填過，僅需填此欄即可一鍵登入）" autocomplete="off" oninput="handleStudentNoInput(this.value)">
-          <div id="gateStudentFoundBadge" style="display: none; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 6px; padding: 4px 8px; margin-top: 4px; font-size: 0.78rem; color: #1b5e20;">
-            ✨ 已查得建檔紀錄：<strong id="gateFoundInfo"></strong>，可直接點擊進入！
-          </div>
+        <div id="gateErrorMsg" style="display:none; background:#ffebee; border:1px solid #ef5350; border-radius:12px; padding:0.6rem 1rem; color:#c62828; font-size:0.88rem; margin-bottom:1rem; font-weight:600; text-align:left;"></div>
+
+        <!-- 學員登入面板 -->
+        <div id="gateStudentPanel">
+          <form id="gateForm" onsubmit="handleLoginOrRegister(event)">
+            <!-- 學號 (初次選填，日後可憑學號一鍵登入) -->
+            <div class="form-group gate-compact-group">
+              <label class="form-label" for="gateStudentNo">
+                <span>學號 <small style="font-weight: normal; color: var(--gold-bronze); font-size: 0.78rem;">（初次選填；日後可僅憑學號一鍵登入）</small></span>
+                <span id="gateStudentNoStatus" style="font-size: 0.75rem; color: #2e7d32; font-weight: 600; display: none;">✅ 已辨識舊生學號</span>
+              </label>
+              <input type="text" id="gateStudentNo" class="form-control gate-styled-input" placeholder="已有學號者僅填此欄即可登入（初次建檔選填）" autocomplete="off" oninput="handleStudentNoInput(this.value)">
+              <div id="gateStudentFoundBadge" style="display: none; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 10px; padding: 6px 12px; margin-top: 6px; font-size: 0.82rem; color: #1b5e20; text-align: left;">
+                ✨ 已查得建檔紀錄：<strong id="gateFoundInfo"></strong>，點擊下方即可直接進入！
+              </div>
+            </div>
+
+            <!-- 班級 ＆ 組別（雙欄排版，手機自動自適應單欄） -->
+            <div class="gate-form-row">
+              <div class="form-group gate-compact-group">
+                <label class="form-label" for="gateClassType">
+                  <span>班級 <strong style="color: var(--vermilion);">*</strong></span>
+                </label>
+                <select id="gateClassType" class="form-control gate-styled-input">
+                  <option value="">-- 請選擇班級 --</option>
+                  <option value="日高">日高班</option>
+                  <option value="夜高">夜高班</option>
+                </select>
+              </div>
+
+              <div class="form-group gate-compact-group">
+                <label class="form-label" for="gateGroupName">
+                  <span>組別 <strong style="color: var(--vermilion);">*</strong></span>
+                </label>
+                <select id="gateGroupName" class="form-control gate-styled-input">
+                  <option value="">-- 請選擇組別 --</option>
+                  <option value="A1">A1</option>
+                  <option value="A2">A2</option>
+                  <option value="B1">B1</option>
+                  <option value="B2">B2</option>
+                  <option value="B3">B3</option>
+                  <option value="B4">B4</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 真實姓名 ＆ 法名（法名為非必要選填） -->
+            <div class="gate-form-row">
+              <div class="form-group gate-compact-group">
+                <label class="form-label gate-label-split" for="gateRealName">
+                  <span>姓名 <strong style="color: var(--vermilion);">*</strong></span>
+                  <span class="gate-privacy-tag lock">🔒 嚴格隱藏</span>
+                </label>
+                <input type="text" id="gateRealName" class="form-control gate-styled-input" placeholder="真實姓名（師父查閱）" autocomplete="off">
+              </div>
+
+              <div class="form-group gate-compact-group">
+                <label class="form-label gate-label-split" for="gateDharmaName">
+                  <span>法名 <small style="font-weight: normal; color: var(--gold-bronze); font-size: 0.78rem;">（選填）</small></span>
+                  <span class="gate-privacy-tag flower">🌸 參觀公開</span>
+                </label>
+                <input type="text" id="gateDharmaName" class="form-control gate-styled-input" placeholder="例如：傳心（無則免填）" autocomplete="off">
+              </div>
+            </div>
+
+            <!-- 主要進入按鈕 (圓角典雅按鈕) -->
+            <button type="submit" class="gate-btn-submit" id="btnGateSubmit">
+              <span>🌸</span> 進入精進花園
+            </button>
+          </form>
         </div>
 
-        <!-- 班級 ＆ 組別（橫向雙欄，緊湊美觀） -->
-        <div class="gate-form-row">
-          <div class="form-group gate-compact-group" style="text-align: left;">
-            <label class="form-label" for="gateClassType">
-              <span>班級 <strong style="color: var(--vermilion);">*</strong></span>
-            </label>
-            <select id="gateClassType" class="form-control">
-              <option value="">-- 班級 --</option>
-              <option value="日高">日高班</option>
-              <option value="夜高">夜高班</option>
-            </select>
-          </div>
-
-          <div class="form-group gate-compact-group" style="text-align: left;">
-            <label class="form-label" for="gateGroupName">
-              <span>組別 <strong style="color: var(--vermilion);">*</strong></span>
-            </label>
-            <select id="gateGroupName" class="form-control">
-              <option value="">-- 組別 --</option>
-              <option value="A1">A1</option>
-              <option value="A2">A2</option>
-              <option value="B1">B1</option>
-              <option value="B2">B2</option>
-              <option value="B3">B3</option>
-              <option value="B4">B4</option>
-            </select>
-          </div>
         </div>
 
-        <!-- 真實姓名 ＆ 法名（橫向雙欄，緊湊美觀） -->
-        <div class="gate-form-row">
-          <div class="form-group gate-compact-group" style="text-align: left;">
-            <label class="form-label" for="gateRealName">
-              <span>姓名 <strong style="color: var(--vermilion);">*</strong></span>
-              <span style="font-size: 0.72rem; color: var(--vermilion); font-weight: normal;">🔒 嚴格隱藏</span>
-            </label>
-            <input type="text" id="gateRealName" class="form-control" placeholder="真實姓名（師父查閱）" autocomplete="off">
-          </div>
-
-          <div class="form-group gate-compact-group" style="text-align: left;">
-            <label class="form-label" for="gateDharmaName">
-              <span>法名 <strong style="color: var(--vermilion);">*</strong></span>
-              <span style="font-size: 0.72rem; color: var(--pine-green); font-weight: normal;">🌸 參觀顯示</span>
-            </label>
-            <input type="text" id="gateDharmaName" class="form-control" placeholder="例如：傳心" autocomplete="off">
-          </div>
-        </div>
-
-        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 0.68rem 1.5rem; font-size: 1rem;">
-          <span>🌸</span> 進入精進花園
-        </button>
-      </form>
-
-      <div style="margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px dashed var(--border-light); font-size: 0.82rem;">
-        <a href="admin.html" style="color: var(--gold-bronze); text-decoration: none; font-weight: 600;">
-          🔒 師父後台管理入口
-        </a>
       </div>
     </div>
   </div>
@@ -129,14 +143,11 @@
               <span>🌸</span> 進入 2D 開心花園
             </a>
             <button type="button" class="btn-secondary" onclick="toggleFriendsDrawer(true)">
-              <span>🪷</span> 參觀同修花園
+              <span>🪷</span> 參觀學員花園
             </button>
             <button type="button" class="btn-secondary" onclick="handleLogout()">
               <span>🚪</span> 登出
             </button>
-            <a href="admin.html" class="btn-secondary" style="color: var(--gold-bronze); border-color: var(--gold-bronze);">
-              <span>🔒</span> 師父管理
-            </a>
           </div>
         </div>
       </div>
@@ -144,12 +155,15 @@
 
     <!-- 參觀他人花園頂部提示列 (參觀模式時動態浮現) -->
     <div class="visitor-banner-strip" id="visitorNoticeBanner" style="display: none;">
-      <div style="display: flex; align-items: center; gap: 0.7rem;">
+      <div style="display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;">
         <span class="visitor-tag-pill">👀 參觀模式</span>
         <strong id="visitorGardenTitle" style="font-size: 1.05rem;">正在參觀：【日高】傳心 的花園</strong>
         <span style="font-size: 0.82rem; opacity: 0.85;">（安全隱私保護：學號與真實姓名已依法規隱藏）</span>
       </div>
-      <div style="display: flex; align-items: center; gap: 0.6rem;">
+      <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+        <button type="button" class="btn-primary" style="padding: 0.4rem 0.95rem; font-size: 0.85rem;" onclick="goToVisited2DGarden()">
+          🌸 進入該員 2D 全景花園
+        </button>
         <button type="button" class="btn-secondary" style="background: #ffd54f; color: #212121; border: none; font-weight: 700;" onclick="handleRejoiceFriend()">
           🙏 隨喜讚嘆合掌 (<span id="visitorRejoiceCount">0</span>)
         </button>
@@ -167,9 +181,6 @@
           <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--ink-deep);">個人精進修持數據統計</h2>
           <span id="statStudentLabel" style="font-size: 0.82rem; color: var(--gold-bronze);"></span>
         </div>
-        <a href="garden2d.html" class="btn-secondary" style="padding: 0.35rem 0.95rem; font-size: 0.84rem; color: var(--pine-green); border-color: var(--pine-green); text-decoration: none;">
-          <span>🌸</span> 2D 開心花園獨立頁面 (四季與成林) ➔
-        </a>
       </div>
 
       <div class="stats-grid-row">
@@ -205,7 +216,7 @@
           <div class="stat-metric-icon" style="background: #fce4ec; color: #c2185b;">🙏</div>
           <div class="stat-metric-info">
             <div class="stat-metric-num" id="statCardRejoices">0</div>
-            <div class="stat-metric-label">同修合掌隨喜功德</div>
+            <div class="stat-metric-label">學員合掌隨喜功德</div>
           </div>
         </div>
 
@@ -223,13 +234,41 @@
     <!-- 主內容區 (左右兩欄：花園畫布 ＋ 每日修持打卡) -->
     <main class="main-garden-layout">
 
-      <!-- 左欄：2D 精進花園 (純淨無花底圖 ＋ 動態蓮池 ＋ 向陽太陽花 ＋ 老和尚木牌法語) -->
+      <!-- 左欄：2D 精進花園 (純淨草皮 ＋ 澄澈蓮池 ＋ 向陽太陽花 ＋ 老和尚木牌法語) -->
       <section id="gardenViewArea" style="position: relative;">
+
+        <!-- 同學端修持進度牌 (同學只看見對應一張圖，未到天數不切換；法師可切換) -->
+        <div class="garden-stage-pills-bar" id="indexStagePillsBar">
+          <div id="indexStudentProgressNotice" style="display: flex; align-items: center; justify-content: space-between; width: 100%; font-size: 0.88rem; font-weight: 600; color: var(--ink-deep); padding: 0.2rem 0.6rem;">
+            <span id="indexStageProgressText">🌸 累積打卡 1 天 ｜ 距下一階段（110天）還差 49 天</span>
+            <span class="linear-badge" style="background: rgba(45,76,66,0.1); border: 1px solid var(--pine-green); color: var(--pine-green); font-size: 0.75rem; padding: 2px 8px; border-radius: 9999px;">線性等差成長 (+12天/階)</span>
+          </div>
+          <!-- 僅指導法師最高權限可見之全階切換按鈕 -->
+          <button type="button" class="garden-stage-pill" id="pillStage1" data-stage="1" onclick="previewGardenStage(1)" style="display: none;">
+            <span>🌱</span> 第1張(49天·善念)
+          </button>
+          <button type="button" class="garden-stage-pill" id="pillStage2" data-stage="2" onclick="previewGardenStage(2)" style="display: none;">
+            <span>🌿</span> 第2張(110天·庭園)
+          </button>
+          <button type="button" class="garden-stage-pill" id="pillStage3" data-stage="3" onclick="previewGardenStage(3)" style="display: none;">
+            <span>🌳</span> 第3張(183天·成林)
+          </button>
+          <button type="button" class="garden-stage-pill" id="pillStage4" data-stage="4" onclick="previewGardenStage(4)" style="display: none;">
+            <span>🍁</span> 第4張(268天·金秋)
+          </button>
+          <button type="button" class="garden-stage-pill" id="pillStage5" data-stage="5" onclick="previewGardenStage(5)" style="display: none;">
+            <span>❄️</span> 第5張(365天·冬藏)
+          </button>
+          <button type="button" class="garden-stage-pill" id="pillStageAuto" data-stage="auto" onclick="resetToActualStage()" style="display: none; margin-left: auto; border-color: var(--gold-bronze); color: var(--gold-bronze);" title="切換回自身修持打卡天數之生長階段">
+            <span>🔄</span> 依打卡天數
+          </button>
+        </div>
+
         <div class="garden-canvas-wrap" id="gardenCanvasWrap">
           
           <!-- 累積打卡次數徽章 -->
           <div class="garden-counter-tag" id="gardenCheckinCounter">
-            累積修持：0 天 ｜ 第 1 張圖 (維持 49 天)
+            累積修持：0 天 ｜ 第 1 天｜種子
           </div>
 
           <!-- A. 蓮池圖層 (蓮花生在池塘裡，依打卡數動態盛開) -->
@@ -353,12 +392,12 @@
        3. 彈窗與抽屜元件
        ═══════════════════════════════════════════════════════════════ -->
 
-  <!-- 蓮池海會 · 同修名錄抽屜 (參觀他人花園，嚴格過濾隱藏學號與真實姓名) -->
+  <!-- 蓮池海會 · 學員名錄抽屜 (參觀他人花園，嚴格過濾隱藏學號與真實姓名) -->
   <div class="friends-drawer-backdrop" id="friendsDrawerModal" onclick="if(event.target===this) toggleFriendsDrawer(false)">
     <div class="friends-drawer-content">
       <div class="drawer-top-banner">
         <div>
-          <h3 style="font-size: 1.15rem; font-weight: 700;">🌸 蓮池海會 · 同修花園</h3>
+          <h3 style="font-size: 1.15rem; font-weight: 700;">🌸 蓮池海會 · 學員花園</h3>
           <p style="font-size: 0.75rem; opacity: 0.85; margin-top: 2px;">
             🔒 隱私保護：僅公開班級與法名，姓名學號絕對隱藏
           </p>
@@ -368,12 +407,12 @@
 
       <!-- 班級快速篩選 -->
       <div style="display: flex; gap: 0.5rem; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-light); background: #fbfbfb;">
-        <button type="button" class="btn-secondary" style="padding: 0.25rem 0.8rem; font-size: 0.82rem;" onclick="loadFriendsList('')">全部同修</button>
+        <button type="button" class="btn-secondary" style="padding: 0.25rem 0.8rem; font-size: 0.82rem;" onclick="loadFriendsList('')">全部學員</button>
         <button type="button" class="btn-secondary" style="padding: 0.25rem 0.8rem; font-size: 0.82rem;" onclick="loadFriendsList('日高')">日高班</button>
         <button type="button" class="btn-secondary" style="padding: 0.25rem 0.8rem; font-size: 0.82rem;" onclick="loadFriendsList('夜高')">夜高班</button>
       </div>
 
-      <!-- 同修名錄列表容器 -->
+      <!-- 學員名錄列表容器 -->
       <div id="friendsDrawerList" style="flex: 1; overflow-y: auto; padding: 1rem;">
         <div style="text-align: center; padding: 2rem; color: #888;">連線蓮池海會名錄……</div>
       </div>

@@ -94,6 +94,66 @@ body.garden-2d-body {
 }
 
 /* ════════════════════════════════
+   動態花朵圖層 (蓮花生於池塘，太陽花生於草皮)
+   ════════════════════════════════ */
+.garden-2d-pond-flowers {
+  position: absolute;
+  left: 8.5%;
+  top: 51%;
+  width: 23.5%;
+  height: 23.5%;
+  z-index: 18;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.25s ease;
+}
+
+.garden-2d-pond-flowers:hover {
+  transform: scale(1.02);
+}
+
+.pond-surface-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.garden-2d-lawn-sunflowers {
+  position: absolute;
+  left: 36%;
+  top: 32%;
+  width: 58%;
+  height: 55%;
+  z-index: 19;
+  pointer-events: auto;
+  background: transparent !important;
+}
+
+.g2d-sunflower-item {
+  position: absolute;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.g2d-sunflower-item:hover {
+  transform: scale(1.2) !important;
+  filter: drop-shadow(0 6px 14px rgba(255, 215, 0, 0.6));
+}
+
+.g2d-flower-sway {
+  animation: g2dFlowerSway 3.6s infinite ease-in-out alternate;
+}
+
+@keyframes g2dFlowerSway {
+  0% { transform: rotate(-2.5deg) translateY(0); }
+  50% { transform: rotate(0deg) translateY(-2px); }
+  100% { transform: rotate(2.5deg) translateY(0); }
+}
+
+/* ════════════════════════════════
    互動熱點與花圃點位層 (Interactive Hotspots)
    ════════════════════════════════ */
 .garden-interactive-canvas {
@@ -263,13 +323,41 @@ body.garden-2d-body {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: #fbf9f4;
-  border: 1px solid #d5c8ab;
+  background: #ffffff;
+  border: 1.5px solid #d5c8ab;
   border-radius: 9999px;
-  padding: 3px 12px;
-  font-size: 0.88rem;
+  padding: 4px 14px;
+  font-size: 0.9rem;
   font-weight: 700;
-  color: #5c441b;
+  color: #3b2811;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 蓮花與太陽花計數膠囊：深色高對比字體，徹底杜絕反白或字體看不清 */
+.hud-flower-counter.lotus-pill {
+  background: #ffffff !important;
+  border: 2px solid #ad1457 !important;
+  color: #880e4f !important;
+  box-shadow: 0 3px 10px rgba(173, 20, 87, 0.2) !important;
+}
+
+.hud-flower-counter.lotus-pill strong {
+  color: #880e4f !important;
+  font-weight: 800 !important;
+  font-size: 1rem !important;
+}
+
+.hud-flower-counter.sunflower-pill {
+  background: #ffffff !important;
+  border: 2px solid #b45309 !important;
+  color: #78350f !important;
+  box-shadow: 0 3px 10px rgba(180, 83, 9, 0.2) !important;
+}
+
+.hud-flower-counter.sunflower-pill strong {
+  color: #78350f !important;
+  font-weight: 800 !important;
+  font-size: 1rem !important;
 }
 
 /* 惟覺老和尚每日廣播金喇叭 */
@@ -309,6 +397,29 @@ body.garden-2d-body {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.hud-back-btn {
+  background: #2b101c;
+  background: linear-gradient(180deg, #381525 0%, #230d17 100%);
+  color: #dfb36c;
+  border: 1.5px solid #dfb36c;
+  border-radius: 9999px;
+  padding: 6px 15px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(43, 16, 28, 0.35);
+  transition: transform 0.18s, filter 0.18s;
+  cursor: pointer;
+}
+
+.hud-back-btn:hover {
+  transform: translateY(-1.5px) scale(1.04);
+  filter: brightness(1.15);
 }
 
 .hud-round-btn {
@@ -381,12 +492,171 @@ body.garden-2d-body {
   box-shadow: 0 2px 10px rgba(255, 213, 79, 0.4);
 }
 
-.season-divider {
-  width: 1px;
-  height: 18px;
-  background: rgba(255, 255, 255, 0.25);
-  margin: 0 4px;
+.stage-tab-btn.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-style: dashed;
 }
+.stage-tab-btn.locked:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #9e9e9e;
+}
+
+/* ════════════════════════════════
+   同學端專屬：單一當前境界牌 (未到天數不切換)
+   ════════════════════════════════ */
+.student-stage-banner {
+  position: absolute;
+  top: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: rgba(18, 30, 24, 0.9);
+  backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(255, 213, 79, 0.4);
+  border-radius: 9999px;
+  padding: 6px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.student-stage-banner .linear-badge {
+  background: rgba(255, 213, 79, 0.2);
+  border: 1px solid #ffd54f;
+  color: #ffd54f;
+  font-size: 0.74rem;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-weight: 700;
+}
+
+/* ════════════════════════════════
+   蓮花與太陽花 · 三階段成花圖型典藏展彈窗
+   ════════════════════════════════ */
+.flower-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 22, 17, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.flower-modal-content {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 860px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+  border: 2px solid #2d4c42;
+  animation: popIn 0.25s ease-out;
+}
+
+.flower-modal-header {
+  background: linear-gradient(135deg, #1d3b32 0%, #12241e 100%);
+  color: #ffffff;
+  padding: 1.25rem 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffd54f;
+}
+
+.flower-modal-body {
+  padding: 1.5rem 1.8rem;
+}
+
+.flower-showcase-row {
+  margin-bottom: 2rem;
+}
+
+.flower-showcase-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #172c26;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flower-showcase-dharma {
+  font-size: 0.85rem;
+  color: #556b62;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.flower-stage-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.flower-stage-card {
+  background: #fbfdfc;
+  border: 1.5px solid rgba(45, 76, 66, 0.15);
+  border-radius: 14px;
+  padding: 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.flower-stage-card:hover {
+  transform: translateY(-3px);
+  border-color: #ffd54f;
+  box-shadow: 0 8px 20px rgba(45, 76, 66, 0.15);
+}
+
+.flower-stage-svg-wrap {
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.8rem;
+}
+
+.flower-stage-tag {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  margin-bottom: 0.4rem;
+}
+
+.tag-stage-1 { background: #e8f5e9; color: #2e7d32; }
+.tag-stage-2 { background: #e0f2f1; color: #00695c; }
+.tag-stage-3 { background: #fff8e1; color: #f57f17; border: 1px solid #ffd54f; }
+
+.flower-stage-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #172c26;
+  margin-bottom: 0.3rem;
+}
+
+.flower-stage-desc {
+  font-size: 0.78rem;
+  color: #616161;
+  line-height: 1.5;
+}
+
 
 /* ════════════════════════════════
    右側抽屜：「同修好友 (Friends)」

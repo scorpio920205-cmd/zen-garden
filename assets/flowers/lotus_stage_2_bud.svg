@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <!-- 水波漸層 -->
+    <radialGradient id="waterRipple2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4db6ac" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#26a69a" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#00897b" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 荷葉漸層 -->
+    <radialGradient id="leafGrad3" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#66bb6a"/>
+      <stop offset="65%" stop-color="#2e7d32"/>
+      <stop offset="100%" stop-color="#1b5e20"/>
+    </radialGradient>
+    <!-- 花莖立體漸層 -->
+    <linearGradient id="stemGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1b5e20"/>
+      <stop offset="40%" stop-color="#4caf50"/>
+      <stop offset="80%" stop-color="#2e7d32"/>
+      <stop offset="100%" stop-color="#1b5e20"/>
+    </linearGradient>
+    <!-- 蓮花花苞粉白漸層 (參考蓮花-02.jpg真實花苞) -->
+    <linearGradient id="budGradMain" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#e8f5e9"/>
+      <stop offset="25%" stop-color="#ffffff"/>
+      <stop offset="60%" stop-color="#f8bbd0"/>
+      <stop offset="85%" stop-color="#ec407a"/>
+      <stop offset="100%" stop-color="#c2185b"/>
+    </linearGradient>
+    <!-- 苞片側層次漸層 -->
+    <linearGradient id="budPetalSideLeft" x1="0%" y1="100%" x2="40%" y2="0%">
+      <stop offset="0%" stop-color="#c8e6c9"/>
+      <stop offset="35%" stop-color="#ffffff"/>
+      <stop offset="75%" stop-color="#f06292"/>
+      <stop offset="100%" stop-color="#ad1457"/>
+    </linearGradient>
+    <linearGradient id="budPetalSideRight" x1="100%" y1="100%" x2="60%" y2="0%">
+      <stop offset="0%" stop-color="#c8e6c9"/>
+      <stop offset="35%" stop-color="#ffffff"/>
+      <stop offset="75%" stop-color="#f06292"/>
+      <stop offset="100%" stop-color="#ad1457"/>
+    </linearGradient>
+    <!-- 花苞底部萼片漸層 -->
+    <linearGradient id="sepalGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#1b5e20"/>
+      <stop offset="100%" stop-color="#66bb6a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 1. 清澈水波漣漪 -->
+  <ellipse cx="100" cy="165" rx="80" ry="24" fill="url(#waterRipple2)"/>
+  <ellipse cx="100" cy="165" rx="55" ry="16" fill="none" stroke="#80cbc4" stroke-width="1.2" opacity="0.6"/>
+
+  <!-- 2. 背景浮水荷葉 (大葉) -->
+  <g transform="translate(135, 160) rotate(-6)">
+    <ellipse cx="0" cy="0" rx="38" ry="17" fill="url(#leafGrad3)"/>
+    <path d="M0 0 L-32 -6 M0 0 L-22 -13 M0 0 L-2 -16 M0 0 L22 -11 M0 0 L34 -4 M0 0 L32 8 M0 0 L15 15 M0 0 L-14 15 M0 0 L-28 8" stroke="#a5d6a7" stroke-width="0.8" opacity="0.6"/>
+    <circle cx="0" cy="0" r="2.2" fill="#c8e6c9"/>
+    <!-- 露珠 -->
+    <ellipse cx="8" cy="-4" rx="3" ry="1.8" fill="#ffffff" opacity="0.85"/>
+  </g>
+
+  <!-- 3. 前方立水小荷 (左側半卷立葉) -->
+  <g transform="translate(58, 115)">
+    <path d="M12 50 Q10 25 5 0" stroke="url(#stemGrad)" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+    <!-- 卷葉筒狀 -->
+    <path d="M5 0 C-4 -12 -2 -28 4 -36 C10 -28 14 -12 5 0 Z" fill="#43a047" stroke="#1b5e20" stroke-width="1"/>
+    <path d="M4 -36 C1 -26 2 -12 5 0" stroke="#81c784" stroke-width="0.8" fill="none"/>
+  </g>
+
+  <!-- 4. 亭亭玉立翡翠花莖 (主花苞挺立向上) -->
+  <path d="M100 165 Q101 110 100 68" stroke="url(#stemGrad)" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <!-- 花莖上的細微小刺/斑點 -->
+  <circle cx="99" cy="135" r="0.8" fill="#1b5e20"/>
+  <circle cx="102" cy="115" r="0.8" fill="#1b5e20"/>
+  <circle cx="99.5" cy="95" r="0.8" fill="#1b5e20"/>
+
+  <!-- 5. 秀拔含苞待放蓮花苞 (完全參照蓮花-02.jpg左上花苞) -->
+  <g id="lotusBudBody">
+    <!-- 花托 / 萼片 -->
+    <path d="M93 72 C94 65 97 62 100 62 C103 62 106 65 107 72 Z" fill="url(#sepalGrad)"/>
+    <path d="M96 73 L92 64 Q96 66 100 67 Q104 66 108 64 L104 73 Z" fill="#2e7d32" opacity="0.8"/>
+
+    <!-- 後層花苞片 -->
+    <path d="M100 68 C84 50 82 28 100 12 C118 28 116 50 100 68 Z" fill="url(#budGradMain)" stroke="#ad1457" stroke-width="0.6"/>
+
+    <!-- 左側抱合花瓣 -->
+    <path d="M100 68 C80 50 84 26 99 13 C95 28 92 48 100 68 Z" fill="url(#budPetalSideLeft)" stroke="#c2185b" stroke-width="0.7"/>
+
+    <!-- 右側抱合花瓣 -->
+    <path d="M100 68 C120 50 116 26 101 13 C105 28 108 48 100 68 Z" fill="url(#budPetalSideRight)" stroke="#c2185b" stroke-width="0.7"/>
+
+    <!-- 前中層微開主瓣 (線條優美、粉尖白身) -->
+    <path d="M100 68 C87 48 88 28 100 12 C112 28 113 48 100 68 Z" fill="url(#budGradMain)" stroke="#e91e63" stroke-width="0.9"/>
+    
+    <!-- 花瓣中央縱向柔和肌理線條 -->
+    <path d="M100 66 Q100 35 100 13" stroke="#f06292" stroke-width="0.6" stroke-linecap="round" opacity="0.65"/>
+    <path d="M98 62 Q94 38 99 18" stroke="#ffffff" stroke-width="0.7" opacity="0.7"/>
+    <path d="M102 62 Q106 38 101 18" stroke="#ffffff" stroke-width="0.7" opacity="0.7"/>
+
+    <!-- 尖端胭紅高光點 -->
+    <circle cx="100" cy="13" r="1.5" fill="#ad1457"/>
+    <!-- 晶瑩水珠掛於花苞側 -->
+    <ellipse cx="94" cy="40" rx="2" ry="2.6" fill="#ffffff" opacity="0.9" transform="rotate(-15 94 40)"/>
+    <circle cx="93.5" cy="39" r="0.7" fill="#ffffff"/>
+  </g>
+
+  <!-- 階段說明文字標籤 -->
+  <text x="100" y="190" text-anchor="middle" font-family="'Noto Serif TC', serif" font-size="11" font-weight="600" fill="#004d40" letter-spacing="1.5">
+    🪷 蓮花 · 第二階段【含苞待放】
+  </text>
+</svg>

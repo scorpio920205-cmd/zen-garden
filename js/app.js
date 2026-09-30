@@ -27,13 +27,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 1. 檢查登入狀態 (未登入顯示登入門檻，已登入展開花園與打卡)
 function checkLoginSession() {
-  const sessionStr = localStorage.getItem(STORAGE_SESSION_KEY);
+  const isLoggedOut = sessionStorage.getItem('zen_logged_out') === '1';
   const loginGate = document.getElementById('loginRegisterGate');
   const mainApp = document.getElementById('mainAppInterface');
+
+  // 若使用者已明確登出，堅決不自動登入，保持在登入門檻畫面
+  if (isLoggedOut) {
+    if (loginGate) loginGate.style.display = 'flex';
+    if (mainApp) mainApp.style.display = 'none';
+    return;
+  }
+
+  const sessionStr = localStorage.getItem(STORAGE_SESSION_KEY) || localStorage.getItem(API_CONFIG.storageKeys.currentStudent);
 
   if (sessionStr) {
     try {
       currentStudent = JSON.parse(sessionStr);
+      // 雙向持久化以防不同頁面儲存鍵不同步
+      localStorage.setItem(STORAGE_SESSION_KEY, JSON.stringify(currentStudent));
+      localStorage.setItem(API_CONFIG.storageKeys.currentStudent, JSON.stringify(currentStudent));
+
       if (loginGate) loginGate.style.display = 'none';
       if (mainApp) mainApp.style.display = 'block';
 
@@ -46,33 +59,83 @@ function checkLoginSession() {
     }
   }
 
-  // 尚未登入
+  // 尚未登入且無 session，展示登入門檻
   if (loginGate) loginGate.style.display = 'flex';
   if (mainApp) mainApp.style.display = 'none';
 }
 
-// 2. 登入 / 註冊提交處理（支援：已有學號者可直接單欄輸入學號一鍵登入）
+// 登入角色切換：🌸 學員修持打卡 ｜ 🔒 指導法師登入
+function switchGateTab(type) {
+  const btnStudent = document.getElementById('tabBtnStudent');
+  const btnMaster = document.getElementById('tabBtnMaster');
+  const panelStudent = document.getElementById('gateStudentPanel');
+  const panelMaster = document.getElementById('gateMasterPanel');
+  const errEl = document.getElementById('gateErrorMsg');
+  if (errEl) errEl.style.display = 'none';
+
+  if (type === 'master') {
+    if (btnStudent) btnStudent.classList.remove('active');
+    if (btnMaster) btnMaster.classList.add('active');
+    if (panelStudent) panelStudent.style.display = 'none';
+    if (panelMaster) panelMaster.style.display = 'block';
+    setTimeout(() => document.getElementById('gateMasterPwd')?.focus(), 80);
+  } else {
+    if (btnMaster) btnMaster.classList.remove('active');
+    if (btnStudent) btnStudent.classList.add('active');
+    if (panelMaster) panelMaster.style.display = 'none';
+    if (panelStudent) panelStudent.style.display = 'block';
+  }
+}
+
+// 指導法師密碼登入驗證
+function handleGateMasterLogin() {
+  const pwdInput = document.getElementById('gateMasterPwd');
+  const errEl = document.getElementById('gateMasterErr');
+  const pwd = (pwdInput?.value || '').trim();
+
+  // 支援法師正統管理密碼與快捷管理碼
+  if (pwd === 'ZhongTai#ZenGarden2026!' || pwd === 'zen2026' || pwd === 'admin') {
+    if (errEl) errEl.style.display = 'none';
+    localStorage.setItem('zen_master_authenticated', '1');
+    localStorage.setItem('zen_active_role', 'master');
+    sessionStorage.setItem('zen_garden_admin_token_v1', pwd);
+    sessionStorage.removeItem('zen_logged_out');
+    window.location.href = 'admin.html';
+  } else {
+    if (errEl) {
+      errEl.textContent = '❌ 指導法師管理密碼不正確，請重新輸入（預設：zen2026）';
+      errEl.style.display = 'block';
+    }
+    if (pwdInput) {
+      pwdInput.value = '';
+      pwdInput.focus();
+    }
+  }
+}
+
+// 2. 登入 / 註冊提交處理（支援：已有學號者僅需輸入學號一鍵登入；初次未填學號者填寫班級、組別、姓名三個即可登入，法名非必要填寫）
 async function handleLoginOrRegister(e) {
   if (e) e.preventDefault();
 
-  const studentNo = document.getElementById('gateStudentNo')?.value.trim() || '';
-  const classType = document.getElementById('gateClassType')?.value || '';
-  const groupName = document.getElementById('gateGroupName')?.value || '';
-  const realName = document.getElementById('gateRealName')?.value.trim() || '';
-  const dharmaName = document.getElementById('gateDharmaName')?.value.trim() || '';
+  const studentNo = (document.getElementById('gateStudentNo')?.value || '').trim();
+  const classType = (document.getElementById('gateClassType')?.value || '').trim();
+  const groupName = (document.getElementById('gateGroupName')?.value || '').trim();
+  const realName = (document.getElementById('gateRealName')?.value || '').trim();
+  const dharmaName = (document.getElementById('gateDharmaName')?.value || '').trim();
   const errEl = document.getElementById('gateErrorMsg');
+  if (errEl) errEl.style.display = 'none';
 
-  // ════ 優先處理：學號直接登入 ════
+  // ════ 優先狀況 1：同修輸入了學號 ════
   if (studentNo) {
     const existingByNo = await ZenAPI.getStudentByStudentNo(studentNo);
     if (existingByNo) {
-      // 查得此學號，若有手動更新其他欄位則同步保存
+      // 曾填寫過學號，直接以此學號一鍵登入！
+      // 若同修在表單中也填了或修改了其他欄位，順道同步更新
       if (classType) existingByNo.class_type = classType;
       if (groupName) existingByNo.group_name = groupName;
       if (realName) existingByNo.real_name = realName;
       if (dharmaName) existingByNo.dharma_name = dharmaName;
 
-      // 更新儲存
       const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
       const idx = students.findIndex(item => item.id === existingByNo.id || (item.student_no && item.student_no.toLowerCase() === studentNo.toLowerCase()));
       if (idx >= 0) {
@@ -85,16 +148,20 @@ async function handleLoginOrRegister(e) {
       loginSuccess(existingByNo);
       return;
     } else {
-      // 學號查無紀錄且下方資料未填齊
-      if (!classType || !groupName || !realName || !dharmaName) {
-        showGateError(`系統查無學號【${studentNo}】的紀錄。若為初次建檔，請填寫下方班級、組別、真實姓名與法名完成首次建檔，往後即可直接以此學號一鍵登入！`);
+      // 此學號尚無紀錄（初次填寫此學號建檔）：
+      // 依規則：必須填寫【班級】、【組別】、【姓名】三項（法名非必要）以完成建檔
+      if (!classType || !groupName || !realName) {
+        showGateError(`系統尚無學號【${studentNo}】的紀錄。初次建檔請填寫下方「班級」、「組別」與「姓名」（法名選填），完成後日後即可僅憑此學號直接登入！`);
         if (!classType) document.getElementById('gateClassType')?.focus();
+        else if (!groupName) document.getElementById('gateGroupName')?.focus();
+        else if (!realName) document.getElementById('gateRealName')?.focus();
         return;
       }
     }
   }
 
-  // ════ 首次建檔或無學號者：驗證班級、組別、姓名、法名 ════
+  // ════ 狀況 2：未填學號，或初次使用新學號建檔 ════
+  // 核心規則：如果第一次沒填學號就是班級組別姓名三個填寫就可登入，法名非必要填寫
   if (!classType) {
     showGateError('請選擇您的班級（日高 或 夜高）');
     document.getElementById('gateClassType')?.focus();
@@ -106,48 +173,60 @@ async function handleLoginOrRegister(e) {
     return;
   }
   if (!realName) {
-    showGateError('請填寫真實姓名（他人花園中將被嚴格隱藏）');
+    showGateError('請填寫姓名');
     document.getElementById('gateRealName')?.focus();
     return;
   }
-  if (!dharmaName) {
-    showGateError('請填寫法名（他人花園中將公開此法名）');
-    document.getElementById('gateDharmaName')?.focus();
-    return;
-  }
+  // 法名非必要填寫，不阻擋
 
-  // 從資料庫中讀取既有學員資料，若無則建立
+  // 查詢資料庫中是否已有該 (班級 + 組別 + 姓名) 的學員
   const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
   let s = students.find(item => item.class_type === classType && item.group_name === groupName && item.real_name === realName);
 
+  if (!s && typeof INITIAL_DEMO_STUDENTS !== 'undefined') {
+    const demo = INITIAL_DEMO_STUDENTS.find(item => item.class_type === classType && item.group_name === groupName && item.real_name === realName);
+    if (demo) {
+      s = { ...demo };
+      students.push(s);
+    }
+  }
+
   if (!s) {
+    // 首次新學員建檔：
+    // 若本次有填學號則綁定，日後可僅憑學號登入；法名為選填
     s = {
       id: Date.now(),
-      student_no: studentNo,
+      student_no: studentNo || '',
       class_type: classType,
       group_name: groupName,
       real_name: realName,
-      dharma_name: dharmaName,
+      dharma_name: dharmaName || '',
       total_checkins: 0,
       total_meditation_mins: 0,
+      total_sutra_recs: 0,
       lotus_level: 1,
       rejoice_count: 0,
       created_at: new Date().toISOString().replace('T', ' ').substring(0, 19)
     };
     students.push(s);
   } else {
-    // 同步更新法名與學號
-    s.dharma_name = dharmaName;
+    // 既有學員以「班級＋組別＋姓名」登入：
+    // 若本次有補填學號，更新綁定學號，以後就可以只用學號登入！
     if (studentNo) s.student_no = studentNo;
+    if (dharmaName) s.dharma_name = dharmaName;
   }
-  localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
 
+  localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
   loginSuccess(s);
 }
 
-// 登入成功通用處理
+// 登入成功通用處理 (學員修持打卡身分)
 function loginSuccess(student) {
   currentStudent = student;
+  localStorage.setItem('zen_active_role', 'student');
+  localStorage.removeItem('zen_master_authenticated');
+  sessionStorage.removeItem('zen_garden_admin_token_v1');
+  sessionStorage.removeItem('zen_logged_out');
   localStorage.setItem(STORAGE_SESSION_KEY, JSON.stringify(student));
   localStorage.setItem(API_CONFIG.storageKeys.currentStudent, JSON.stringify(student));
 
@@ -190,7 +269,8 @@ async function handleStudentNoInput(val) {
 
     if (statusEl) statusEl.style.display = 'inline';
     if (badge && badgeInfo) {
-      badgeInfo.textContent = `【${s.class_type}】${s.group_name} · ${s.dharma_name}`;
+      const displayName = s.dharma_name ? `${s.dharma_name}（${s.real_name}）` : s.real_name;
+      badgeInfo.textContent = `【${s.class_type}】${s.group_name} · ${displayName}`;
       badge.style.display = 'block';
     }
   } else {
@@ -211,6 +291,11 @@ function showGateError(msg) {
 function handleLogout() {
   if (confirm("確定要登出嗎？\n您的修持打卡與花園資料皆已妥善保存。")) {
     localStorage.removeItem(STORAGE_SESSION_KEY);
+    localStorage.removeItem(API_CONFIG.storageKeys.currentStudent);
+    localStorage.removeItem('zen_master_authenticated');
+    localStorage.removeItem('zen_active_role');
+    sessionStorage.removeItem('zen_garden_admin_token_v1');
+    sessionStorage.setItem('zen_logged_out', '1');
     currentStudent = null;
     isVisitingMode = false;
     window.location.reload();
@@ -222,7 +307,8 @@ function updateUserHeaderUI(student) {
   const nameEl = document.getElementById('navStudentTitle');
   const countEl = document.getElementById('navCheckinCount');
   if (nameEl) {
-    nameEl.textContent = `【${student.class_type}】${student.group_name} · ${student.dharma_name}`;
+    const displayName = student.dharma_name || student.real_name || '精進學員';
+    nameEl.textContent = `【${student.class_type}】${student.group_name} · ${displayName}`;
   }
   if (countEl) {
     countEl.textContent = student.total_checkins || 0;
@@ -271,33 +357,110 @@ function updateUserHeaderUI(student) {
   }
 
   if (studentLabelEl) {
-    studentLabelEl.textContent = `· 【${student.class_type}】${student.group_name} ${student.dharma_name}`;
+    const displayName = student.dharma_name || student.real_name || '精進學員';
+    studentLabelEl.textContent = `· 【${student.class_type}】${student.group_name} ${displayName}`;
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 等差線性成長背景階段設定 (基準 49 天，每張圖多 12 天)
-// 第 1 張：維持 49 天
-// 第 2 張：61 天（累積 110 天）
-// 第 3 張：73 天（累積 183 天）
-// 第 4 張：85 天（累積 268 天）
-// 第 5 張：97 天（累積 365 天）
+// 修持打卡生長演化階段設定 (第 1 天｜種子、第 2 天｜發芽、第 3 天｜花開、第 4 天以上｜成林)
+// ═══════════════════════════════════════════════════════════════
+// 2. 花園修行線性等差生長體系 (每張圖比前一張多固定 12 天)
+// 第 1 張圖：維持 49 天 (累積 1 ~ 49 天)
+// 第 2 張圖：維持 61 天 (累積 50 ~ 110 天)
+// 第 3 張圖：維持 73 天 (累積 111 ~ 183 天)
+// 第 4 張圖：維持 85 天 (累積 184 ~ 268 天)
+// 第 5 張圖：維持 97 天 (累積 269 ~ 365+ 天)
 // ═══════════════════════════════════════════════════════════════
 const PROGRESSION_STAGES = [
-  { stage: 1, duration: 49, cumulative: 49, name: "第 1 張圖：維持 49 天 (草皮池塘 · 種子萌發)", bg: "assets/images/stage_1_seed.jpg" },
-  { stage: 2, duration: 61, cumulative: 110, name: "第 2 張圖：61 天 (累積 110 天 · 破土萌發)", bg: "assets/images/stage_2_sprout.jpg" },
-  { stage: 3, duration: 73, cumulative: 183, name: "第 3 張圖：73 天 (累積 183 天 · 繁花盛開)", bg: "assets/images/stage_3_bloom.jpg" },
-  { stage: 4, duration: 85, cumulative: 268, name: "第 4 張圖：85 天 (累積 268 天 · 菩提成林)", bg: "assets/images/stage_4_forest.jpg" },
-  { stage: 5, duration: 97, cumulative: 365, name: "第 5 張圖：97 天 (累積 365 天 · 萬善圓滿)", bg: "assets/images/season_autumn.jpg" }
+  { stage: 1, duration: 49, cumulative: 49, name: "第一階段 (維持 49 天 · 綠茵草皮與清淨蓮池)", bg: "assets/images/stage_1_seed.jpg" },
+  { stage: 2, duration: 61, cumulative: 110, name: "第二階段 (維持 61 天 · 庭園初展 · 石徑生機)", bg: "assets/images/stage_2_sprout.jpg" },
+  { stage: 3, duration: 73, cumulative: 183, name: "第三階段 (維持 73 天 · 菩提成林 · 草房漸大)", bg: "assets/images/stage_3_forest_v2.jpg" },
+  { stage: 4, duration: 85, cumulative: 268, name: "第四階段 (維持 85 天 · 丹楓金杏 · 秋收大草舍)", bg: "assets/images/stage_4_autumn_v2.jpg" },
+  { stage: 5, duration: 97, cumulative: 365, name: "第五階段 (維持 97 天 · 萬里雪境 · 禪房圓滿)", bg: "assets/images/stage_5_winter_v2.jpg" }
 ];
 
-function getBackgroundStage(days) {
+let manualPreviewStage = null;
+
+function isCurrentUserAdmin() {
+  return localStorage.getItem('zen_master_authenticated') === '1' && localStorage.getItem('zen_active_role') === 'master';
+}
+
+function getActualStageNum(checkins) {
+  const d = Math.max(1, checkins || 1);
+  if (d <= 49) return 1;
+  if (d <= 110) return 2;
+  if (d <= 183) return 3;
+  if (d <= 268) return 4;
+  return 5;
+}
+
+function getNextStageInfo(days) {
   const d = Math.max(1, days || 1);
-  if (d <= 49) return PROGRESSION_STAGES[0];
-  if (d <= 110) return PROGRESSION_STAGES[1];
-  if (d <= 183) return PROGRESSION_STAGES[2];
-  if (d <= 268) return PROGRESSION_STAGES[3];
-  return PROGRESSION_STAGES[4];
+  if (d <= 49) {
+    return { currentStage: 1, duration: 49, target: 50, diff: 50 - d, text: `累積打卡 ${d} 天 ｜ 距下一階段（110天）還差 ${50 - d} 天` };
+  }
+  if (d <= 110) {
+    return { currentStage: 2, duration: 61, target: 111, diff: 111 - d, text: `累積打卡 ${d} 天 ｜ 距下一階段（183天）還差 ${111 - d} 天` };
+  }
+  if (d <= 183) {
+    return { currentStage: 3, duration: 73, target: 184, diff: 184 - d, text: `累積打卡 ${d} 天 ｜ 距下一階段（268天）還差 ${184 - d} 天` };
+  }
+  if (d <= 268) {
+    return { currentStage: 4, duration: 85, target: 269, diff: 269 - d, text: `累積打卡 ${d} 天 ｜ 距下一階段（365天）還差 ${269 - d} 天` };
+  }
+  return { currentStage: 5, duration: 97, target: 365, diff: 0, text: `累積打卡 ${d} 天 · 一整年修持圓滿大成！` };
+}
+
+function getBackgroundStage(days) {
+  // 只有指導法師可以手動預覽全部圖；同學未到天數只能看到對應天數的一張圖
+  if (manualPreviewStage && isCurrentUserAdmin()) {
+    const found = PROGRESSION_STAGES.find(s => s.stage === manualPreviewStage);
+    if (found) return found;
+  }
+  const stageNum = getActualStageNum(days);
+  return PROGRESSION_STAGES.find(s => s.stage === stageNum) || PROGRESSION_STAGES[0];
+}
+
+// 預覽指定階段花園 (僅指導法師可用)
+function previewGardenStage(stageNum) {
+  if (!isCurrentUserAdmin()) {
+    alert("🔒 未到天數只能看到對應天數的圖。同學端依累積修持天數顯現對應境界，只有指導法師具備全圖巡檢權限！");
+    return;
+  }
+  manualPreviewStage = stageNum;
+  const count = currentStudent?.total_checkins || 0;
+  renderGardenFlowers(count);
+  updateStagePillsUI(stageNum);
+  playChimeSound(528);
+}
+
+// 切換回自身實際打卡天數之生長階段
+function resetToActualStage() {
+  manualPreviewStage = null;
+  const count = currentStudent?.total_checkins || 0;
+  renderGardenFlowers(count);
+  const actualStage = getActualStageNum(count);
+  updateStagePillsUI(actualStage);
+  playChimeSound(432);
+}
+
+function updateStagePillsUI(activeStage) {
+  const isAdmin = isCurrentUserAdmin();
+  const pillsBar = document.getElementById('indexStagePillsBar');
+  const progressNotice = document.getElementById('indexStudentProgressNotice');
+
+  if (pillsBar && !isAdmin) {
+    // 同學端不顯示切換藥丸，只顯示等差進度提示
+    pillsBar.querySelectorAll('.garden-stage-pill').forEach(p => p.style.display = 'none');
+  }
+
+  document.querySelectorAll('.garden-stage-pill').forEach(pill => {
+    pill.classList.remove('active');
+    if (pill.dataset.stage == activeStage) {
+      pill.classList.add('active');
+    }
+  });
 }
 
 // 切換靜坐與誦經勾選
@@ -311,7 +474,7 @@ function toggleSutraOption(checked) {
   if (wrap) wrap.style.display = checked ? 'block' : 'none';
 }
 
-// 3. 根據打卡天數「換背景 (5段等差線性成長)」與「動態長出池中蓮花＋草皮太陽花 (3階段：種子、發芽、花開)」
+// 3. 根據打卡天數「換背景 (3階段：種子、發芽、花開 ＋ 成林)」與「動態長出池中蓮花＋草皮太陽花」
 function renderGardenFlowers(checkinCount) {
   const pondWater = document.getElementById('pondFlowersLayer');
   const sunflowerSoil = document.getElementById('sunflowerSoilLayer');
@@ -319,11 +482,14 @@ function renderGardenFlowers(checkinCount) {
   const gardenCanvas = document.getElementById('gardenCanvasWrap');
   const stageEl = document.getElementById('statCardStage');
 
-  // A. 5 段等差背景切換
+  // A. 階段背景切換
   const currentStage = getBackgroundStage(checkinCount);
   if (gardenCanvas) {
     gardenCanvas.style.backgroundImage = `url('${currentStage.bg}')`;
   }
+
+  const effectiveStageNum = manualPreviewStage || getActualStageNum(checkinCount);
+  updateStagePillsUI(effectiveStageNum);
 
   if (countBadge) {
     countBadge.textContent = `累積修持：${checkinCount} 天 ｜ ${currentStage.name}`;
@@ -333,38 +499,56 @@ function renderGardenFlowers(checkinCount) {
     stageEl.textContent = currentStage.name;
   }
 
-  // B. 蓮池中的蓮花 (蓮花生在池塘裡，依 3 階段演化：第 1 天種子、第 2 天發芽、第 3 天花開)
+  // B. 蓮池中的蓮花 (精巧微型化，蓮花生在池塘裡，每 3 天 1 朵盛開花，餘數 1 初萌種子，餘數 2 含苞待放)
   if (pondWater) {
     let lotusHTML = '';
-    // 池中浮萍與清淨綠荷基底
+    // 池中浮萍與清淨綠荷基底 (精緻縮放，不搶主花視覺)
     lotusHTML += `
-      <ellipse cx="70" cy="115" rx="36" ry="18" fill="#2d6e35" stroke="#1d4d23" stroke-width="1.5" opacity="0.9"/>
-      <ellipse cx="150" cy="120" rx="40" ry="20" fill="#2d6e35" stroke="#1d4d23" stroke-width="1.5" opacity="0.9"/>
-      <ellipse cx="110" cy="140" rx="34" ry="16" fill="#388e3c" stroke="#1d4d23" stroke-width="1.5" opacity="0.95"/>
+      <ellipse cx="65" cy="118" rx="28" ry="13" fill="#2d6e35" stroke="#1d4d23" stroke-width="1.2" opacity="0.9"/>
+      <ellipse cx="145" cy="122" rx="30" ry="14" fill="#2d6e35" stroke="#1d4d23" stroke-width="1.2" opacity="0.9"/>
+      <ellipse cx="105" cy="142" rx="26" ry="12" fill="#388e3c" stroke="#1d4d23" stroke-width="1.2" opacity="0.95"/>
     `;
 
-    if (checkinCount <= 1) {
-      // 第 1 天｜種子：初發碧綠小荷苞苗
-      lotusHTML += createLotusSVG(105, 105, 0.7, 'bud');
-    } else if (checkinCount === 2) {
-      // 第 2 天｜發芽：水面亭亭長出蓮花花苞
-      lotusHTML += createLotusSVG(105, 90, 0.95, 'bud');
-      lotusHTML += createLotusSVG(65, 100, 0.8, 'bud');
-    } else {
-      // 第 3 天以上｜花開：蓮花盛開！
-      lotusHTML += createLotusSVG(65, 80, 1.0, 'bloom');
-      lotusHTML += createLotusSVG(150, 75, 1.1, 'bloom');
+    const blooms = Math.floor(checkinCount / 3);
+    const remainder = checkinCount % 3;
 
-      if (checkinCount >= 6) {
-        lotusHTML += createLotusSVG(110, 60, 0.85, 'bloom');
+    // 縮小蓮花比例（scale 0.35 ~ 0.52），錯落排布於水面
+    const APP_LOTUS_COORDS = [
+      { cx: 105, cy: 92, scale: 0.48 },
+      { cx: 62, cy: 84, scale: 0.44 },
+      { cx: 152, cy: 86, scale: 0.46 },
+      { cx: 118, cy: 118, scale: 0.52 },
+      { cx: 72, cy: 124, scale: 0.50 },
+      { cx: 165, cy: 116, scale: 0.51 },
+      { cx: 92, cy: 62, scale: 0.38 },
+      { cx: 140, cy: 64, scale: 0.39 },
+      { cx: 38, cy: 78, scale: 0.42 },
+      { cx: 192, cy: 80, scale: 0.43 },
+      { cx: 125, cy: 48, scale: 0.35 },
+      { cx: 75, cy: 52, scale: 0.36 },
+      { cx: 168, cy: 54, scale: 0.36 },
+      { cx: 106, cy: 140, scale: 0.54 }
+    ];
+
+    const lotuses = [];
+    for (let i = 0; i < blooms; i++) {
+      lotuses.push({ stage: (i === 0 && blooms >= 3) ? 'golden' : 'bloom' });
+    }
+    if (remainder === 1) lotuses.push({ stage: 'sprout' });
+    else if (remainder === 2) lotuses.push({ stage: 'bud' });
+
+    if (lotuses.length === 0) {
+      lotuses.push({ stage: 'sprout' });
+    }
+
+    const totalToRender = Math.min(lotuses.length, APP_LOTUS_COORDS.length);
+    for (let i = 0; i < totalToRender; i++) {
+      const c = APP_LOTUS_COORDS[i];
+      const item = lotuses[i];
+      if (item.stage === 'golden') {
+        lotusHTML += `<circle cx="${c.cx}" cy="${c.cy}" r="28" fill="url(#goldenLotusGlow)" opacity="0.6"/>`;
       }
-      if (checkinCount >= 10) {
-        // 10 天以上：中央盛開【七寶金光大祥蓮】
-        lotusHTML += `
-          <circle cx="108" cy="85" r="48" fill="url(#goldenLotusGlow)" opacity="0.6"/>
-          ${createLotusSVG(108, 85, 1.35, 'golden')}
-        `;
-      }
+      lotusHTML += createLotusSVG(c.cx, c.cy, c.scale, item.stage);
     }
 
     pondWater.innerHTML = lotusHTML;
@@ -422,66 +606,119 @@ function renderGardenFlowers(checkinCount) {
   }
 }
 
-// 產生蓮花向量圖形
-function createLotusSVG(cx, cy, scale, type) {
-  const isGolden = type === 'golden';
-  const petalFill = isGolden ? '#ffd54f' : '#f48fb1';
-  const petalStroke = isGolden ? '#ffb300' : '#e91e63';
-  const centerFill = isGolden ? '#ffea00' : '#fdd835';
-
-  if (type === 'bud') {
+// 產生蓮花向量圖形 (精確參照蓮花-01與02真實佛座聖蓮：白底粉尖、鮮綠蓮蓬、金黃花蕊)
+function createLotusSVG(cx, cy, scale, stage) {
+  if (stage === 'sprout' || stage === 1) {
+    // 階段一：第 1 天｜種子
     return `
       <g transform="translate(${cx}, ${cy}) scale(${scale})">
-        <path d="M0 20 L0 0" stroke="#2e7d32" stroke-width="3.5" stroke-linecap="round"/>
-        <path d="M0 0 C-10 -10 -6 -24 0 -28 C6 -24 10 -10 0 0" fill="${petalFill}" stroke="${petalStroke}" stroke-width="1"/>
+        <ellipse cx="0" cy="2" rx="11" ry="5.5" fill="#2e7d32" opacity="0.9"/>
+        <circle cx="0" cy="-1" r="7" fill="#ffd54f" opacity="0.3"/>
+        <ellipse cx="0" cy="-1" rx="2.5" ry="3" fill="#ffd54f" stroke="#ffb300" stroke-width="0.7"/>
+        <circle cx="-0.5" cy="-1.8" r="0.8" fill="#ffffff"/>
+        <path d="M0 -3 Q2 -8 4 -10 Q3 -7 1 -3" fill="#81c784" stroke="#2e7d32" stroke-width="0.5"/>
       </g>
     `;
   }
 
+  if (stage === 'bud' || stage === 2) {
+    // 階段二：第 2 天｜發芽（立苞）
+    return `
+      <g transform="translate(${cx}, ${cy}) scale(${scale})">
+        <g class="lotus-flower-bloom">
+          <ellipse cx="4" cy="4" rx="10" ry="5" fill="#2e7d32" opacity="0.8"/>
+          <path d="M-2 4 Q-1 -2 -2 -8" stroke="#2e7d32" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <path d="M-2 -8 C-8 -15 -6 -23 -2 -27 C2 -23 4 -15 -2 -8 Z" fill="#f8bbd0" stroke="#c2185b" stroke-width="0.5"/>
+          <path d="M-2 -8 C-6 -15 -4 -22 -2 -27" stroke="#f06292" stroke-width="0.4" fill="none"/>
+          <path d="M-2 -8 C2 -15 0 -22 -2 -27" stroke="#f06292" stroke-width="0.4" fill="none"/>
+          <circle cx="-2" cy="-26.5" r="0.8" fill="#ad1457"/>
+        </g>
+      </g>
+    `;
+  }
+
+  // 階段三：第 3 天｜花開（聖潔盛開）
+  const isGolden = stage === 'golden';
+  const petalStroke = isGolden ? '#ffb300' : '#c2185b';
+  const petalFill = isGolden ? '#fff9c4' : '#ffffff';
+  const petalTip = isGolden ? '#ffd54f' : '#ec407a';
+
   return `
-    <g transform="translate(${cx}, ${cy}) scale(${scale})" class="lotus-flower-bloom">
-      <path d="M0 25 L0 0" stroke="#2e7d32" stroke-width="4" stroke-linecap="round"/>
-      <!-- 外層花瓣 -->
-      <path d="M0 0 C-24 2 -30 -14 -18 -22 C-5 -28 0 0 0 0" fill="${petalFill}" stroke="${petalStroke}" stroke-width="0.8"/>
-      <path d="M0 0 C24 2 30 -14 18 -22 C5 -28 0 0 0 0" fill="${petalFill}" stroke="${petalStroke}" stroke-width="0.8"/>
-      <!-- 中層花瓣 -->
-      <path d="M0 0 C-14 -2 -18 -22 0 -28 C18 -22 14 -2 0 0" fill="${isGolden ? '#ffe082' : '#f8bbd0'}" stroke="${petalStroke}" stroke-width="0.8"/>
-      <!-- 內層蓮蓬與花蕊 -->
-      <ellipse cx="0" cy="-12" rx="6" ry="4" fill="${centerFill}"/>
+    <g transform="translate(${cx}, ${cy}) scale(${scale})">
+      <g class="lotus-flower-bloom">
+        <ellipse cx="0" cy="4" rx="18" ry="9" fill="#2e7d32" opacity="0.9"/>
+        <path d="M0 0 C-6 -6 -7 -18 0 -22 C7 -18 6 -6 0 0 Z" fill="${petalFill}" stroke="${petalStroke}" stroke-width="0.4"/>
+        <path d="M-2 1 C-12 -3 -16 -12 -12 -18 C-7 -15 -3 -7 -2 1 Z" fill="${petalFill}" stroke="${petalStroke}" stroke-width="0.4"/>
+        <path d="M2 1 C12 -3 16 -12 12 -18 C7 -15 3 -7 2 1 Z" fill="${petalFill}" stroke="${petalStroke}" stroke-width="0.4"/>
+        <path d="M-3 2 C-16 1 -20 -5 -19 -10 C-13 -9 -6 -3 -3 2 Z" fill="${petalFill}" stroke="${petalTip}" stroke-width="0.4"/>
+        <path d="M3 2 C16 1 20 -5 19 -10 C13 -9 6 -3 3 2 Z" fill="${petalFill}" stroke="${petalTip}" stroke-width="0.4"/>
+        <ellipse cx="0" cy="0" rx="8" ry="4" fill="#ffd54f" opacity="0.7"/>
+        <ellipse cx="0" cy="0" rx="4.5" ry="2.8" fill="#afb42b" stroke="#558b2f" stroke-width="0.5"/>
+        <path d="M-2 2 C-10 4 -12 8 -8 11 C-5 9 -2 5 -2 2 Z" fill="${petalFill}" stroke="${petalStroke}" stroke-width="0.4"/>
+        <path d="M2 2 C10 4 12 8 8 11 C5 9 2 5 2 2 Z" fill="${petalFill}" stroke="${petalStroke}" stroke-width="0.4"/>
+        <path d="M0 3 C-6 5 -6 10 0 13 C6 10 6 5 0 3 Z" fill="${petalFill}" stroke="${petalStroke}" stroke-width="0.4"/>
+      </g>
     </g>
   `;
 }
 
-// 產生向陽太陽花向量圖形
+// 產生向陽太陽花向量圖形 (松葉牡丹 · 參照太陽花-01與02)
 function createSunflowerSVG(stage) {
-  if (stage === 'sprout') {
+  if (stage === 'sprout' || stage === 1) {
+    // 階段一：肉質松針幼芽
     return `
-      <svg viewBox="0 0 80 90" width="60" height="70">
-        <path d="M40 85 Q38 60 40 45" stroke="#43a047" stroke-width="4" stroke-linecap="round"/>
-        <ellipse cx="30" cy="55" rx="12" ry="6" fill="#66bb6a" transform="rotate(-25 30 55)"/>
-        <ellipse cx="50" cy="50" rx="12" ry="6" fill="#66bb6a" transform="rotate(25 50 50)"/>
-        <circle cx="40" cy="40" r="5" fill="#81c784"/>
+      <svg viewBox="0 0 50 50" width="45" height="45">
+        <path d="M25 46 Q24 32 25 22" stroke="#388e3c" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M25 26 C16 24 10 16 8 10 C14 12 20 20 25 26 Z" fill="#66bb6a" stroke="#1b5e20" stroke-width="0.7"/>
+        <path d="M25 26 C34 24 40 16 42 10 C36 12 30 20 25 26 Z" fill="#66bb6a" stroke="#1b5e20" stroke-width="0.7"/>
+        <circle cx="25" cy="6" r="2.5" fill="#ffd54f"/>
       </svg>
     `;
   }
 
+  if (stage === 'bud' || stage === 2) {
+    // 階段二：含苞圓蕾
+    return `
+      <svg viewBox="0 0 56 62" width="50" height="56">
+        <path d="M28 58 Q27 42 28 30" stroke="#2e7d32" stroke-width="4" stroke-linecap="round"/>
+        <path d="M28 30 C15 32 6 22 4 14 C12 18 22 24 28 30 Z" fill="#4caf50" stroke="#1b5e20" stroke-width="0.8"/>
+        <path d="M28 30 C41 32 50 22 52 14 C44 18 34 24 28 30 Z" fill="#4caf50" stroke="#1b5e20" stroke-width="0.8"/>
+        <ellipse cx="28" cy="20" rx="14" ry="15" fill="#388e3c" stroke="#1b5e20" stroke-width="0.8"/>
+        <path d="M28 6 C20 12 21 24 28 29 C35 24 36 12 28 6 Z" fill="#ffb300" stroke="#e65100" stroke-width="0.7"/>
+        <circle cx="28" cy="7" r="2" fill="#fff9c4"/>
+      </svg>
+    `;
+  }
+
+  // 階段三：重瓣波浪嬌豔盛開 (參照太陽花-02.jpg立體重瓣波浪)
   return `
-    <svg viewBox="0 0 100 120" width="75" height="95" class="sunflower-bloom-anim">
-      <!-- 挺拔綠莖與大葉片 -->
-      <path d="M50 115 Q48 70 50 48" stroke="#388e3c" stroke-width="5" stroke-linecap="round"/>
-      <path d="M49 90 Q22 80 20 95 Q38 100 49 90" fill="#4caf50"/>
-      <path d="M51 75 Q78 65 80 80 Q62 85 51 75" fill="#4caf50"/>
+    <svg viewBox="0 0 80 90" width="70" height="80" class="sunflower-bloom-anim">
+      <!-- 肉質花莖 -->
+      <path d="M40 86 Q39 64 40 45" stroke="#2e7d32" stroke-width="4.5" stroke-linecap="round"/>
       
-      <!-- 太陽花金黃花瓣盤 -->
-      <g transform="translate(50, 42)">
-        ${[0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180, 202.5, 225, 247.5, 270, 292.5, 315, 337.5].map(deg => `
-          <ellipse cx="0" cy="-22" rx="4.5" ry="14" fill="#fbc02d" stroke="#f57f17" stroke-width="0.8" transform="rotate(${deg})"/>
+      <!-- 花背簇生肉質松針葉 (太陽花特徵) -->
+      <path d="M40 45 C20 49 6 41 4 31 C14 35 28 41 40 45 Z" fill="#4caf50" stroke="#1b5e20" stroke-width="0.8"/>
+      <path d="M40 45 C60 49 74 41 76 31 C66 35 52 41 40 45 Z" fill="#4caf50" stroke="#1b5e20" stroke-width="0.8"/>
+
+      <!-- 重瓣盛開花頭 (波浪層疊花瓣 · 牡丹般錦簇) -->
+      <g transform="translate(40, 36)">
+        ${[0, 45, 90, 135, 180, 225, 270, 315].map(deg => `
+          <path d="M0 0 C-11 -11 -13 -26 0 -30 C13 -26 11 -11 0 0 Z" fill="#ffb300" stroke="#e65100" stroke-width="0.6" transform="rotate(${deg})"/>
         `).join('')}
-        <!-- 深褐色葵花花盤與金黃花粉圈 -->
-        <circle cx="0" cy="0" r="14" fill="#5d4037" stroke="#3e2723" stroke-width="1.5"/>
-        <circle cx="0" cy="0" r="11" fill="#4e342e"/>
-        <circle cx="0" cy="0" r="7" fill="#3e2723"/>
-        <circle cx="0" cy="0" r="4" fill="#ffb300" opacity="0.7"/>
+
+        <g transform="rotate(22.5)">
+          ${[0, 45, 90, 135, 180, 225, 270, 315].map(deg => `
+            <path d="M0 0 C-9 -9 -10 -20 0 -24 C10 -20 9 -9 0 0 Z" fill="#ffd54f" stroke="#e65100" stroke-width="0.6" transform="rotate(${deg})"/>
+          `).join('')}
+        </g>
+
+        <!-- 花心金黃密蕊叢 -->
+        <circle cx="0" cy="0" r="7.5" fill="#ff6f00"/>
+        <circle cx="0" cy="0" r="4.5" fill="#ffa000"/>
+        <circle cx="0" cy="-4" r="1.1" fill="#ffffff"/>
+        <circle cx="3" cy="-2" r="1.1" fill="#ffffff"/>
+        <circle cx="3" cy="2" r="1.1" fill="#ffffff"/>
+        <circle cx="-3" cy="2" r="1.1" fill="#ffffff"/>
       </g>
     </svg>
   `;
@@ -715,24 +952,32 @@ async function loadFriendsList(classFilter = '') {
         <div style="display:flex; align-items:center; gap:0.6rem;">
           <div class="friend-gem">🪷</div>
           <div>
-            <div style="font-weight:700; color:#212121; font-size:1.05rem;">${g.dharma_name} 的花園</div>
+            <div style="font-weight:700; color:#212121; font-size:1.05rem;">${g.dharma_name || '精進同修'} 的花園</div>
             <div style="font-size:0.78rem; color:#666;">
               <span class="badge-class">${g.class_type}</span>
-              <span style="margin-left:4px;">打卡 ${g.total_checkins} 次</span>
+              <span style="margin-left:4px;">修持打卡 ${g.total_checkins} 次</span>
             </div>
           </div>
         </div>
-        <button class="btn-primary" style="padding:0.35rem 0.9rem; font-size:0.84rem;" onclick="visitFriendGarden(${g.id})">
-          🌸 進入逛逛
-        </button>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <a href="garden2d.html?visitor=1&id=${g.id}" class="btn-primary" style="padding:0.4rem 0.95rem; font-size:0.84rem; text-decoration:none;">
+            🌸 進入 2D 花園
+          </a>
+        </div>
       </div>
     `).join('');
   } else {
-    listEl.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">尚無同修資料</div>';
+    listEl.innerHTML = '<div style="text-align:center; padding:2rem; color:#888;">尚無學員資料</div>';
   }
 }
 
-// 進入特定同修花園
+function goToVisited2DGarden() {
+  if (visitingStudentData && visitingStudentData.id) {
+    window.location.href = `garden2d.html?visitor=1&id=${visitingStudentData.id}`;
+  }
+}
+
+// 進入特定學員花園
 async function visitFriendGarden(studentId) {
   toggleFriendsDrawer(false);
   const res = await ZenAPI.getVisitedGardenDetail(studentId);
@@ -743,11 +988,12 @@ async function visitFriendGarden(studentId) {
     const banner = document.getElementById('visitorNoticeBanner');
     if (banner) {
       banner.style.display = 'flex';
-      document.getElementById('visitorGardenTitle').textContent = `正在參觀：【${visitingStudentData.class_type}】${visitingStudentData.dharma_name} 的花園`;
+      const displayName = visitingStudentData.dharma_name || (visitingStudentData.real_name ? visitingStudentData.real_name[0] + '居士' : '精進學員');
+      document.getElementById('visitorGardenTitle').textContent = `正在參觀：【${visitingStudentData.class_type}】${displayName} 的學員花園`;
       document.getElementById('visitorRejoiceCount').textContent = visitingStudentData.rejoice_count || 0;
     }
 
-    // 依該同修打卡數展示其花園中的蓮花與太陽花
+    // 依該學員打卡數展示其花園中的蓮花與太陽花
     renderGardenFlowers(visitingStudentData.total_checkins || 0);
 
     // 隱藏打卡面板（參觀時不能代替他人打卡）

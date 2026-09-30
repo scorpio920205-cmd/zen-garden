@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%">
+  <defs>
+    <!-- 智慧光芒光暈 -->
+    <radialGradient id="sunBloomGlow" cx="50%" cy="48%" r="50%">
+      <stop offset="0%" stop-color="#fffde7" stop-opacity="0.95"/>
+      <stop offset="40%" stop-color="#fff59d" stop-opacity="0.6"/>
+      <stop offset="75%" stop-color="#ffe082" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#ffd54f" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 肉質松針葉漸層 (參考太陽花-01.jpg) -->
+    <linearGradient id="needleLeaf3" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#1b5e20"/>
+      <stop offset="45%" stop-color="#2e7d32"/>
+      <stop offset="85%" stop-color="#4caf50"/>
+      <stop offset="100%" stop-color="#81c784"/>
+    </linearGradient>
+
+    <!-- 太陽花重瓣外輪金黃花瓣漸層 (參考太陽花-02.jpg立體重瓣波浪褶皺) -->
+    <linearGradient id="petalGoldOuter" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#ff8f00"/>
+      <stop offset="35%" stop-color="#ffa000"/>
+      <stop offset="70%" stop-color="#ffd54f"/>
+      <stop offset="100%" stop-color="#fff59d"/>
+    </linearGradient>
+    <!-- 內輪花瓣漸層 (明亮柔美) -->
+    <linearGradient id="petalGoldInner" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#ff6f00"/>
+      <stop offset="40%" stop-color="#ffb300"/>
+      <stop offset="80%" stop-color="#ffea00"/>
+      <stop offset="100%" stop-color="#ffff8d"/>
+    </linearGradient>
+    <!-- 核心暖心漸層 -->
+    <radialGradient id="sunCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e65100"/>
+      <stop offset="55%" stop-color="#ff8f00"/>
+      <stop offset="100%" stop-color="#ffa000"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 1. 草皮光暈與佛光普照暖暈 -->
+  <circle cx="120" cy="115" r="95" fill="url(#sunBloomGlow)"/>
+
+  <!-- 2. 肉質花莖 (直徑厚實、生機昂然) -->
+  <path d="M120 205 Q119 165 120 135" stroke="#2e7d32" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+  
+  <!-- 3. 環抱花朵的肉質松針葉群 (太陽花-01特徵) -->
+  <g id="needleLeafCluster" transform="translate(120, 125)">
+    <!-- 放射狀圍繞花心的多枚肉質松針葉 -->
+    <path d="M0 0 C-45 10 -75 2 -95 -12 C-75 -5 -45 2 0 0 Z" fill="url(#needleLeaf3)" stroke="#1b5e20" stroke-width="0.8"/>
+    <path d="M0 0 C45 10 75 2 95 -12 C75 -5 45 2 0 0 Z" fill="url(#needleLeaf3)" stroke="#1b5e20" stroke-width="0.8"/>
+    <path d="M0 0 C-38 25 -65 38 -88 42 C-68 32 -40 20 0 0 Z" fill="url(#needleLeaf3)" stroke="#1b5e20" stroke-width="0.8"/>
+    <path d="M0 0 C38 25 65 38 88 42 C68 32 40 20 0 0 Z" fill="url(#needleLeaf3)" stroke="#1b5e20" stroke-width="0.8"/>
+    <path d="M0 0 C-20 35 -35 55 -42 75 C-32 55 -15 35 0 0 Z" fill="url(#needleLeaf3)" stroke="#1b5e20" stroke-width="0.8"/>
+    <path d="M0 0 C20 35 35 55 42 75 C32 55 15 35 0 0 Z" fill="url(#needleLeaf3)" stroke="#1b5e20" stroke-width="0.8"/>
+    <path d="M0 0 C-50 -15 -78 -35 -92 -58 C-75 -42 -45 -22 0 0 Z" fill="url(#needleLeaf3)" stroke="#1b5e20" stroke-width="0.8"/>
+    <path d="M0 0 C50 -15 78 -35 92 -58 C75 -42 45 -22 0 0 Z" fill="url(#needleLeaf3)" stroke="#1b5e20" stroke-width="0.8"/>
+  </g>
+
+  <!-- 4. 重瓣盛開太陽花 (松葉牡丹重瓣花瓣 · 參照太陽花-02.jpg) -->
+  <g id="bloomFlowerHead" transform="translate(120, 115)">
+
+    <!-- ════ 第一層：外輪大波浪重瓣 (8大瓣，邊緣如絲綢波浪) ════ -->
+    <g id="outerPetalWhorl">
+      <!-- 0度 (頂瓣) -->
+      <path d="M0 0 C-28 -25 -32 -65 0 -76 C32 -65 28 -25 0 0 Z" fill="url(#petalGoldOuter)" stroke="#e65100" stroke-width="0.8"/>
+      <!-- 45度 -->
+      <path d="M0 0 C-4 -36 24 -70 54 -54 C68 -24 36 2 0 0 Z" fill="url(#petalGoldOuter)" stroke="#e65100" stroke-width="0.8"/>
+      <!-- 90度 (右側瓣) -->
+      <path d="M0 0 C25 -28 65 -32 76 0 C65 32 25 28 0 0 Z" fill="url(#petalGoldOuter)" stroke="#e65100" stroke-width="0.8"/>
+      <!-- 135度 -->
+      <path d="M0 0 C36 -4 70 24 54 54 C24 68 -2 36 0 0 Z" fill="url(#petalGoldOuter)" stroke="#e65100" stroke-width="0.8"/>
+      <!-- 180度 (底瓣) -->
+      <path d="M0 0 C28 25 32 65 0 76 C-32 65 -28 25 0 0 Z" fill="url(#petalGoldOuter)" stroke="#e65100" stroke-width="0.8"/>
+      <!-- 225度 -->
+      <path d="M0 0 C4 36 -24 70 -54 54 C-68 24 -36 -2 0 0 Z" fill="url(#petalGoldOuter)" stroke="#e65100" stroke-width="0.8"/>
+      <!-- 270度 (左側瓣) -->
+      <path d="M0 0 C-25 28 -65 32 -76 0 C-65 -32 -25 -28 0 0 Z" fill="url(#petalGoldOuter)" stroke="#e65100" stroke-width="0.8"/>
+      <!-- 315度 -->
+      <path d="M0 0 C-36 4 -70 -24 -54 -54 C-24 -68 2 -36 0 0 Z" fill="url(#petalGoldOuter)" stroke="#e65100" stroke-width="0.8"/>
+    </g>
+
+    <!-- ════ 第二層：中輪立體波浪褶皺瓣 (交疊旋轉22.5度) ════ -->
+    <g id="middlePetalWhorl" transform="rotate(22.5)">
+      <path d="M0 0 C-22 -20 -25 -52 0 -62 C25 -52 22 -20 0 0 Z" fill="url(#petalGoldInner)" stroke="#f57f17" stroke-width="0.8"/>
+      <path d="M0 0 C-3 -28 20 -55 44 -44 C55 -20 28 2 0 0 Z" fill="url(#petalGoldInner)" stroke="#f57f17" stroke-width="0.8"/>
+      <path d="M0 0 C20 -22 52 -25 62 0 C52 25 20 22 0 0 Z" fill="url(#petalGoldInner)" stroke="#f57f17" stroke-width="0.8"/>
+      <path d="M0 0 C28 -3 55 20 44 44 C20 55 -2 28 0 0 Z" fill="url(#petalGoldInner)" stroke="#f57f17" stroke-width="0.8"/>
+      <path d="M0 0 C22 20 25 52 0 62 C-25 52 -22 20 0 0 Z" fill="url(#petalGoldInner)" stroke="#f57f17" stroke-width="0.8"/>
+      <path d="M0 0 C3 28 -20 55 -44 44 C-55 20 -28 -2 0 0 Z" fill="url(#petalGoldInner)" stroke="#f57f17" stroke-width="0.8"/>
+      <path d="M0 0 C-20 22 -52 25 -62 0 C-52 -25 -20 -22 0 0 Z" fill="url(#petalGoldInner)" stroke="#f57f17" stroke-width="0.8"/>
+      <path d="M0 0 C-28 3 -55 -20 -44 -44 C-20 -55 2 -28 0 0 Z" fill="url(#petalGoldInner)" stroke="#f57f17" stroke-width="0.8"/>
+    </g>
+
+    <!-- ════ 第三層：內輪細褶抱心瓣 (錦球般層次) ════ -->
+    <g id="innerPetalWhorl" transform="rotate(12)">
+      <path d="M0 0 C-15 -14 -16 -36 0 -42 C16 -36 15 -14 0 0 Z" fill="#fff59d" stroke="#f57f17" stroke-width="0.7"/>
+      <path d="M0 0 C14 -15 36 -16 42 0 C36 16 14 15 0 0 Z" fill="#fff59d" stroke="#f57f17" stroke-width="0.7"/>
+      <path d="M0 0 C15 14 16 36 0 42 C-16 36 -15 14 0 0 Z" fill="#fff59d" stroke="#f57f17" stroke-width="0.7"/>
+      <path d="M0 0 C-14 15 -36 16 -42 0 C-36 -16 -14 -15 0 0 Z" fill="#fff59d" stroke="#f57f17" stroke-width="0.7"/>
+    </g>
+
+    <!-- ════ 第四層：花心金黃密蕊叢 (以經照心，大放光明) ════ -->
+    <circle cx="0" cy="0" r="18" fill="url(#sunCore)"/>
+    <circle cx="0" cy="0" r="14" fill="#ff6f00"/>
+
+    <!-- 密集微小金黃花絲雄蕊與花粉囊 -->
+    <g id="stamenRing">
+      <!-- 放射小金點 -->
+      <circle cx="0" cy="-10" r="2.2" fill="#fffde7" stroke="#e65100" stroke-width="0.5"/>
+      <circle cx="7" cy="-7" r="2.2" fill="#fffde7" stroke="#e65100" stroke-width="0.5"/>
+      <circle cx="10" cy="0" r="2.2" fill="#fffde7" stroke="#e65100" stroke-width="0.5"/>
+      <circle cx="7" cy="7" r="2.2" fill="#fffde7" stroke="#e65100" stroke-width="0.5"/>
+      <circle cx="0" cy="10" r="2.2" fill="#fffde7" stroke="#e65100" stroke-width="0.5"/>
+      <circle cx="-7" cy="7" r="2.2" fill="#fffde7" stroke="#e65100" stroke-width="0.5"/>
+      <circle cx="-10" cy="0" r="2.2" fill="#fffde7" stroke="#e65100" stroke-width="0.5"/>
+      <circle cx="-7" cy="-7" r="2.2" fill="#fffde7" stroke="#e65100" stroke-width="0.5"/>
+
+      <!-- 核心星芒金光 -->
+      <circle cx="0" cy="0" r="5" fill="#fffde7"/>
+      <circle cx="0" cy="0" r="2" fill="#ffffff"/>
+    </g>
+  </g>
+
+  <!-- 階段說明文字標籤 -->
+  <text x="120" y="228" text-anchor="middle" font-family="'Noto Serif TC', serif" font-size="11.5" font-weight="700" fill="#e65100" letter-spacing="2">
+    🌻 太陽花 · 第三階段【重瓣盛開】
+  </text>
+</svg>

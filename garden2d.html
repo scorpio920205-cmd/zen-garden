@@ -23,6 +23,22 @@
   <!-- 飄落環境粒子層 (春花、秋楓、冬雪) -->
   <div class="garden-ambient-particles" id="gardenAmbientParticles"></div>
 
+  <!-- ════ 動態蓮池花朵層 (蓮花生於池塘中，依修持生長) ════ -->
+  <div class="garden-2d-pond-flowers" id="garden2dPondFlowers" title="蓮池：靜坐調心，出淤泥而不染，靜中生慧">
+    <svg id="garden2dPondSvg" class="pond-surface-svg" viewBox="0 0 240 180">
+      <defs>
+        <radialGradient id="g2dGoldenGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffd54f" stop-opacity="0.9" />
+          <stop offset="60%" stop-color="#ffb300" stop-opacity="0.4" />
+          <stop offset="100%" stop-color="#ffb300" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- ════ 動態草皮太陽花層 (太陽花生於綠茵草皮上，向陽盛開) ════ -->
+  <div class="garden-2d-lawn-sunflowers" id="garden2dLawnSunflowers" title="草皮太陽花：以經照心，佛光注照，光明常在"></div>
+
   <!-- 互動熱點與花圃點位層 -->
   <div class="garden-interactive-canvas" id="gardenInteractiveCanvas"></div>
 
@@ -61,6 +77,20 @@
         <span>💧</span>
         <span id="hudDewDrops">12</span>
       </div>
+
+      <!-- 累積蓮花計數 (靜坐所化，生於池塘，每3天長成一朵盛開花) -->
+      <div class="hud-pill hud-flower-counter lotus-pill" id="hudLotusPill" title="靜坐修持所成：每 3 次打卡長成 1 朵盛開蓮花" style="border: 2px solid #ad1457; background: #ffffff !important; color: #880e4f; padding: 4px 14px; box-shadow: 0 3px 10px rgba(173, 20, 87, 0.2);">
+        <span style="font-size: 1.1rem;">🪷</span>
+        <strong id="hudLotusCount" style="color: #880e4f !important; font-weight: 800; font-size: 1rem; margin-left: 2px;">0 朵</strong>
+        <span id="hudLotusRemainder" style="font-size: 0.8rem; color: #ad1457; font-weight: 800; margin-left: 4px;"></span>
+      </div>
+
+      <!-- 累積太陽花計數 (讀誦經典所化，生於草皮，每3天長成一朵盛開花) -->
+      <div class="hud-pill hud-flower-counter sunflower-pill" id="hudSunflowerPill" title="誦經修持所成：每 3 次打卡長成 1 朵盛開太陽花" style="border: 2px solid #b45309; background: #ffffff !important; color: #78350f; padding: 4px 14px; box-shadow: 0 3px 10px rgba(180, 83, 9, 0.2);">
+        <span style="font-size: 1.1rem;">🌻</span>
+        <strong id="hudSunflowerCount" style="color: #78350f !important; font-weight: 800; font-size: 1rem; margin-left: 2px;">0 朵</strong>
+        <span id="hudSunflowerRemainder" style="font-size: 0.8rem; color: #92400e; font-weight: 800; margin-left: 4px;"></span>
+      </div>
     </div>
 
     <!-- 惟覺安公老和尚每日法語廣播金喇叭 -->
@@ -71,69 +101,69 @@
       </span>
     </div>
 
-    <!-- 右上快捷操作鍵 -->
+    <!-- 右上快捷操作鍵 (含明確返回按鈕) -->
     <div class="hud-action-group">
-      <a href="index.html" class="hud-round-btn" title="返回精進打卡首頁">🏠</a>
+      <a href="index.html" class="hud-back-btn" id="btnBackToCheckin" title="返回修持打卡區">
+        <span>🏠</span> 返回打卡區
+      </a>
+      <button class="hud-round-btn" onclick="openFlowerShowcaseModal()" title="檢視蓮花與太陽花三階段成花圖型" style="color: #c2185b;">🪷</button>
       <button class="hud-round-btn" onclick="playChimeSound(432)" title="空靈頌缽鐘聲">🔔</button>
       <button class="hud-round-btn" onclick="handle2DLogout()" title="登出系統" style="font-size: 1.05rem;">🚪</button>
-      <a href="admin.html" class="hud-round-btn" title="法師管理端" style="font-size: 1.1rem;">🔒</a>
+      <!-- 僅指導法師巡視時可見之管理入口，學員端徹底隱藏 -->
+      <a href="admin.html" class="hud-round-btn" id="btnAdminEntrance" title="法師管理後台" style="font-size: 1.1rem; display: none;">🔒</a>
     </div>
 
   </header>
 
-  <!-- ════ 花園生長演化階段 ＆ 四季切換中控列 (中央) ════ -->
-  <nav class="garden-stage-dock">
+  <!-- ════ 指導法師最高權限中控切換列 (僅法師可見／全解鎖) ════ -->
+  <nav class="garden-stage-dock" id="gardenStageDock" style="display: none;">
     <button class="stage-tab-btn active" data-stage="1">
-      <span>🌱</span> 第 1 天｜種子
+      <span>🌱</span> 第 1 階段｜49 天
     </button>
     <button class="stage-tab-btn" data-stage="2">
-      <span>🌿</span> 第 2 天｜發芽
+      <span>🌿</span> 第 2 階段｜61 天
     </button>
     <button class="stage-tab-btn" data-stage="3">
-      <span>🌸</span> 第 3 天｜花開
+      <span>🌳</span> 第 3 階段｜73 天
     </button>
     <button class="stage-tab-btn" data-stage="4">
-      <span>🌳</span> 持續用功｜成林
+      <span>🍁</span> 第 4 階段｜85 天
     </button>
-    
-    <div class="season-divider"></div>
-
-    <button class="stage-tab-btn" data-stage="autumn">
-      <span>🍁</span> 四季｜秋收
-    </button>
-    <button class="stage-tab-btn" data-stage="winter">
-      <span>❄️</span> 四季｜冬藏
+    <button class="stage-tab-btn" data-stage="5">
+      <span>❄️</span> 第 5 階段｜97 天
     </button>
   </nav>
 
-  <!-- 階段說明標題條 (底部輔助) -->
+  <!-- 累積花朵常態提示 (已去除目前境界與第一張圖文字) -->
   <div style="position: absolute; bottom: 86px; left: 32px; z-index: 40; pointer-events: none;">
-    <div style="background: rgba(22, 28, 24, 0.78); backdrop-filter: blur(8px); border-left: 4px solid #ffd54f; border-radius: 6px; padding: 6px 14px; color: #ffffff; font-size: 0.88rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-      <span id="stageDescText">第 1 天｜種子 · 剛開始，只有一小片土地，善法種子深植心田</span>
+    <div style="background: rgba(35, 20, 26, 0.88); backdrop-filter: blur(8px); border-left: 4px solid #e91e63; border-radius: 6px; padding: 5px 14px; color: #ffffff; font-size: 0.84rem; display: flex; align-items: center; gap: 14px; width: fit-content; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+      <span>🪷 蓮池已累積：<strong id="badgeLotusNum" style="color: #f8bbd0; font-size: 0.95rem;">0</strong> 朵</span>
+      <span style="opacity: 0.4;">｜</span>
+      <span>🌻 草皮已累積：<strong id="badgeSunflowerNum" style="color: #ffe082; font-size: 0.95rem;">0</strong> 朵</span>
     </div>
   </div>
 
-  <!-- 參觀同修花園提示橫幅 -->
+  <!-- 參觀學員花園提示橫幅 -->
   <div id="visitingFriendIndicator" style="display: none; position: absolute; top: 125px; left: 50%; transform: translateX(-50%); z-index: 55; background: rgba(26, 40, 32, 0.92); backdrop-filter: blur(10px); border: 2px solid #ffd54f; border-radius: 9999px; padding: 6px 20px; color: #ffffff; align-items: center; gap: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.4);">
     <span style="font-size: 1.15rem;">🌸</span>
-    <span id="visitingFriendTitle" style="font-weight: 600; font-size: 0.95rem;">正在參觀：【日高】傳覺 的精進花園</span>
+    <span id="visitingFriendTitle" style="font-weight: 600; font-size: 0.95rem;">正在參觀學員花園：【日高】傳覺 的精進花園</span>
     <span style="font-size: 0.76rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 9999px;">🛡️ 隱私安全防護</span>
     <button type="button" onclick="returnToMyGarden()" style="background: #ffd54f; color: #172c26; border: none; border-radius: 9999px; padding: 4px 14px; font-weight: 700; font-size: 0.85rem; cursor: pointer;">
       ← 返回我的花園
     </button>
   </div>
 
-  <!-- ════ 右側邊緣拉籤：「同修好友 (Friends)」 ════ -->
-  <div class="friends-edge-handle" id="friendsEdgeHandle" title="展開同修花園名錄">
+  <!-- ════ 右側邊緣拉籤：「學員花園 (Students)」 ════ -->
+  <div class="friends-edge-handle" id="friendsEdgeHandle" title="展開學員花園名錄">
     <span class="arrow">◀</span>
-    <span class="txt-vertical">同修好友</span>
+    <span class="txt-vertical">學員花園</span>
   </div>
 
-  <!-- 同修好友側邊抽屜面版 -->
+  <!-- 學員花園側邊抽屜面版 -->
   <div class="drawer-mask-overlay" id="drawerMaskOverlay">
     <div class="drawer-body-card">
       <div class="drawer-head-banner">
-        <h3><span>🪷</span> 蓮池海會 · 同修名錄</h3>
+        <h3><span>🪷</span> 蓮池海會 · 學員名錄</h3>
         <button class="drawer-close-btn" id="drawerCloseBtn">&times;</button>
       </div>
 
@@ -167,6 +197,112 @@
       <div style="margin-top: 1.4rem; display: flex; justify-content: flex-end;">
         <button type="button" class="btn-go-visit" style="padding: 0.5rem 1.4rem; font-size: 0.92rem;" onclick="closeZenDialog()">
           合掌領受 🙏
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ 蓮花與太陽花 · 三階段成花圖型典藏展 ════ -->
+  <div class="flower-modal-backdrop" id="flowerShowcaseModal">
+    <div class="flower-modal-content">
+      <div class="flower-modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.4rem;">🪷🌻</span>
+          <h2 style="font-size: 1.2rem; font-weight: 700; margin: 0;">蓮花與太陽花 · 三階段成花圖型典藏展</h2>
+        </div>
+        <button class="dialog-dismiss-btn" onclick="closeFlowerShowcaseModal()">&times;</button>
+      </div>
+
+      <div class="flower-modal-body">
+        <!-- 蓮花三階段展示 -->
+        <div class="flower-showcase-row">
+          <div class="flower-showcase-title">
+            <span>🪷 蓮花（Nelumbo nucifera）成花三階段</span>
+            <span class="badge" style="background:#e0f2f1; color:#00695c; font-size:0.78rem;">靜坐 15+ 分鐘 · 3 天長成一朵</span>
+          </div>
+          <div class="flower-showcase-dharma">
+            <strong>【靜中生慧】：</strong>靜坐是向內安住，沉澱自性心水。出淤泥而不染，濯清漣而不妖。蓮花三階段由種子金光、翡翠苞芽至白底胭脂粉瓣盛開。
+          </div>
+          <div class="flower-stage-cards">
+            <!-- 蓮花階段 1 -->
+            <div class="flower-stage-card">
+              <span class="flower-stage-tag tag-stage-1">第 1 天 ｜ 種子</span>
+              <div class="flower-stage-svg-wrap">
+                <img src="assets/flowers/lotus_stage_1_seed.svg" alt="蓮花第一階段" style="width: 100%; height: 100%;" />
+              </div>
+              <div class="flower-stage-name">水波浮葉 · 善種深植</div>
+              <div class="flower-stage-desc">靜坐第 1 天 · 碧波初生圓形浮水荷葉，菩提金種微光閃耀。</div>
+            </div>
+
+            <!-- 蓮花階段 2 -->
+            <div class="flower-stage-card">
+              <span class="flower-stage-tag tag-stage-2">第 2 天 ｜ 發芽</span>
+              <div class="flower-stage-svg-wrap">
+                <img src="assets/flowers/lotus_stage_2_bud.svg" alt="蓮花第二階段" style="width: 100%; height: 100%;" />
+              </div>
+              <div class="flower-stage-name">玉莖亭立 · 秀拔蓮苞</div>
+              <div class="flower-stage-desc">靜坐第 2 天 · 挺立翡翠花莖，尖端微染胭脂粉紅，抱合欲放。</div>
+            </div>
+
+            <!-- 蓮花階段 3 -->
+            <div class="flower-stage-card">
+              <span class="flower-stage-tag tag-stage-3">第 3 天 ｜ 花開</span>
+              <div class="flower-stage-svg-wrap">
+                <img src="assets/flowers/lotus_stage_3_bloom.svg" alt="蓮花第三階段" style="width: 100%; height: 100%;" />
+              </div>
+              <div class="flower-stage-name">重瓣祥蓮 · 見佛悟道</div>
+              <div class="flower-stage-desc">靜坐第 3 天 · 白底粉尖重瓣，中心鮮綠蓮蓬與金黃花蕊大放光明。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 太陽花三階段展示 -->
+        <div class="flower-showcase-row" style="margin-bottom: 0.5rem;">
+          <div class="flower-showcase-title">
+            <span>🌻 太陽花（松葉牡丹 / 太陽花）成花三階段</span>
+            <span class="badge" style="background:#fff8e1; color:#f57f17; font-size:0.78rem;">每日誦經 · 以經照心</span>
+          </div>
+          <div class="flower-showcase-dharma">
+            <strong>【以經照心】：</strong>誦經是以法照心，讓佛法光明每天陪伴自己。肉質松針幼莖生機盎然，頂結圓苞，盛開為金黃佛光重瓣花朵。
+          </div>
+          <div class="flower-stage-cards">
+            <!-- 太陽花階段 1 -->
+            <div class="flower-stage-card">
+              <span class="flower-stage-tag tag-stage-1">第 1 天 ｜ 種子</span>
+              <div class="flower-stage-svg-wrap">
+                <img src="assets/flowers/sunflower_stage_1_sprout.svg" alt="太陽花第一階段" style="width: 100%; height: 100%;" />
+              </div>
+              <div class="flower-stage-name">肉質松針 · 破土萌發</div>
+              <div class="flower-stage-desc">誦經第 1 天 · 草皮上破土萌生翠綠肉質小針葉，生機初現。</div>
+            </div>
+
+            <!-- 太陽花階段 2 -->
+            <div class="flower-stage-card">
+              <span class="flower-stage-tag tag-stage-2">第 2 天 ｜ 發芽</span>
+              <div class="flower-stage-svg-wrap">
+                <img src="assets/flowers/sunflower_stage_2_bud.svg" alt="太陽花第二階段" style="width: 100%; height: 100%;" />
+              </div>
+              <div class="flower-stage-name">松針簇擁 · 金苞蓄勢</div>
+              <div class="flower-stage-desc">誦經第 2 天 · 肉質針葉簇擁緊實圓花苞，微露金黃花瓣。</div>
+            </div>
+
+            <!-- 太陽花階段 3 -->
+            <div class="flower-stage-card">
+              <span class="flower-stage-tag tag-stage-3">第 3 天 ｜ 花開</span>
+              <div class="flower-stage-svg-wrap">
+                <img src="assets/flowers/sunflower_stage_3_bloom.svg" alt="太陽花第三階段" style="width: 100%; height: 100%;" />
+              </div>
+              <div class="flower-stage-name">以經照心 · 佛光注照</div>
+              <div class="flower-stage-desc">誦經第 3 天 · 波浪層疊重瓣金黃盛開，中央金蕊散發智慧光芒。</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="background: #f4f8f6; padding: 1rem 1.8rem; border-top: 1px solid rgba(45,76,66,0.15); display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-primary" style="padding: 0.5rem 1.6rem; font-size: 0.92rem;" onclick="closeFlowerShowcaseModal()">
+          法喜充滿 · 返回花園 🙏
         </button>
       </div>
     </div>

@@ -61,23 +61,20 @@
 </head>
 <body>
 
-  <!-- 頂部導覽列 -->
+  <!-- 頂部導覽列 (完全獨立師父管理端，無返回學員連結) -->
   <header class="site-header">
     <div class="header-inner">
-      <a href="index.html" class="brand-wrap">
+      <div class="brand-wrap">
         <div class="brand-symbol">印</div>
         <div class="brand-text">
           <h1>精進花園 · 師父管理端</h1>
           <span>Highest Permission Portal</span>
         </div>
-      </a>
+      </div>
 
       <div style="display: flex; gap: 0.8rem; align-items: center;">
-        <a href="index.html" class="btn-secondary" style="padding: 0.45rem 1.1rem; font-size: 0.88rem;">
-          ← 返回學員打卡頁
-        </a>
-        <a href="garden2d.html" class="btn-primary" style="padding: 0.45rem 1.1rem; font-size: 0.88rem;">
-          🌸 開心花園 (2D)
+        <a href="garden2d.html?admin=1" class="btn-primary" style="padding: 0.45rem 1.1rem; font-size: 0.88rem;">
+          🌸 開心花園 (2D) 全景巡檢
         </a>
       </div>
     </div>
@@ -93,7 +90,7 @@
           指導法師最高權限登入
         </h2>
         <p style="font-size: 0.9rem; color: var(--ink-muted); margin-bottom: 1.8rem; line-height: 1.8;">
-          本專區為最高權限管理員專屬，具備完整名錄（含真實姓名與學號）檢閱、法語線上批註及修持資料管理權限。
+          本專區為指導法師專屬獨立網址，具備完整名錄（含真實姓名與學號）檢閱、法語線上批註及修持資料管理/刪除權限。
         </p>
 
         <form onsubmit="handleAdminLogin(event)">
@@ -104,7 +101,7 @@
             </label>
             <input type="password" id="adminPassword" class="form-control" placeholder="請輸入管理密碼" required autofocus />
             <div style="font-size: 0.78rem; color: var(--ink-faint); margin-top: 0.4rem;">
-              預設高強度金鑰：<code>ZhongTai#ZenGarden2026!</code>（部署上線後可於 Cloudflare Variables 自訂）
+              預設高強度金鑰：<code>ZhongTai#ZenGarden2026!</code> 或 <code>zen2026</code>
             </div>
           </div>
 
@@ -144,12 +141,144 @@
         </div>
       </div>
 
+      <!-- ════ 指導法師 · 2D 精進花園全生長階段圖庫總覽 (5階段嚴格吻合) ════ -->
+      <div class="zen-card" id="adminGardenGallery" style="margin-bottom: 2rem; border-top: 4px solid var(--pine-green);">
+        <div class="card-heading">
+          <div class="card-title-group">
+            <h2><span>🌸</span> 指導法師 · 2D 精進花園全生長圖庫總覽（全部圖檢閱）</h2>
+            <p>指導法師最高權限專屬：等差遞增成長（每階段+12天），點擊各階段巡檢按鈕即可即時檢視該階段之 2D 全景花園實景。</p>
+          </div>
+          <div>
+            <a href="garden2d.html?admin=1" target="_blank" class="btn-primary" style="font-size: 0.88rem; padding: 0.5rem 1.2rem;">
+              🔍 開啟 2D 花園全景巡檢
+            </a>
+          </div>
+        </div>
+
+        <div class="admin-gallery-grid">
+          <!-- 階段 1：49 天 -->
+          <div class="admin-gallery-card">
+            <div class="admin-gallery-img-wrap">
+              <img src="assets/images/stage_1_seed.jpg" alt="第 1 階段｜維持 49 天" />
+              <span class="admin-gallery-stage-tag">🌱 第 1 階段｜累積 1~49 天</span>
+            </div>
+            <div class="admin-gallery-body">
+              <div class="admin-gallery-title">
+                <span>善念初萌 · 種子深植</span>
+                <span class="stage-badge stage-badge-1">維持 49 天</span>
+              </div>
+              <div class="admin-gallery-rules">
+                🌿 <strong>景觀生態：</strong>如茵平坦草皮、澄澈碧波池塘，無泥土污濁。<br>
+                ✨ <strong>象徵意涵：</strong>菩提金種初植心田，初耕心地，善法萌芽。
+              </div>
+              <div class="admin-gallery-actions">
+                <a href="garden2d.html?admin=1&stage=1" target="_blank" class="btn-secondary" style="width: 100%; text-align: center; font-size: 0.85rem; padding: 0.4rem 0;">
+                  👁️ 巡檢第 1 階段 (1~49天)
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 階段 2：110 天 (維持61天) -->
+          <div class="admin-gallery-card">
+            <div class="admin-gallery-img-wrap">
+              <img src="assets/images/stage_2_sprout.jpg" alt="第 2 階段｜累積 110 天" />
+              <span class="admin-gallery-stage-tag">🌿 第 2 階段｜累積 50~110 天</span>
+            </div>
+            <div class="admin-gallery-body">
+              <div class="admin-gallery-title">
+                <span>精進抽芽 · 庭園初展</span>
+                <span class="stage-badge stage-badge-2">維持 61 天</span>
+              </div>
+              <div class="admin-gallery-rules">
+                🌱 <strong>庭園開展：</strong>視野開闊延展，石階步道鋪展，綠蔭竹影。<br>
+                🪷 <strong>水面澄明：</strong>池面範圍擴大，菩提生機日盛，漸次繁茂。
+              </div>
+              <div class="admin-gallery-actions">
+                <a href="garden2d.html?admin=1&stage=2" target="_blank" class="btn-secondary" style="width: 100%; text-align: center; font-size: 0.85rem; padding: 0.4rem 0;">
+                  👁️ 巡檢第 2 階段 (50~110天)
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 階段 3：183 天 (菩提成林，維持73天) -->
+          <div class="admin-gallery-card">
+            <div class="admin-gallery-img-wrap">
+              <img src="assets/images/stage_3_forest_v2.jpg" alt="第 3 階段｜累積 183 天" />
+              <span class="admin-gallery-stage-tag">🌳 第 3 階段｜累積 111~183 天</span>
+            </div>
+            <div class="admin-gallery-body">
+              <div class="admin-gallery-title">
+                <span>繁茂成林 · 菩提大蔭</span>
+                <span class="stage-badge stage-badge-3">維持 73 天</span>
+              </div>
+              <div class="admin-gallery-rules">
+                🌳 <strong>茂林修竹：</strong>樹林漸密，草房日益開展，同位置蓮池清淨澄澈。<br>
+                🏞️ <strong>圓融道場：</strong>草皮與池塘生機豐沛，成林庇蔭十方群生。
+              </div>
+              <div class="admin-gallery-actions">
+                <a href="garden2d.html?admin=1&stage=3" target="_blank" class="btn-secondary" style="width: 100%; text-align: center; font-size: 0.85rem; padding: 0.4rem 0;">
+                  👁️ 巡檢第 3 階段 (111~183天)
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 階段 4：268 天 (金秋豐收，維持85天) -->
+          <div class="admin-gallery-card">
+            <div class="admin-gallery-img-wrap">
+              <img src="assets/images/stage_4_autumn_v2.jpg" alt="第 4 階段｜累積 268 天" />
+              <span class="admin-gallery-stage-tag">🍁 第 4 階段｜累積 184~268 天</span>
+            </div>
+            <div class="admin-gallery-body">
+              <div class="admin-gallery-title">
+                <span>金秋豐收 · 秋收功德</span>
+                <span class="stage-badge stage-badge-4">維持 85 天</span>
+              </div>
+              <div class="admin-gallery-rules">
+                🍂 <strong>丹楓金杏：</strong>秋林深密，草房擴建為莊嚴大禪堂，同位置蓮池清澈倒影。<br>
+                🧘 <strong>迴光返照：</strong>歷事練心，由動歸靜，秋收攝心，功德普及。
+              </div>
+              <div class="admin-gallery-actions">
+                <a href="garden2d.html?admin=1&stage=4" target="_blank" class="btn-secondary" style="width: 100%; text-align: center; font-size: 0.85rem; padding: 0.4rem 0;">
+                  👁️ 巡檢第 4 階段 (184~268天)
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 階段 5：365 天 (冬藏圓滿，維持97天) -->
+          <div class="admin-gallery-card">
+            <div class="admin-gallery-img-wrap">
+              <img src="assets/images/stage_5_winter_v2.jpg" alt="第 5 階段｜累積 365 天" />
+              <span class="admin-gallery-stage-tag">❄️ 第 5 階段｜累積 269~365+ 天</span>
+            </div>
+            <div class="admin-gallery-body">
+              <div class="admin-gallery-title">
+                <span>冬藏圓滿 · 澄明寂照</span>
+                <span class="stage-badge stage-badge-5" style="background:#e0f2fe; color:#0369a1; border:1px solid #7dd3fc;">維持 97 天</span>
+              </div>
+              <div class="admin-gallery-rules">
+                ❄️ <strong>純淨無垢：</strong>一歲圓滿！白雪覆地，萬緣放下，自性清淨圓融。<br>
+                💎 <strong>如如不動：</strong>寒梅傲雪，自性本不生滅，功德大成自性花開。
+              </div>
+              <div class="admin-gallery-actions">
+                <a href="garden2d.html?admin=1&stage=5" target="_blank" class="btn-secondary" style="width: 100%; text-align: center; font-size: 0.85rem; padding: 0.4rem 0;">
+                  👁️ 巡檢第 5 階段 (269~365天)
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 操作工具列 -->
       <div class="zen-card">
         <div class="card-heading">
           <div class="card-title-group">
             <h2><span>📋</span> 全班完整修持名錄（最高權限未脫敏檢閱）</h2>
-            <p>包含學員真實姓名、學號、打卡次數與 3D 花園巡視。</p>
+            <p>包含學員真實姓名、學號、打卡次數、花園境界與 2D 花園巡視。</p>
           </div>
           <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
             <button type="button" class="btn-secondary" style="font-size: 0.88rem;" onclick="exportAllDataJSON()">
@@ -182,7 +311,9 @@
                 <th>法名</th>
                 <th>累積打卡</th>
                 <th>禪坐時長</th>
-                <th>3D 花園</th>
+                <th>2D 生長境界</th>
+                <th>2D 花園巡視</th>
+                <th style="text-align: center; color: var(--vermilion);">最高權限維護</th>
               </tr>
             </thead>
             <tbody id="studentsTableBody">
