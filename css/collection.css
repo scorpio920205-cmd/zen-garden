@@ -1,0 +1,828 @@
+/* ═══════════════════════════════════════════════════════════════
+   般若智慧卡 · 菩提收集冊 (Collection Album & Gacha System)
+   風格參照：StockBoss Collection 典雅金石風 ＋ 禪意高質感
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 主頁籤切換欄 */
+.main-tabs-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 1.2rem auto 0.8rem auto;
+  padding: 0 1rem;
+}
+
+.main-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.main-tab-btn:hover {
+  color: var(--pine-green);
+  background: #ffffff;
+  border-color: var(--pine-light);
+  transform: translateY(-1px);
+}
+
+.main-tab-btn.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--pine-green) 0%, #1e453e 100%);
+  border-color: var(--pine-green);
+  box-shadow: 0 4px 14px rgba(27, 51, 44, 0.28);
+}
+
+.main-tab-btn#tabBtnCollection.active {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  border-color: #d97706;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
+}
+
+.tab-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: inherit;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.main-tab-btn:not(.active) .tab-badge {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+/* 收集冊外層容器 */
+.collection-container {
+  max-width: 1200px;
+  margin: 0 auto 3rem auto;
+  padding: 0 1rem;
+}
+
+/* 收集冊頂部看板 (模仿 StockBoss Header) */
+.collection-header-card {
+  background: linear-gradient(180deg, rgba(255, 253, 248, 0.98) 0%, rgba(254, 243, 199, 0.45) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(180, 83, 9, 0.08);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.collection-header-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #f59e0b, #ef4444, #a855f7, #3b82f6, #10b981, #f59e0b);
+}
+
+.collection-title-wrap {
+  margin-bottom: 0.75rem;
+}
+
+.collection-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #b45309;
+  letter-spacing: 2px;
+  margin: 0 0 0.4rem 0;
+}
+
+.collection-subtitle {
+  font-size: 0.95rem;
+  color: #78350f;
+  opacity: 0.88;
+  margin: 0;
+}
+
+.collection-edition-pill {
+  display: inline-block;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 5px 18px;
+  border-radius: 999px;
+  margin: 1rem 0 0.8rem 0;
+  box-shadow: 0 3px 8px rgba(217, 119, 6, 0.3);
+}
+
+/* 進度條 (StockBoss 風格) */
+.collection-progress-wrap {
+  max-width: 650px;
+  margin: 0.75rem auto 1.25rem auto;
+}
+
+.collection-progress-bar {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.collection-progress-fill {
+  background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 60%, #f59e0b 100%);
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+}
+
+.collection-progress-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.collection-ticket-status {
+  font-size: 0.86rem;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 抽卡與機率按鈕操作群 */
+.collection-header-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
+}
+
+.btn-gacha-main {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: #ffffff;
+  border: none;
+  font-size: 1.05rem;
+  font-weight: 800;
+  padding: 0.75rem 2rem;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(180, 83, 9, 0.35);
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-gacha-main:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(180, 83, 9, 0.45);
+  filter: brightness(1.08);
+}
+
+.btn-gacha-main:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-rates-outline {
+  background: #ffffff;
+  color: #b45309;
+  border: 1px solid #f59e0b;
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 0.7rem 1.3rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-rates-outline:hover {
+  background: #fef3c7;
+}
+
+/* 稀有度過濾標籤列 (StockBoss Filter Tabs) */
+.rarity-tabs-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+}
+
+.rarity-pill-btn {
+  background: #ffffff;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rarity-pill-btn:hover {
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+.rarity-pill-btn.active {
+  background: #b45309;
+  color: #ffffff;
+  border-color: #b45309;
+  box-shadow: 0 2px 8px rgba(180, 83, 9, 0.25);
+}
+
+.rarity-pill-btn[data-rarity="USR"].active {
+  background: linear-gradient(135deg, #f59e0b 0%, #ec4899 50%, #8b5cf6 100%);
+  border-color: transparent;
+}
+.rarity-pill-btn[data-rarity="UR"].active {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  border-color: #b91c1c;
+}
+.rarity-pill-btn[data-rarity="SSR"].active {
+  background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+  border-color: #7e22ce;
+}
+.rarity-pill-btn[data-rarity="SR"].active {
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+  border-color: #047857;
+}
+.rarity-pill-btn[data-rarity="R"].active {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  border-color: #1d4ed8;
+}
+
+.rarity-pill-count {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+/* 卡牌宮格 (Cards Grid) */
+.cards-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 1rem;
+}
+
+@media (max-width: 640px) {
+  .cards-grid-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* 卡牌本體架構 (3:4.2 比例) */
+.dharma-card-item {
+  position: relative;
+  aspect-ratio: 206 / 290;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  perspective: 1000px;
+}
+
+.dharma-card-item:hover {
+  transform: translateY(-4px) scale(1.02);
+  z-index: 2;
+}
+
+/* 未解鎖暗卡 (Locked State) */
+.dharma-card-locked {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  filter: brightness(0.88) contrast(1.05);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.dharma-card-locked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(1px);
+}
+
+.locked-card-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 12px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.locked-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.locked-card-no {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #f8fafc;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.locked-center-badge {
+  align-self: center;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #fbbf24;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.locked-card-footer {
+  text-align: center;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* 已解鎖明卡 (Unlocked State) */
+.dharma-card-unlocked {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fffdf8 0%, #fdf8eb 100%);
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* 稀有度專屬邊框與光芒 */
+.dharma-card-unlocked.tier-USR {
+  border: 2px solid #f59e0b;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.45);
+  background: linear-gradient(180deg, #fffcf0 0%, #fef3c7 100%);
+}
+.dharma-card-unlocked.tier-USR::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.dharma-card-unlocked.tier-UR {
+  border: 2px solid #ef4444;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.35);
+  background: linear-gradient(180deg, #fffdfd 0%, #fee2e2 100%);
+}
+
+.dharma-card-unlocked.tier-SSR {
+  border: 2px solid #a855f7;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.35);
+  background: linear-gradient(180deg, #fdfaff 0%, #f3e8ff 100%);
+}
+
+.dharma-card-unlocked.tier-SR {
+  border: 2px solid #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+  background: linear-gradient(180deg, #fafffd 0%, #d1fae5 100%);
+}
+
+.dharma-card-unlocked.tier-R {
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+  background: linear-gradient(180deg, #f8faff 0%, #dbeafe 100%);
+}
+
+/* 卡面元素 */
+.unlocked-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.unlocked-no {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.rarity-badge-pill {
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.rarity-badge-pill.badge-usr { background: linear-gradient(135deg, #f59e0b 0%, #ec4899 50%, #8b5cf6 100%); }
+.rarity-badge-pill.badge-ur  { background: #ef4444; }
+.rarity-badge-pill.badge-ssr { background: #a855f7; }
+.rarity-badge-pill.badge-sr  { background: #10b981; }
+.rarity-badge-pill.badge-r   { background: #3b82f6; }
+
+.unlocked-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0 4px;
+}
+
+.unlocked-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.unlocked-quote-snippet {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #475569;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-style: italic;
+}
+
+.unlocked-footer {
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.08);
+  font-size: 0.72rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.card-copies-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+/* ════ 卡牌詳情 Modal ════ */
+.card-detail-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(6px);
+  z-index: 10000;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.card-detail-card-box {
+  background: #ffffff;
+  border-radius: 24px;
+  max-width: 480px;
+  width: 100%;
+  padding: 2rem 1.8rem;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+  position: relative;
+  text-align: center;
+  animation: modalPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPopIn {
+  from { opacity: 0; transform: scale(0.92) translateY(15px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.card-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.card-detail-close-x {
+  background: #f1f5f9;
+  border: none;
+  color: #64748b;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-detail-close-x:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.card-detail-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 1rem 0;
+}
+
+.card-detail-quote-box {
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 1.2rem 1.2rem;
+  border-radius: 12px;
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+.card-detail-quote-text {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #78350f;
+  font-weight: 600;
+  margin: 0 0 0.6rem 0;
+}
+
+.card-detail-source {
+  font-size: 0.85rem;
+  color: #b45309;
+  font-weight: 700;
+  text-align: right;
+  margin: 0;
+}
+
+.card-detail-insight-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.card-detail-insight-title {
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.card-detail-insight-text {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #334155;
+  margin: 0;
+}
+
+.btn-detail-close {
+  background: #1e293b;
+  color: #ffffff;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.65rem 2rem;
+  border-radius: 999px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-detail-close:hover {
+  background: #0f172a;
+}
+
+/* ════ 抽卡動畫 Modal (Gacha Reveal Modal) ════ */
+.gacha-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 30, 0.88);
+  backdrop-filter: blur(8px);
+  z-index: 10005;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.gacha-box {
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  color: #ffffff;
+  position: relative;
+}
+
+.gacha-pack-img-wrap {
+  position: relative;
+  width: 200px;
+  margin: 0 auto 1.5rem auto;
+  cursor: pointer;
+}
+
+.gacha-pack-img {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 10px 35px rgba(245, 158, 11, 0.4);
+  transition: transform 0.3s ease;
+}
+
+.gacha-pack-img-wrap:hover .gacha-pack-img {
+  transform: scale(1.04);
+}
+
+.gacha-pack-glowing {
+  animation: packPulse 1.8s infinite alternate ease-in-out;
+}
+
+@keyframes packPulse {
+  0% { filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.4)); }
+  100% { filter: drop-shadow(0 0 35px rgba(245, 158, 11, 0.9)) brightness(1.1); }
+}
+
+/* 抽卡時卡包左右快速晃動特效 */
+@keyframes packShakeFast {
+  0% { transform: scale(1) rotate(0deg); }
+  10% { transform: scale(1.04) rotate(-8deg) translateX(-12px); }
+  20% { transform: scale(1.06) rotate(8deg) translateX(12px); }
+  30% { transform: scale(1.08) rotate(-10deg) translateX(-14px); }
+  40% { transform: scale(1.1) rotate(10deg) translateX(14px); }
+  50% { transform: scale(1.12) rotate(-8deg) translateX(-10px); }
+  60% { transform: scale(1.14) rotate(8deg) translateX(10px); }
+  70% { transform: scale(1.16) rotate(-5deg) translateX(-6px); }
+  80% { transform: scale(1.18) rotate(5deg) translateX(6px); }
+  90% { transform: scale(1.2) rotate(-2deg) translateX(-3px); }
+  100% { transform: scale(1.22) rotate(0deg) translateX(0); }
+}
+
+.gacha-pack-shaking {
+  animation: packShakeFast 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+  filter: drop-shadow(0 0 45px rgba(245, 158, 11, 1)) brightness(1.25) !important;
+}
+
+/* 抽卡結果卡片翻轉效果 (3D Flip) */
+.gacha-reveal-stage {
+  perspective: 1000px;
+  display: none;
+  margin: 1rem auto 1.5rem auto;
+  width: 230px;
+  height: 325px;
+}
+
+.gacha-reveal-card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.gacha-reveal-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.gacha-card-side {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 14px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+}
+
+.gacha-card-back {
+  background-size: cover;
+  background-position: center;
+}
+
+.gacha-card-front {
+  transform: rotateY(180deg);
+  background: #ffffff;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.gacha-new-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #ef4444, #f59e0b);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.82rem;
+  padding: 3px 12px;
+  border-radius: 999px;
+  margin-bottom: 0.6rem;
+  animation: bounce 1s infinite alternate;
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-4px); }
+}
+
+/* 機率公告 Modal */
+.rates-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(5px);
+  z-index: 10010;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.rates-box {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 520px;
+  width: 100%;
+  padding: 1.8rem;
+  position: relative;
+}
+
+.rates-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.92rem;
+}
+
+.rates-table th, .rates-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+}
+
+.rates-table th {
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 700;
+}

@@ -363,6 +363,11 @@ function updateUserHeaderUI(student) {
     const displayName = student.dharma_name || student.real_name || '精進學員';
     studentLabelEl.textContent = `· 【${student.class_type}】${student.group_name} ${displayName}`;
   }
+
+  // 同步更新般若收集冊進度與抽卡次數
+  if (typeof renderCollectionUI === 'function') {
+    renderCollectionUI();
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -500,6 +505,21 @@ function renderGardenFlowers(checkinCount) {
 
   if (stageEl) {
     stageEl.textContent = currentStage.name;
+  }
+
+  // 同步更新修持指南卡中的當前進度與境界
+  const nextInfo = getNextStageInfo(checkinCount);
+  const progressText = document.getElementById('indexStageProgressText');
+  if (progressText) {
+    progressText.textContent = nextInfo.text;
+  }
+  const guideStage = document.getElementById('guideCurrentStage');
+  if (guideStage) {
+    guideStage.textContent = currentStage.name;
+  }
+  const guideCheckins = document.getElementById('guideCurrentCheckins');
+  if (guideCheckins) {
+    guideCheckins.textContent = checkinCount;
   }
 
   // B. 蓮池中的蓮花 (精巧微型化，蓮花生在池塘裡，每 3 天 1 朵盛開花，餘數 1 初萌種子，餘數 2 含苞待放)
@@ -733,6 +753,8 @@ function setupQuoteWoodenSign() {
   const signTextEl = document.getElementById('woodenSignQuoteText');
   const quoteModalBody = document.getElementById('woodenQuoteModalText');
   const quoteSourceEl = document.getElementById('woodenQuoteSource');
+  const guideQuoteSnippet = document.getElementById('guideDailyQuoteSnippet');
+  const guideQuoteSource = document.getElementById('guideDailyQuoteSource');
 
   if (quote && signTextEl) {
     signTextEl.textContent = quote.quote;
@@ -741,12 +763,16 @@ function setupQuoteWoodenSign() {
     quoteModalBody.textContent = quote.quote;
     if (quoteSourceEl) quoteSourceEl.textContent = quote.source;
   }
+  if (quote && guideQuoteSnippet) {
+    guideQuoteSnippet.textContent = `「${quote.quote}」`;
+    if (guideQuoteSource) guideQuoteSource.textContent = `—— ${quote.source}`;
+  }
 }
 
-// 點擊木牌彈窗檢視法語
+// 點擊木牌彈窗檢視法語（每日固定一則，澄心觀照）
 function handleWoodenSignClick() {
   playChimeSound(432);
-  const q = getRandomQuote();
+  const q = (typeof getTodayQuote === 'function') ? getTodayQuote() : getRandomQuote();
   document.getElementById('woodenQuoteModalText').textContent = q.quote;
   document.getElementById('woodenQuoteSource').textContent = q.source;
   document.getElementById('woodenSignQuoteText').textContent = q.quote;
@@ -1094,5 +1120,36 @@ function setupURLParameters() {
   const id = params.get('id');
   if (isVisitorParam && id) {
     visitFriendGarden(id);
+  }
+}
+
+// ════ 指南摺疊手風琴控制邏輯 ════
+function handleMainGuideToggle(detailsEl) {
+  if (!detailsEl) return;
+  const toggleText = detailsEl.querySelector('.toggle-text');
+  const toggleArrow = detailsEl.querySelector('.toggle-arrow');
+  if (detailsEl.open) {
+    if (toggleText) toggleText.textContent = '點擊收合說明';
+    if (toggleArrow) toggleArrow.textContent = '▲';
+  } else {
+    if (toggleText) toggleText.textContent = '點擊展開說明';
+    if (toggleArrow) toggleArrow.textContent = '▼';
+  }
+}
+
+function toggleAllGuideAccordions() {
+  const items = document.querySelectorAll('.guide-accordion-item');
+  if (!items.length) return;
+  const anyOpen = Array.from(items).some(item => item.hasAttribute('open'));
+  items.forEach(item => {
+    if (anyOpen) {
+      item.removeAttribute('open');
+    } else {
+      item.setAttribute('open', '');
+    }
+  });
+  const btn = document.getElementById('btnToggleAllGuide');
+  if (btn) {
+    btn.innerHTML = anyOpen ? '<span>➕</span> 全部展開' : '<span>➖</span> 全部收合';
   }
 }

@@ -551,8 +551,529 @@ body::before {
 }
 
 /* ════════════════════════════════
-   4. 2D 精進花園畫布 (The Living Garden)
-   底圖無花朵，蓮花與太陽花完全依打卡數生長！
+   4. 精進修持指南與系統使用說明卡 (Practice Guide Card)
+   取代打卡頁大圖，詳述五階演化、花園開花與打卡規範
+   ════════════════════════════════ */
+.practice-guide-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 1.8rem 2rem;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+/* 主指南卡外層摺疊 (Main Guide Collapsible) */
+.main-guide-details {
+  width: 100%;
+}
+
+.main-guide-summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.main-guide-summary::-webkit-details-marker {
+  display: none;
+}
+
+.guide-toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card-sub);
+  border: 1px solid rgba(45, 76, 66, 0.25);
+  color: var(--pine-green);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.main-guide-summary:hover .guide-toggle-pill {
+  background: var(--pine-light);
+  border-color: var(--pine-green);
+}
+
+.main-guide-body {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: fadeInAccordion 0.25s ease-out;
+}
+
+/* 內部章節摺疊手風琴 (Section Accordions) */
+.guide-accordion-item {
+  border-top: 1px solid var(--border-light);
+  padding: 0.2rem 0;
+  transition: all 0.25s ease;
+}
+
+.guide-accordion-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.6rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: background-color 0.2s ease;
+}
+
+.guide-accordion-summary::-webkit-details-marker {
+  display: none;
+}
+
+.guide-accordion-summary:hover {
+  background-color: var(--bg-card-sub);
+}
+
+.guide-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.guide-summary-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink-deep);
+  margin: 0;
+}
+
+.guide-summary-sub {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  font-weight: normal;
+}
+
+.guide-accordion-arrow {
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  background: var(--bg-card-sub);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  border: 1px solid var(--border-light);
+  transition: transform 0.25s ease, background 0.2s, color 0.2s;
+}
+
+.guide-accordion-item[open] .guide-accordion-arrow {
+  transform: rotate(180deg);
+  background: var(--pine-light);
+  color: var(--pine-green);
+  border-color: rgba(45, 76, 66, 0.3);
+}
+
+.guide-accordion-content {
+  padding: 0.5rem 0.6rem 0.4rem 0.6rem;
+  animation: fadeInAccordion 0.25s ease-out;
+}
+
+.guide-toggle-bar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.2rem;
+}
+
+.btn-toggle-all-guide {
+  background: var(--bg-card-sub);
+  border: 1px solid var(--border-light);
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  padding: 3px 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.btn-toggle-all-guide:hover {
+  background: var(--pine-light);
+  color: var(--pine-green);
+  border-color: rgba(45, 76, 66, 0.2);
+}
+
+.guide-header-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.guide-icon-badge {
+  font-size: 1.5rem;
+  background: var(--pine-light);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  color: var(--pine-green);
+  border: 1px solid rgba(45, 76, 66, 0.15);
+}
+
+.guide-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--ink-deep);
+  letter-spacing: 0.5px;
+}
+
+.guide-subtitle {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+
+.guide-user-progress-bar {
+  background: var(--bg-card-sub);
+  border: 1px solid rgba(45, 76, 66, 0.18);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+}
+
+.guide-divider {
+  color: rgba(0, 0, 0, 0.2);
+  margin: 0 4px;
+}
+
+.guide-view-garden-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--pine-green);
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: var(--pine-light);
+  border: 1px solid rgba(45, 76, 66, 0.2);
+  transition: all 0.2s ease;
+}
+
+.guide-view-garden-link:hover {
+  background: var(--pine-green);
+  color: #ffffff;
+}
+
+.guide-daily-quote-card {
+  background: linear-gradient(135deg, #fdfbf7, #f7efe2);
+  border: 1px solid rgba(143, 111, 58, 0.25);
+  border-left: 4px solid var(--gold-bronze);
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.3rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(143, 111, 58, 0.08);
+}
+
+.guide-daily-quote-card:hover {
+  box-shadow: 0 4px 16px rgba(143, 111, 58, 0.15);
+  transform: translateY(-2px);
+}
+
+.guide-quote-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.btn-quote-rejoice {
+  background: var(--gold-bronze);
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 3px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.2s;
+}
+
+.btn-quote-rejoice:hover {
+  opacity: 0.9;
+}
+
+.guide-quote-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink-deep);
+  line-height: 1.75;
+  font-style: italic;
+}
+
+.guide-quote-source {
+  font-size: 0.8rem;
+  color: var(--gold-bronze);
+  margin-top: 0.4rem;
+  text-align: right;
+  font-weight: 600;
+}
+
+.guide-section-block {
+  border-top: 1px solid var(--border-light);
+  padding-top: 1.1rem;
+}
+
+.guide-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.guide-section-title h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink-deep);
+}
+
+.guide-section-intro {
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+  line-height: 1.7;
+  margin-bottom: 0.8rem;
+}
+
+.guide-grid-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  margin-bottom: 0.8rem;
+}
+
+@media (max-width: 640px) {
+  .guide-grid-two {
+    grid-template-columns: 1fr;
+  }
+}
+
+.guide-item-card {
+  background: var(--bg-card-sub);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+}
+
+.guide-item-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.92rem;
+  color: var(--pine-green);
+  margin-bottom: 0.35rem;
+}
+
+.guide-item-desc {
+  font-size: 0.84rem;
+  color: var(--ink-muted);
+  line-height: 1.6;
+}
+
+.guide-tips-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: rgba(45, 76, 66, 0.05);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.83rem;
+  color: var(--ink-base);
+  line-height: 1.6;
+}
+
+/* 花朵 3 階段演化步驟列 */
+.guide-flower-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--bg-card-sub);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+  flex-wrap: wrap;
+}
+
+.flower-step-item {
+  flex: 1;
+  min-width: 100px;
+  text-align: center;
+  padding: 0.5rem 0.3rem;
+  border-radius: var(--radius-sm);
+}
+
+.flower-step-item.active {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.flower-step-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #b45309;
+  background: #fef3c7;
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  margin-bottom: 4px;
+}
+
+.flower-step-icon {
+  font-size: 1.5rem;
+  margin-bottom: 2px;
+}
+
+.flower-step-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-deep);
+}
+
+.flower-step-sub {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+.flower-step-arrow {
+  color: var(--ink-faint);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* 5 階段列表 */
+.guide-stages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.guide-stage-row {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-card-sub);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.guide-stage-row:hover {
+  border-color: rgba(45, 76, 66, 0.3);
+  background: #ffffff;
+}
+
+.stage-tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+.stage-tag.s1 { background: #e8f5e9; color: #2e7d32; }
+.stage-tag.s2 { background: #e0f2fe; color: #0369a1; }
+.stage-tag.s3 { background: #fef3c7; color: #b45309; }
+.stage-tag.s4 { background: #ffedd5; color: #c2410c; }
+.stage-tag.s5 { background: #f1f5f9; color: #475569; }
+
+.stage-info {
+  flex: 1;
+}
+
+.stage-info strong {
+  font-size: 0.88rem;
+  color: var(--ink-deep);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.stage-info p {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* 抽卡規則說明框 */
+.guide-gacha-info-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.gacha-rule-pill {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  background: #fdfbf7;
+  border: 1px solid rgba(180, 83, 9, 0.15);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.95rem;
+  font-size: 0.85rem;
+}
+
+.gacha-rule-pill span {
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.gacha-rule-pill strong {
+  color: #92400e;
+  display: block;
+  font-size: 0.88rem;
+  margin-bottom: 2px;
+}
+
+.gacha-rule-pill div div {
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+/* 底部操作按鈕 */
+.guide-action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+/* ════════════════════════════════
+   5. 2D 精進花園畫布樣式保留
    ════════════════════════════════ */
 .garden-canvas-wrap {
   position: relative;
