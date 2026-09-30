@@ -706,6 +706,26 @@
   100% { filter: drop-shadow(0 0 35px rgba(245, 158, 11, 0.9)) brightness(1.1); }
 }
 
+/* 抽卡時卡包左右快速晃動特效 */
+@keyframes packShakeFast {
+  0% { transform: scale(1) rotate(0deg); }
+  10% { transform: scale(1.04) rotate(-8deg) translateX(-12px); }
+  20% { transform: scale(1.06) rotate(8deg) translateX(12px); }
+  30% { transform: scale(1.08) rotate(-10deg) translateX(-14px); }
+  40% { transform: scale(1.1) rotate(10deg) translateX(14px); }
+  50% { transform: scale(1.12) rotate(-8deg) translateX(-10px); }
+  60% { transform: scale(1.14) rotate(8deg) translateX(10px); }
+  70% { transform: scale(1.16) rotate(-5deg) translateX(-6px); }
+  80% { transform: scale(1.18) rotate(5deg) translateX(6px); }
+  90% { transform: scale(1.2) rotate(-2deg) translateX(-3px); }
+  100% { transform: scale(1.22) rotate(0deg) translateX(0); }
+}
+
+.gacha-pack-shaking {
+  animation: packShakeFast 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+  filter: drop-shadow(0 0 45px rgba(245, 158, 11, 1)) brightness(1.25) !important;
+}
+
 /* 抽卡結果卡片翻轉效果 (3D Flip) */
 .gacha-reveal-stage {
   perspective: 1000px;

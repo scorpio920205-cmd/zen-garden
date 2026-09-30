@@ -51,12 +51,64 @@ function saveStudentCollectionData(data) {
   localStorage.setItem(key, JSON.stringify(data));
 }
 
-// 計算剩餘抽卡次數 (迎新禮 5 張 + 花園每開 1 朵花得 1 張 - 已使用抽卡次數)
+// 計算 2D 開心花園中已完全盛開的花朵總數（每 3 天修持打卡長成 1 朵盛開花）
+function getGardenCompletedFlowerCount() {
+  const student = (window.currentStudent && (window.currentStudent.student_no || window.currentStudent.total_checkins !== undefined)) 
+    ? window.currentStudent 
+    : (function() {
+        try {
+          const raw = localStorage.getItem('zen_garden_logged_student_v2') || 
+                      (typeof API_CONFIG !== 'undefined' && API_CONFIG.storageKeys ? localStorage.getItem(API_CONFIG.storageKeys.currentStudent) : null);
+          return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+      })();
+
+  if (!student) return 0;
+
+  const totalDays = parseInt(student.total_checkins) || 0;
+  let lotusBlooms = 0;
+  let sunflowerBlooms = 0;
+
+  try {
+    const storageKey = (typeof API_CONFIG !== 'undefined' && API_CONFIG.storageKeys && API_CONFIG.storageKeys.checkins)
+      ? API_CONFIG.storageKeys.checkins
+      : 'zen_garden_checkins_v2';
+    const rawCheckins = localStorage.getItem(storageKey);
+    const allCheckins = rawCheckins ? JSON.parse(rawCheckins) : [];
+    const studentCheckins = allCheckins.filter(c => c.student_id == student.student_no || c.student_id == student.id);
+
+    if (studentCheckins.length > 0) {
+      const lotusCount = studentCheckins.filter(c => 
+        (c.meditation_minutes && c.meditation_minutes > 0) || 
+        (c.practice_item && (c.practice_item.includes('坐') || c.practice_item.includes('禪')))
+      ).length;
+
+      const sunflowerCount = studentCheckins.filter(c => 
+        (c.sutra_name && c.sutra_name.trim().length > 0) || 
+        (c.practice_item && c.practice_item.includes('經'))
+      ).length;
+
+      const effLotus = Math.max(lotusCount, (lotusCount === 0 && totalDays > 0) ? totalDays : lotusCount);
+      const effSunflower = Math.max(sunflowerCount, (sunflowerCount === 0 && totalDays > 0) ? totalDays : sunflowerCount);
+
+      lotusBlooms = Math.floor(effLotus / 3);
+      sunflowerBlooms = Math.floor(effSunflower / 3);
+    } else {
+      lotusBlooms = Math.floor(totalDays / 3);
+      sunflowerBlooms = Math.floor(totalDays / 3);
+    }
+  } catch (e) {
+    lotusBlooms = Math.floor(totalDays / 3);
+    sunflowerBlooms = Math.floor(totalDays / 3);
+  }
+
+  return lotusBlooms + sunflowerBlooms;
+}
+
+// 計算剩餘抽卡次數 (迎新禮 5 張 + 2D花園每完成 1 朵盛開花得 1 張 - 已使用抽卡次數)
 function getAvailableDrawCount() {
   const colData = loadStudentCollectionData();
-  const flowerCount = (window.currentStudent && window.currentStudent.total_checkins) 
-    ? window.currentStudent.total_checkins 
-    : 0;
+  const flowerCount = getGardenCompletedFlowerCount();
   
   const totalEarned = (colData.initialBonus || 5) + flowerCount;
   const remaining = Math.max(0, totalEarned - (colData.drawsUsed || 0));
@@ -115,7 +167,7 @@ function renderCollectionUI() {
   if (navBtnCount) navBtnCount.textContent = `${collectedCount}/${totalCards}`;
 
   if (ticketBadge) {
-    ticketBadge.innerHTML = `🎴 剩餘抽卡機會：<strong style="color: #b45309; font-size: 1.05rem;">${drawInfo.remaining}</strong> 次 <small style="color: #64748b;">(花園花朵: ${drawInfo.flowers} + 迎新禮: ${drawInfo.initialBonus})</small>`;
+    ticketBadge.innerHTML = `🎴 剩餘抽卡機會：<strong style="color: #b45309; font-size: 1.05rem;">${drawInfo.remaining}</strong> 次 <small style="color: #64748b;">(2D花園盛開花朵: ${drawInfo.flowers} 朵 ＋ 登入迎新禮: ${drawInfo.initialBonus} 包)</small>`;
   }
 
   if (btnGacha) {
@@ -124,7 +176,7 @@ function renderCollectionUI() {
       btnGacha.innerHTML = `<span>✨</span> 恭請今日法語（剩餘 ${drawInfo.remaining} 次）`;
     } else {
       btnGacha.disabled = false; // 允許點擊看說明
-      btnGacha.innerHTML = `<span>🪷</span> 今日次數已用畢 · 修持開花得次數`;
+      btnGacha.innerHTML = `<span>🪷</span> 抽卡次數已用畢 · 2D花園開花得次數`;
     }
   }
 
@@ -242,7 +294,7 @@ function renderCardsGrid(colData) {
 
 // 點擊未解鎖卡片提示
 function handleLockedCardClick(id, rarity) {
-  alert(`【No.${id} · ${rarity} 法語卡】\n\n此卡尚未解鎖。花園每開出一朵花（每日修持打卡），即可獲得 1 次抽卡機會！`);
+  alert(`【No.${id} · ${rarity} 法語卡】\n\n此卡尚未解鎖。2D 開心花園中每長成 1 朵盛開花（修持打卡每 3 天），即可獲得 1 次抽卡機會！`);
 }
 
 // 開啟卡牌詳情 Modal (純粹觀照：無分享與迴向按鈕)
@@ -279,10 +331,41 @@ function closeCardDetailModal() {
 }
 
 // ════ 抽卡核心互動 (Gacha Experience) ════
+let isGachaShaking = false;
+
+// 抽卡卡包晃動震音（Web Audio API 柔和清脆泛音）
+function playPackShakeAudio() {
+  try {
+    const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtxClass) return;
+    const ctx = new AudioCtxClass();
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(440, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.18);
+    osc.frequency.exponentialRampToValueAtTime(1174.6, now + 0.38);
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.2, now + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.62);
+  } catch (e) {
+    // 靜音優雅降級
+  }
+}
+
 function openGachaDrawModal() {
   const drawInfo = getAvailableDrawCount();
   if (drawInfo.remaining <= 0) {
-    alert("【抽卡次數已用畢】\n\n花園每開出一朵花即可獲得 1 次法語抽卡機會！\n請先完成每日修持打卡，長出蓮花與太陽花後即可繼續抽卡。");
+    alert("【抽卡次數已用畢】\n\n登入迎新禮 5 包已使用完畢。\n2D 開心花園中每長成 1 朵盛開花朵（修持打卡每 3 天），即可再開啟 1 包！\n請持續每日精進靜坐與誦經，花開見佛、福慧圓滿。");
     return;
   }
 
@@ -295,6 +378,7 @@ function openGachaDrawModal() {
   if (initStage) initStage.style.display = 'block';
   if (revealStage) revealStage.style.display = 'none';
   if (btnDoDraw) {
+    btnDoDraw.disabled = false;
     btnDoDraw.style.display = 'inline-flex';
     btnDoDraw.innerHTML = `<span>✨</span> 以心印心 · 開啟法語寶匣（剩餘 ${drawInfo.remaining} 次）`;
   }
@@ -306,17 +390,61 @@ function openGachaDrawModal() {
 function closeGachaModal() {
   const modal = document.getElementById('gachaModal');
   if (modal) modal.style.display = 'none';
+  isGachaShaking = false;
   renderCollectionUI();
 }
 
-// 執行單次抽取
+// 執行單次抽取（含卡包左右快速晃動震動特效）
 function executeGachaDraw() {
+  if (isGachaShaking) return;
+
   const drawInfo = getAvailableDrawCount();
   if (drawInfo.remaining <= 0) {
-    alert("剩餘抽卡次數不足！請先進行每日修持打卡。");
+    alert("【抽卡次數已用畢】\n\n登入迎新禮 5 包已使用完畢。\n2D 開心花園中每長成 1 朵盛開花朵（修持打卡每 3 天），即可再開啟 1 包！\n請持續每日精進靜坐與誦經，花開見佛、福慧圓滿。");
     return;
   }
 
+  const initStage = document.getElementById('gachaInitialStage');
+  const revealStage = document.getElementById('gachaRevealStage');
+  const btnDoDraw = document.getElementById('btnDoGachaDraw');
+  const btnCollectDone = document.getElementById('btnGachaCollectDone');
+
+  // 若當前在翻牌結算階段（例如連續抽卡），切回卡包展示舞台進行晃動
+  if (revealStage && revealStage.style.display !== 'none') {
+    revealStage.style.display = 'none';
+    if (initStage) initStage.style.display = 'block';
+  }
+
+  isGachaShaking = true;
+  if (btnDoDraw) {
+    btnDoDraw.disabled = true;
+    btnDoDraw.innerHTML = `<span>⏳</span> 寶匣震動感應中……`;
+  }
+  if (btnCollectDone) {
+    btnCollectDone.style.display = 'none';
+  }
+
+  const packWrap = document.getElementById('gachaPackWrap') || document.querySelector('.gacha-pack-img-wrap');
+  if (packWrap) {
+    packWrap.classList.remove('gacha-pack-shaking');
+    void packWrap.offsetWidth; // 強制重繪以觸發動畫
+    packWrap.classList.add('gacha-pack-shaking');
+  }
+
+  playPackShakeAudio();
+
+  // 左右快速晃動 0.65 秒後開包揭曉卡牌
+  setTimeout(() => {
+    if (packWrap) packWrap.classList.remove('gacha-pack-shaking');
+    if (btnDoDraw) btnDoDraw.disabled = false;
+    isGachaShaking = false;
+
+    performGachaDrawCore();
+  }, 650);
+}
+
+// 抽卡核心計算與結果揭曉
+function performGachaDrawCore() {
   const colData = loadStudentCollectionData();
 
   // 1. 保底判定 (連續 15 抽未獲得 SSR+，第 16 抽必出 SSR 以上)

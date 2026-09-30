@@ -156,9 +156,6 @@
           </div>
 
           <div class="app-nav-actions">
-            <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #d97706, #b45309); border: none; box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35); padding: 0.45rem 1.1rem; font-size: 0.88rem;" onclick="switchMainTab('collection')">
-              <span>🎴</span> 般若收集冊 (<span id="navCollectionBtnCount">0/70</span>)
-            </button>
             <a href="garden2d.html" class="btn-primary" style="padding: 0.45rem 1.1rem; font-size: 0.88rem; text-decoration: none;">
               <span>🌸</span> 進入 2D 開心花園
             </a>
@@ -560,7 +557,7 @@
     <div class="gacha-box">
       <!-- 初始階段：卡包展示與開包按鈕 -->
       <div id="gachaInitialStage">
-        <div class="gacha-pack-img-wrap gacha-pack-glowing" onclick="executeGachaDraw()">
+        <div class="gacha-pack-img-wrap gacha-pack-glowing" id="gachaPackWrap" onclick="executeGachaDraw()">
           <img src="assets/cards/pack_cover.png" alt="法語寶匣卡包" class="gacha-pack-img">
         </div>
         <h3 style="font-size: 1.45rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: 1px;">妙法寶匣 · 抽取法語</h3>
