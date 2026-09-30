@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const guideDetails = document.getElementById('mainGuideDetails');
     if (guideDetails) guideDetails.open = false;
   }
+  // 背景預先抓取 Cloudflare D1 最新全體學員名冊，確保跨裝置即時核驗與即時同步
+  ZenAPI.getAllStudents().catch(() => {});
 });
 
 // 1. 檢查登入狀態 (未登入顯示登入門檻，已登入展開花園與打卡)
@@ -57,6 +59,20 @@ function checkLoginSession() {
       updateUserHeaderUI(currentStudent);
       renderGardenFlowers(currentStudent.total_checkins || 0);
       setupURLParameters();
+
+      // 背景即時向 D1 雲端校驗同步最新學員狀態（如在其他裝置補填學號或修持次數）
+      if (currentStudent && currentStudent.real_name) {
+        ZenAPI.getStudentByProfile(currentStudent.class_type, currentStudent.group_name, currentStudent.real_name).then(fresh => {
+          if (fresh && (fresh.student_no !== currentStudent.student_no || fresh.total_checkins !== currentStudent.total_checkins || fresh.group_name !== currentStudent.group_name || fresh.class_type !== currentStudent.class_type)) {
+            currentStudent = { ...currentStudent, ...fresh };
+            localStorage.setItem(STORAGE_SESSION_KEY, JSON.stringify(currentStudent));
+            localStorage.setItem(API_CONFIG.storageKeys.currentStudent, JSON.stringify(currentStudent));
+            updateUserHeaderUI(currentStudent);
+            renderGardenFlowers(currentStudent.total_checkins || 0);
+          }
+        }).catch(err => console.warn('背景同步學員狀態失敗', err));
+      }
+
       return;
     } catch (e) {
       console.warn("Session parse failed", e);
@@ -280,18 +296,24 @@ async function handleLoginOrRegister(e) {
       if (groupName) existingByName.group_name = groupName;
       if (dharmaName) existingByName.dharma_name = dharmaName;
 
-      await ZenAPI.updateStudent(existingByName);
+      const updateRes = await ZenAPI.updateStudent(existingByName);
+      if (updateRes && updateRes.error) {
+        showGateError(updateRes.error);
+        return;
+      }
+      const finalStudent = (updateRes && updateRes.id) ? updateRes : existingByName;
 
-      alert(`✨ 歡迎！已為您成功補齊綁定學號【${studentNo}】！\n您過往累積的修持打卡（共 ${existingByName.total_checkins || 0} 次）已完整為您保留。\n日後即可僅憑此學號一鍵快速登入。`);
-      loginSuccess(existingByName);
+      alert(`✨ 歡迎！已為您成功補齊綁定學號【${studentNo}】！\n您過往累積的修持打卡（共 ${finalStudent.total_checkins || 0} 次）已完整為您保留。\n日後即可僅憑此學號一鍵快速登入。`);
+      loginSuccess(finalStudent);
       return;
     } else {
       // 本次依然未輸入學號，直接以原有帳號登入
       if (classType) existingByName.class_type = classType;
       if (groupName) existingByName.group_name = groupName;
       if (dharmaName) existingByName.dharma_name = dharmaName;
-      await ZenAPI.updateStudent(existingByName);
-      loginSuccess(existingByName);
+      const updateRes = await ZenAPI.updateStudent(existingByName);
+      const finalStudent = (updateRes && updateRes.id) ? updateRes : existingByName;
+      loginSuccess(finalStudent);
       return;
     }
   }
@@ -314,8 +336,13 @@ async function handleLoginOrRegister(e) {
     if (dharmaName) matchedStudent.dharma_name = dharmaName;
     if (studentNo && !matchedStudent.student_no) matchedStudent.student_no = studentNo;
 
-    await ZenAPI.updateStudent(matchedStudent);
-    loginSuccess(matchedStudent);
+    const updateRes = await ZenAPI.updateStudent(matchedStudent);
+    if (updateRes && updateRes.error) {
+      showGateError(updateRes.error);
+      return;
+    }
+    const finalStudent = (updateRes && updateRes.id) ? updateRes : matchedStudent;
+    loginSuccess(finalStudent);
     return;
   }
 
@@ -337,8 +364,13 @@ async function handleLoginOrRegister(e) {
     created_at: new Date().toISOString().replace('T', ' ').substring(0, 19)
   };
 
-  await ZenAPI.createStudent(newStudent);
-  loginSuccess(newStudent);
+  const createRes = await ZenAPI.createStudent(newStudent);
+  if (createRes && createRes.error) {
+    showGateError(createRes.error);
+    return;
+  }
+  const finalStudent = (createRes && createRes.id) ? createRes : newStudent;
+  loginSuccess(finalStudent);
 }
 
 // 顯示登入衝突或錯誤提撕彈出提示
@@ -559,17 +591,27 @@ async function executeBindStudentNo() {
     return;
   }
 
-  // 2. 補齊/更新當前學員紀錄
-  currentStudent.student_no = cleanNo;
-  await ZenAPI.updateStudent(currentStudent);
+  // 2. 補齊/更新當前學員紀錄 (立即同步至 Cloudflare D1 雲端資料庫)
+  const targetStudent = { ...currentStudent, student_no: cleanNo };
+  const updateRes = await ZenAPI.updateStudent(targetStudent);
 
+  if (updateRes && updateRes.error) {
+    if (errEl) {
+      errEl.innerHTML = `⚠️ ${updateRes.error}`;
+      errEl.style.display = 'block';
+    }
+    inputEl?.focus();
+    return;
+  }
+
+  currentStudent = (updateRes && updateRes.id) ? updateRes : targetStudent;
   localStorage.setItem(STORAGE_SESSION_KEY, JSON.stringify(currentStudent));
   localStorage.setItem(API_CONFIG.storageKeys.currentStudent, JSON.stringify(currentStudent));
 
   updateUserHeaderUI(currentStudent);
   closeBindStudentNoModal();
 
-  alert(`✨ 補齊學號成功！\n\n學號【${cleanNo}】已成功綁定至【${currentStudent.class_type} ${currentStudent.group_name} · ${currentStudent.real_name}】。\n過往 ${currentStudent.total_checkins || 0} 次修持紀錄完整保留，日後即可憑此學號一鍵快速登入！`);
+  alert(`✨ 補齊學號成功！\n\n學號【${cleanNo}】已成功綁定至【${currentStudent.class_type} ${currentStudent.group_name} · ${currentStudent.real_name}】。\n過往 ${currentStudent.total_checkins || 0} 次修持紀錄完整保留，雲端資料庫已即時同步，日後在電腦或手機皆可憑此學號一鍵快速登入！`);
 }
 
 // 更新頂部登入者狀態與統計數據看板

@@ -78,7 +78,7 @@ export async function onRequestPost({ request, env }) {
         }
 
         // 之前沒輸入學號的幫他把之前輸入過的補齊而不是新增！
-        if (!student.student_no && cleanNo) {
+        if ((!student.student_no || student.student_no.trim() === '') && cleanNo) {
           await db.prepare('UPDATE students SET student_no = ?, updated_at = datetime(\'now\', \'+8 hours\') WHERE id = ?').bind(cleanNo, student.id).run();
           student.student_no = cleanNo;
         }

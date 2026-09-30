@@ -305,16 +305,30 @@ const ZenAPI = {
     };
   },
 
-  // 2.1 依學號查詢學員資料（支援學號一鍵登入）
+  // 2.1 依學號查詢學員資料（支援學號一鍵登入與跨裝置即時同步）
   async getStudentByStudentNo(studentNo) {
     if (!studentNo) return null;
     const cleanNo = studentNo.trim();
     const isCloud = await this.isCloudflareBackendAvailable();
     if (isCloud) {
       try {
-        const resp = await fetch(`/api/my-garden?student_no=${encodeURIComponent(cleanNo)}`);
-        const res = await resp.json();
-        if (res.success && res.student) return res.student;
+        const resp = await fetch(`/api/student?student_no=${encodeURIComponent(cleanNo)}`);
+        if (resp.ok) {
+          const res = await resp.json();
+          if (res.success && res.student) {
+            this.syncStudentToLocal(res.student);
+            return res.student;
+          }
+        }
+        // 備援查詢 my-garden
+        const mgResp = await fetch(`/api/my-garden?student_no=${encodeURIComponent(cleanNo)}`);
+        if (mgResp.ok) {
+          const mgRes = await mgResp.json();
+          if (mgRes.success && mgRes.student) {
+            this.syncStudentToLocal(mgRes.student);
+            return mgRes.student;
+          }
+        }
       } catch (e) {
         console.warn('雲端學號查詢失敗，嘗試本地', e);
       }
@@ -332,17 +346,47 @@ const ZenAPI = {
     return found || null;
   },
 
-  // 2.2 依班級、組別、真實姓名查詢學員資料（支援首次無學號登入/建檔查詢）
+  // 2.2 依班級、組別、真實姓名查詢學員資料（支援首次無學號登入/建檔查詢與跨裝置即時同步）
   async getStudentByProfile(classType, groupName, realName) {
-    if (!classType || !groupName || !realName) return null;
-    const cleanClass = classType.trim();
-    const cleanGroup = groupName.trim();
+    if (!realName) return null;
+    const cleanClass = (classType || '').trim();
+    const cleanGroup = (groupName || '').trim();
     const cleanReal = realName.trim();
 
+    const isCloud = await this.isCloudflareBackendAvailable();
+    if (isCloud) {
+      try {
+        let url = `/api/student?name=${encodeURIComponent(cleanReal)}`;
+        if (cleanClass && cleanGroup) {
+          url += `&class=${encodeURIComponent(cleanClass)}&group=${encodeURIComponent(cleanGroup)}`;
+        }
+        const resp = await fetch(url);
+        if (resp.ok) {
+          const res = await resp.json();
+          if (res.success && res.student) {
+            this.syncStudentToLocal(res.student);
+            return res.student;
+          }
+        }
+      } catch (e) {
+        console.warn('雲端姓名查詢失敗，嘗試本地', e);
+      }
+    }
+
     const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
-    let found = students.find(s => s.class_type === cleanClass && s.group_name === cleanGroup && s.real_name === cleanReal);
+    let found = students.find(s => {
+      if (s.real_name !== cleanReal) return false;
+      if (cleanClass && s.class_type !== cleanClass) return false;
+      if (cleanGroup && s.group_name !== cleanGroup) return false;
+      return true;
+    });
     if (!found && typeof INITIAL_DEMO_STUDENTS !== 'undefined') {
-      found = INITIAL_DEMO_STUDENTS.find(s => s.class_type === cleanClass && s.group_name === cleanGroup && s.real_name === cleanReal) || null;
+      found = INITIAL_DEMO_STUDENTS.find(s => {
+        if (s.real_name !== cleanReal) return false;
+        if (cleanClass && s.class_type !== cleanClass) return false;
+        if (cleanGroup && s.group_name !== cleanGroup) return false;
+        return true;
+      }) || null;
       if (found) {
         students.push(found);
         localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
@@ -351,8 +395,40 @@ const ZenAPI = {
     return found || null;
   },
 
-  // 2.3 取得系統中所有學員紀錄 (包含預設 Demo)
+  // 2.3 取得系統中所有學員紀錄 (跨裝置雲端 D1 資料即時抓取並合併本機快取)
   async getAllStudents() {
+    const isCloud = await this.isCloudflareBackendAvailable();
+    if (isCloud) {
+      try {
+        const resp = await fetch('/api/student?action=all');
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.success && Array.isArray(data.students)) {
+            const localStudents = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
+            const mergedMap = new Map();
+            // 先載入預設 demo 或本機
+            if (typeof INITIAL_DEMO_STUDENTS !== 'undefined') {
+              INITIAL_DEMO_STUDENTS.forEach(s => {
+                if (s && s.real_name) mergedMap.set(s.real_name, s);
+              });
+            }
+            localStudents.forEach(s => {
+              if (s && s.real_name) mergedMap.set(s.real_name, s);
+            });
+            // 雲端最新 D1 資料權重最高，全面更新覆蓋
+            data.students.forEach(s => {
+              if (s && s.real_name) mergedMap.set(s.real_name, s);
+            });
+            const mergedList = Array.from(mergedMap.values());
+            localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(mergedList));
+            return mergedList;
+          }
+        }
+      } catch (e) {
+        console.warn('雲端獲取學員清單失敗，使用本地快取', e);
+      }
+    }
+
     const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
     if (students.length === 0 && typeof INITIAL_DEMO_STUDENTS !== 'undefined') {
       localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(INITIAL_DEMO_STUDENTS));
@@ -361,34 +437,69 @@ const ZenAPI = {
     return students;
   },
 
-  // 2.4 新增學員
+  // 2.4 新增學員（立即寫入 Cloudflare D1 雲端資料庫並同步本地）
   async createStudent(newStudent) {
-    const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
-    students.push(newStudent);
-    localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
+    const isCloud = await this.isCloudflareBackendAvailable();
+    if (isCloud) {
+      try {
+        const resp = await fetch('/api/student', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newStudent)
+        });
+        const res = await resp.json();
+        if (resp.ok && res.success && res.student) {
+          this.syncStudentToLocal(res.student);
+          return res.student;
+        } else if (!resp.ok && res.error) {
+          return { error: res.error, code: res.code, existingStudent: res.existingStudent };
+        }
+      } catch (e) {
+        console.warn('雲端建檔失敗，降級本地儲存', e);
+      }
+    }
+
+    this.syncStudentToLocal(newStudent);
     return newStudent;
   },
 
-  // 2.5 更新既有學員資料（例如補齊學號、變更組別等）
+  // 2.5 更新既有學員資料（例如補齊學號、變更組別等，立即同步寫入 Cloudflare D1）
   async updateStudent(updatedStudent) {
     const isCloud = await this.isCloudflareBackendAvailable();
-    if (isCloud && updatedStudent.student_no && updatedStudent.real_name) {
+    if (isCloud) {
       try {
-        await fetch(`/api/my-garden?student_no=${encodeURIComponent(updatedStudent.student_no)}&name=${encodeURIComponent(updatedStudent.real_name)}&class=${encodeURIComponent(updatedStudent.class_type || '')}&group=${encodeURIComponent(updatedStudent.group_name || '')}`);
+        const resp = await fetch('/api/student', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedStudent)
+        });
+        const res = await resp.json();
+        if (resp.ok && res.success && res.student) {
+          this.syncStudentToLocal(res.student);
+          return res.student;
+        } else if (!resp.ok && res.error) {
+          return { error: res.error, code: res.code, existingStudent: res.existingStudent };
+        }
       } catch (e) {
         console.warn('雲端更新失敗，降級本地儲存', e);
       }
     }
 
+    this.syncStudentToLocal(updatedStudent);
+    return updatedStudent;
+  },
+
+  // 輔助方法：將單一學員同步更新至 localStorage 快取
+  syncStudentToLocal(student) {
+    if (!student || !student.real_name) return;
     const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
-    const idx = students.findIndex(s => s.id === updatedStudent.id || (s.real_name === updatedStudent.real_name));
+    const idx = students.findIndex(s => (student.id && s.id === student.id) || (s.real_name === student.real_name));
     if (idx >= 0) {
-      students[idx] = { ...students[idx], ...updatedStudent };
+      students[idx] = { ...students[idx], ...student };
     } else {
-      students.push(updatedStudent);
+      students.push(student);
     }
     localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
-    return updatedStudent;
   },
 
   // 3. 取得「參觀他人花園」清單（安全隱私模式：真實姓名與學號完全脫敏/過濾）
