@@ -983,7 +983,9 @@ function handleHotspotClick(id, name, desc, action, el) {
 function openDharmaDialog(title, content) {
   const modal = document.getElementById('zenDialogBackdrop');
   if (!modal) return;
-  const quote = (typeof getRandomQuote === 'function') ? getRandomQuote() : {
+  
+  // 每日固定一則隨機法語（依日曆種子計算，每日一則，澄心觀照）
+  const quote = (typeof getTodayQuote === 'function') ? getTodayQuote() : {
     quote: "靜則一念不生，動則萬善圓滿。人在哪裡，心就在哪裡。做任何事情都能專心，這就是定；在定中還能清楚明白，這就是慧。",
     source: "《中台月刊》・惟覺安公老和尚開示",
     category: "定慧等持",
@@ -1007,31 +1009,9 @@ function openDharmaDialog(title, content) {
           </div>
         </div>
         <p style="font-size: 0.85rem; color: #556b62; margin: 0; line-height: 1.6;">
-          🌸 <strong>精進叮嚀：</strong>老和尚法語開示大寶庫共 36 則精選法語隨機抽籤，點擊下方「換一則」隨時領納大善知識法雨甘露。
+          🌸 <strong>每日法語：</strong>每日依日曆為您恭選一則老和尚法語，澄心領受，安住當下。
         </p>
       </div>
-    `;
-  }
-
-  // 更新彈窗按鈕
-  const panel = modal.querySelector('.zen-dialog-panel');
-  if (panel) {
-    let footerWrap = panel.querySelector('.dialog-footer-actions');
-    if (!footerWrap) {
-      const existingBottomDiv = panel.querySelector('div:last-child');
-      if (existingBottomDiv && existingBottomDiv !== bodyEl) existingBottomDiv.remove();
-      footerWrap = document.createElement('div');
-      footerWrap.className = 'dialog-footer-actions';
-      footerWrap.style.cssText = 'margin-top: 1.2rem; display: flex; justify-content: flex-end; gap: 0.8rem; flex-wrap: wrap;';
-      panel.appendChild(footerWrap);
-    }
-    footerWrap.innerHTML = `
-      <button type="button" class="btn-secondary" style="padding: 0.5rem 1.2rem; font-size: 0.9rem;" onclick="openDharmaDialog()">
-        🔄 恭讀下一則開示
-      </button>
-      <button type="button" class="btn-go-visit" style="padding: 0.5rem 1.4rem; font-size: 0.9rem;" onclick="closeZenDialog()">
-        合掌領受 🙏
-      </button>
     `;
   }
 

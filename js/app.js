@@ -748,10 +748,10 @@ function setupQuoteWoodenSign() {
   }
 }
 
-// 點擊木牌彈窗檢視法語
+// 點擊木牌彈窗檢視法語（每日固定一則，澄心觀照）
 function handleWoodenSignClick() {
   playChimeSound(432);
-  const q = getRandomQuote();
+  const q = (typeof getTodayQuote === 'function') ? getTodayQuote() : getRandomQuote();
   document.getElementById('woodenQuoteModalText').textContent = q.quote;
   document.getElementById('woodenQuoteSource').textContent = q.source;
   document.getElementById('woodenSignQuoteText').textContent = q.quote;
