@@ -488,6 +488,23 @@ const ZenAPI = {
 
   // 8. 管理員批註法語開示
   async addMentorComment(checkinId, comment, pwd) {
+    const isCloud = await this.isCloudflareBackendAvailable();
+    if (isCloud) {
+      try {
+        const resp = await fetch('/api/comment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ checkin_id: checkinId, comment: comment, pwd: pwd })
+        });
+        const res = await resp.json();
+        if (res.success) {
+          // 雲端批註成功
+        }
+      } catch (e) {
+        console.warn('雲端儲存批註失敗，降級本機', e);
+      }
+    }
+
     const checkins = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.checkins) || '[]');
     const c = checkins.find(item => item.id == checkinId);
     if (c) {

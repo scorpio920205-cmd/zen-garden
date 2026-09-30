@@ -21,8 +21,8 @@ export async function onRequestPost({ request, env }) {
       reflection_note = ''
     } = data;
 
-    if (!class_type || !group_name || !real_name || !dharma_name) {
-      return new Response(JSON.stringify({ success: false, error: '缺少必填欄位（班級、組別、姓名或法名）' }), {
+    if (!class_type || !group_name || !real_name) {
+      return new Response(JSON.stringify({ success: false, error: '缺少必填欄位（班級、組別與姓名）' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -49,11 +49,11 @@ export async function onRequestPost({ request, env }) {
     let lotusLevel = 1;
 
     if (!student) {
-      // 新建學員紀錄
+      // 新建學員紀錄（法名為選填）
       const insertResult = await db.prepare(`
         INSERT INTO students (student_no, class_type, group_name, real_name, dharma_name, total_checkins, total_meditation_mins, total_sutra_recs, lotus_level, rejoice_count)
         VALUES (?, ?, ?, ?, ?, 1, ?, ?, 1, 0)
-      `).bind(student_no || '', class_type, group_name, real_name, dharma_name, addMins, addSutra).run();
+      `).bind(student_no || '', class_type, group_name, real_name, dharma_name || '', addMins, addSutra).run();
 
       studentId = insertResult.meta.last_row_id;
     } else {
@@ -73,10 +73,11 @@ export async function onRequestPost({ request, env }) {
             total_meditation_mins = total_meditation_mins + ?,
             total_sutra_recs = total_sutra_recs + ?,
             lotus_level = ?,
-            dharma_name = ?,
+            dharma_name = CASE WHEN ? != '' THEN ? ELSE dharma_name END,
+            student_no = CASE WHEN ? != '' THEN ? ELSE student_no END,
             updated_at = datetime('now', '+8 hours')
         WHERE id = ?
-      `).bind(addMins, addSutra, lotusLevel, dharma_name, studentId).run();
+      `).bind(addMins, addSutra, lotusLevel, dharma_name || '', dharma_name || '', student_no || '', student_no || '', studentId).run();
     }
 
     // 2. 插入打卡明細 (支援歷史補填時間)
