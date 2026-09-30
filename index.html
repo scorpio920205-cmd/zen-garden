@@ -28,6 +28,7 @@
   
   <!-- 核心樣式引入 -->
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/collection.css">
 </head>
 <body>
 
@@ -155,6 +156,9 @@
           </div>
 
           <div class="app-nav-actions">
+            <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #d97706, #b45309); border: none; box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35); padding: 0.45rem 1.1rem; font-size: 0.88rem;" onclick="switchMainTab('collection')">
+              <span>🎴</span> 般若收集冊 (<span id="navCollectionBtnCount">0/70</span>)
+            </button>
             <a href="garden2d.html" class="btn-primary" style="padding: 0.45rem 1.1rem; font-size: 0.88rem; text-decoration: none;">
               <span>🌸</span> 進入 2D 開心花園
             </a>
@@ -168,6 +172,19 @@
         </div>
       </div>
     </header>
+
+    <!-- 主功能頁籤切換：精進花園打卡 VS 般若收集冊 -->
+    <div class="main-tabs-bar">
+      <button type="button" class="main-tab-btn active" id="tabBtnGarden" onclick="switchMainTab('garden')">
+        <span>🌿</span> 精進花園 ＆ 修持打卡
+      </button>
+      <button type="button" class="main-tab-btn" id="tabBtnCollection" onclick="switchMainTab('collection')">
+        <span>🎴</span> 般若收集冊 <span class="tab-badge" id="navCardBadge">0/70</span>
+      </button>
+    </div>
+
+    <!-- ════ 頁籤內容 1：精進花園 ＆ 修持打卡 ════ -->
+    <div id="tabContentGarden">
 
     <!-- 參觀他人花園頂部提示列 (參觀模式時動態浮現) -->
     <div class="visitor-banner-strip" id="visitorNoticeBanner" style="display: none;">
@@ -399,10 +416,58 @@
           </button>
         </form>
       </section>
-
     </main>
+    </div> <!-- end #tabContentGarden -->
 
-  </div>
+    <!-- ════ 頁籤內容 2：般若收集冊 (StockBoss 收集冊風格) ════ -->
+    <div id="tabContentCollection" style="display: none;" class="collection-container">
+      <!-- 收集冊頂部看板 -->
+      <div class="collection-header-card">
+        <div class="collection-title-wrap">
+          <h2 class="collection-title">般若收集冊</h2>
+          <p class="collection-subtitle">每一張卡都是一份智慧 · 每一則法語都是照破無明的心燈</p>
+        </div>
+
+        <div>
+          <span class="collection-edition-pill">第一彈 · 靈泉月現</span>
+        </div>
+
+        <!-- 收集進度條 -->
+        <div class="collection-progress-wrap">
+          <div class="collection-progress-bar">
+            <div class="collection-progress-fill" id="colProgressFill"></div>
+          </div>
+          <div class="collection-progress-stats">
+            <span id="colProgressStats">已收集 0 / 70 (0%)</span>
+            <span class="collection-ticket-status" id="colTicketBadge">
+              🎴 剩餘抽卡機會：<strong style="color: #b45309;">5</strong> 次
+            </span>
+          </div>
+        </div>
+
+        <!-- 抽卡操作按鈕群 -->
+        <div class="collection-header-actions">
+          <button type="button" class="btn-gacha-main" id="btnStartGacha" onclick="openGachaDrawModal()">
+            <span>✨</span> 恭請今日法語（開啟寶匣）
+          </button>
+          <button type="button" class="btn-rates-outline" onclick="openRatesModal()">
+            <span>📊</span> 機率與規則公告
+          </button>
+        </div>
+      </div>
+
+      <!-- 稀有度過濾標籤列 -->
+      <div class="rarity-tabs-row" id="rarityTabsRow">
+        <!-- 由 collection.js 動態渲染 -->
+      </div>
+
+      <!-- 70 張卡牌展示宮格 -->
+      <div class="cards-grid-container" id="dharmaCardsGrid">
+        <!-- 由 collection.js 動態渲染 -->
+      </div>
+    </div> <!-- end #tabContentCollection -->
+
+  </div> <!-- end #mainAppInterface -->
 
   <!-- ═══════════════════════════════════════════════════════════════
        3. 彈窗與抽屜元件
@@ -465,9 +530,140 @@
     </div>
   </div>
 
+  <!-- ════ 般若收集冊彈窗元件 ════ -->
+
+  <!-- 1. 法語卡牌放大詳情彈窗 (純淨觀照，無複製分享與迴向按鈕) -->
+  <div class="card-detail-modal-bg" id="cardDetailModal" onclick="if(event.target===this) closeCardDetailModal()">
+    <div class="card-detail-card-box">
+      <div class="card-detail-header">
+        <span class="unlocked-no" id="detailCardNo">No.001</span>
+        <span class="rarity-badge-pill" id="detailCardBadge">USR</span>
+        <button type="button" class="card-detail-close-x" onclick="closeCardDetailModal()">&times;</button>
+      </div>
+      <h3 class="card-detail-title" id="detailCardTitle">見自本心 · 即心是佛</h3>
+      
+      <div class="card-detail-quote-box">
+        <p class="card-detail-quote-text" id="detailCardQuote">「靜則一念不生，動則萬善圓滿。守本真心，妄念不生，即是見性成佛。」</p>
+        <p class="card-detail-source" id="detailCardSource">——《中台月刊》第1期〈開示篇〉・惟覺安公老和尚</p>
+      </div>
+
+      <div class="card-detail-insight-box">
+        <div class="card-detail-insight-title">💡 般若智慧提撕</div>
+        <p class="card-detail-insight-text" id="detailCardInsight">心外求佛了不可得。照顧好當前這念清楚、明白、作主的心，動靜一如，當下即是自性靈泉。</p>
+      </div>
+
+      <button type="button" class="btn-detail-close" onclick="closeCardDetailModal()">
+        關閉法語卡
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. 抽卡寶匣互動彈窗 (3D 翻牌動畫) -->
+  <div class="gacha-modal-bg" id="gachaModal" onclick="if(event.target===this) closeGachaModal()">
+    <div class="gacha-box">
+      <!-- 初始階段：卡包展示與開包按鈕 -->
+      <div id="gachaInitialStage">
+        <div class="gacha-pack-img-wrap gacha-pack-glowing" onclick="executeGachaDraw()">
+          <img src="assets/cards/pack_cover.png" alt="法語寶匣卡包" class="gacha-pack-img">
+        </div>
+        <h3 style="font-size: 1.45rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: 1px;">妙法寶匣 · 抽取法語</h3>
+        <p style="font-size: 0.92rem; opacity: 0.85; margin-bottom: 1.2rem;">
+          每一次抽取，都是一次與佛陀及老和尚以心印心的機緣
+        </p>
+        <div style="font-size: 0.82rem; color: #fbbf24; margin-bottom: 1.5rem;">
+          🌟 進行 15 次抽取時，保證獲得 SSR 菩提圓滿卡
+        </div>
+      </div>
+
+      <!-- 翻牌展示舞台 -->
+      <div class="gacha-reveal-stage" id="gachaRevealStage">
+        <div class="gacha-reveal-card" id="gachaRevealCard">
+          <div class="gacha-card-side gacha-card-back" id="gachaCardBack"></div>
+          <div class="gacha-card-side gacha-card-front" id="gachaCardFront"></div>
+        </div>
+      </div>
+
+      <!-- 操作按鈕群 -->
+      <div style="display: flex; justify-content: center; gap: 12px; margin-top: 1.2rem; flex-wrap: wrap;">
+        <button type="button" class="btn-gacha-main" id="btnDoGachaDraw" onclick="executeGachaDraw()">
+          <span>✨</span> 以心印心 · 開啟法語寶匣
+        </button>
+        <button type="button" class="btn-detail-close" id="btnGachaCollectDone" style="display: none; width: auto; padding: 0.75rem 2rem;" onclick="closeGachaModal()">
+          <span>🎴</span> 收入收集冊
+        </button>
+      </div>
+
+      <button type="button" onclick="closeGachaModal()" style="position: absolute; top: -15px; right: -10px; background: rgba(255,255,255,0.2); border: none; color: #ffffff; width: 36px; height: 36px; border-radius: 999px; font-size: 1.4rem; cursor: pointer;">&times;</button>
+    </div>
+  </div>
+
+  <!-- 3. 機率公告彈窗 -->
+  <div class="rates-modal-bg" id="ratesModal" onclick="if(event.target===this) closeRatesModal()">
+    <div class="rates-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: #b45309; margin: 0;">📊 機率與規則公告</h3>
+        <button type="button" class="card-detail-close-x" onclick="closeRatesModal()">&times;</button>
+      </div>
+
+      <p style="font-size: 0.88rem; color: #64748b; line-height: 1.6; margin-bottom: 1rem;">
+        《般若智慧卡》第一彈共收錄 <strong>70 張</strong> 殊勝法語，源自《中台月刊》惟覺安公老和尚歷期開示與《金剛經》、《藥師經》、《普門品》。
+      </p>
+
+      <table class="rates-table">
+        <thead>
+          <tr>
+            <th>卡別</th>
+            <th>掉落機率</th>
+            <th>收錄張數</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong style="color: #3b82f6;">R</strong> (日用清涼卡)</td>
+            <td>62%</td>
+            <td>45 張</td>
+          </tr>
+          <tr>
+            <td><strong style="color: #10b981;">SR</strong> (定慧明心卡)</td>
+            <td>27%</td>
+            <td>15 張</td>
+          </tr>
+          <tr>
+            <td><strong style="color: #a855f7;">SSR</strong> (菩提圓滿卡)</td>
+            <td>7%</td>
+            <td>5 張</td>
+          </tr>
+          <tr>
+            <td><strong style="color: #ef4444;">UR</strong> (圓頓實相卡)</td>
+            <td>3%</td>
+            <td>3 張</td>
+          </tr>
+          <tr>
+            <td><strong style="color: #f59e0b;">USR</strong> (萬德莊嚴卡)</td>
+            <td>1%</td>
+            <td>2 張</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top: 1.2rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 0.85rem 1rem; font-size: 0.84rem; color: #92400e; line-height: 1.6;">
+        🌟 <strong>獲取規則</strong>：<br>
+        1. <strong>迎新禮</strong>：初次登入自動獲贈 <strong>5 張</strong> 免費抽卡機會！<br>
+        2. <strong>花朵換法語</strong>：花園每開出 1 朵花（每日修持打卡），即可獲得 1 次抽卡機會。<br>
+        3. <strong>保底機制</strong>：連續 15 次未抽得 SSR 以上卡片時，第 16 次必定獲贈 SSR / UR / USR 卡！
+      </div>
+
+      <button type="button" class="btn-detail-close" style="margin-top: 1.2rem;" onclick="closeRatesModal()">
+        我知道了
+      </button>
+    </div>
+  </div>
+
   <!-- 核心腳本載入 -->
   <script src="js/quotes.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/cards-data.js"></script>
+  <script src="js/collection.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

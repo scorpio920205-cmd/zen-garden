@@ -363,6 +363,11 @@ function updateUserHeaderUI(student) {
     const displayName = student.dharma_name || student.real_name || '精進學員';
     studentLabelEl.textContent = `· 【${student.class_type}】${student.group_name} ${displayName}`;
   }
+
+  // 同步更新般若收集冊進度與抽卡次數
+  if (typeof renderCollectionUI === 'function') {
+    renderCollectionUI();
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
