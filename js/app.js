@@ -507,6 +507,21 @@ function renderGardenFlowers(checkinCount) {
     stageEl.textContent = currentStage.name;
   }
 
+  // 同步更新修持指南卡中的當前進度與境界
+  const nextInfo = getNextStageInfo(checkinCount);
+  const progressText = document.getElementById('indexStageProgressText');
+  if (progressText) {
+    progressText.textContent = nextInfo.text;
+  }
+  const guideStage = document.getElementById('guideCurrentStage');
+  if (guideStage) {
+    guideStage.textContent = currentStage.name;
+  }
+  const guideCheckins = document.getElementById('guideCurrentCheckins');
+  if (guideCheckins) {
+    guideCheckins.textContent = checkinCount;
+  }
+
   // B. 蓮池中的蓮花 (精巧微型化，蓮花生在池塘裡，每 3 天 1 朵盛開花，餘數 1 初萌種子，餘數 2 含苞待放)
   if (pondWater) {
     let lotusHTML = '';
@@ -738,6 +753,8 @@ function setupQuoteWoodenSign() {
   const signTextEl = document.getElementById('woodenSignQuoteText');
   const quoteModalBody = document.getElementById('woodenQuoteModalText');
   const quoteSourceEl = document.getElementById('woodenQuoteSource');
+  const guideQuoteSnippet = document.getElementById('guideDailyQuoteSnippet');
+  const guideQuoteSource = document.getElementById('guideDailyQuoteSource');
 
   if (quote && signTextEl) {
     signTextEl.textContent = quote.quote;
@@ -745,6 +762,10 @@ function setupQuoteWoodenSign() {
   if (quote && quoteModalBody) {
     quoteModalBody.textContent = quote.quote;
     if (quoteSourceEl) quoteSourceEl.textContent = quote.source;
+  }
+  if (quote && guideQuoteSnippet) {
+    guideQuoteSnippet.textContent = `「${quote.quote}」`;
+    if (guideQuoteSource) guideQuoteSource.textContent = `—— ${quote.source}`;
   }
 }
 
