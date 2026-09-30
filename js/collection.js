@@ -140,14 +140,14 @@ function renderRarityTabs(colData) {
   const tabsWrap = document.getElementById('rarityTabsRow');
   if (!tabsWrap) return;
 
-  const rarities = ['ALL', 'USR', 'UR', 'SSR', 'SR', 'R'];
+  const rarities = ['ALL', 'R', 'SR', 'SSR', 'UR', 'USR'];
   const labels = {
     ALL: '全部',
-    USR: 'USR',
-    UR: 'UR',
-    SSR: 'SSR',
-    SR: 'SR',
-    R: 'R'
+    R: 'R (普通)',
+    SR: 'SR (稀有)',
+    SSR: 'SSR (超稀有)',
+    UR: 'UR (極稀有)',
+    USR: 'USR (萬德)'
   };
 
   let html = '';
