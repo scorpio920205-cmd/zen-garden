@@ -19,32 +19,42 @@
 </head>
 <body class="garden-2d-body">
 
-  <!-- ════ 全景背景視圖容器 (支援四季與修行階段漸層切換) ════ -->
-  <div class="garden-bg-viewport" id="gardenBgViewport">
-    <!-- 背景圖層由 garden2d.js 動態以 CSS 漸層呈現 -->
+  <!-- ════ 2D 開心花園全景可滑動舞台 (手機支援手勢滑動，PC支援拖曳) ════ -->
+  <div class="garden-scene-viewport" id="gardenSceneViewport">
+    <div class="garden-world-stage" id="gardenWorldStage">
+      <!-- 1. 全景背景視圖容器 (支援四季與修行階段漸層切換) -->
+      <div class="garden-bg-viewport" id="gardenBgViewport">
+        <!-- 背景圖層由 garden2d.js 動態以 CSS 漸層呈現 -->
+      </div>
+
+      <!-- 2. 飄落環境粒子層 (春花、秋楓、冬雪) -->
+      <div class="garden-ambient-particles" id="gardenAmbientParticles"></div>
+
+      <!-- 3. 動態蓮池花朵層 (蓮花生於池塘中，依修持生長) -->
+      <div class="garden-2d-pond-flowers" id="garden2dPondFlowers" title="蓮池：靜坐調心，出淤泥而不染，靜中生慧">
+        <svg id="garden2dPondSvg" class="pond-surface-svg" viewBox="0 0 240 180">
+          <defs>
+            <radialGradient id="g2dGoldenGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffd54f" stop-opacity="0.9" />
+              <stop offset="60%" stop-color="#ffb300" stop-opacity="0.4" />
+              <stop offset="100%" stop-color="#ffb300" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- 4. 動態草皮太陽花層 (太陽花生於綠茵草皮上，向陽盛開) -->
+      <div class="garden-2d-lawn-sunflowers" id="garden2dLawnSunflowers" title="草皮太陽花：以經照心，佛光注照，光明常在"></div>
+
+      <!-- 5. 互動熱點與花圃點位層 -->
+      <div class="garden-interactive-canvas" id="gardenInteractiveCanvas"></div>
+    </div>
   </div>
 
-  <!-- 飄落環境粒子層 (春花、秋楓、冬雪) -->
-  <div class="garden-ambient-particles" id="gardenAmbientParticles"></div>
-
-  <!-- ════ 動態蓮池花朵層 (蓮花生於池塘中，依修持生長) ════ -->
-  <div class="garden-2d-pond-flowers" id="garden2dPondFlowers" title="蓮池：靜坐調心，出淤泥而不染，靜中生慧">
-    <svg id="garden2dPondSvg" class="pond-surface-svg" viewBox="0 0 240 180">
-      <defs>
-        <radialGradient id="g2dGoldenGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#ffd54f" stop-opacity="0.9" />
-          <stop offset="60%" stop-color="#ffb300" stop-opacity="0.4" />
-          <stop offset="100%" stop-color="#ffb300" stop-opacity="0" />
-        </radialGradient>
-      </defs>
-    </svg>
+  <!-- 手機版左右滑動引導提撕 (滑動後自動淡出) -->
+  <div class="mobile-slide-hint" id="mobileSlideHint">
+    <span>👈</span> 左右滑動探索全景花園 <span>👉</span>
   </div>
-
-  <!-- ════ 動態草皮太陽花層 (太陽花生於綠茵草皮上，向陽盛開) ════ -->
-  <div class="garden-2d-lawn-sunflowers" id="garden2dLawnSunflowers" title="草皮太陽花：以經照心，佛光注照，光明常在"></div>
-
-  <!-- 互動熱點與花圃點位層 -->
-  <div class="garden-interactive-canvas" id="gardenInteractiveCanvas"></div>
 
   <!-- ════ 頂部 HUD 狀態列 ════ -->
   <header class="top-hud-bar">

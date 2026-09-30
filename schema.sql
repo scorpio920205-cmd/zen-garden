@@ -24,7 +24,9 @@ CREATE TABLE IF NOT EXISTS students (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_students_unique_profile ON students(class_type, group_name, real_name);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_students_student_no_unique ON students(student_no) WHERE student_no IS NOT NULL AND student_no != '';
 CREATE INDEX IF NOT EXISTS idx_students_no ON students(student_no);
+CREATE INDEX IF NOT EXISTS idx_students_real_name ON students(real_name);
 CREATE INDEX IF NOT EXISTS idx_students_class ON students(class_type);
 CREATE INDEX IF NOT EXISTS idx_students_dharma ON students(dharma_name);
 

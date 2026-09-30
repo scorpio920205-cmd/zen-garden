@@ -36,10 +36,54 @@ export async function onRequestPost({ request, env }) {
       });
     }
 
-    // 1. 查詢是否已有該學員
-    let student = await db.prepare(
-      'SELECT * FROM students WHERE class_type = ? AND group_name = ? AND real_name = ?'
-    ).bind(class_type, group_name, real_name).first();
+    const cleanNo = (student_no || '').trim();
+    const cleanRealName = (real_name || '').trim();
+
+    // 1. 查詢是否已有該學員（優先依學號，次依姓名/班級組別）
+    let student = null;
+
+    if (cleanNo) {
+      // (A) 先以學號查詢
+      student = await db.prepare(
+        'SELECT * FROM students WHERE LOWER(student_no) = LOWER(?)'
+      ).bind(cleanNo).first();
+
+      if (student && student.real_name !== cleanRealName) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: `學號【${cleanNo}】已登記對應姓名【${student.real_name}】，與您輸入的姓名【${cleanRealName}】不符。學號對應姓名為唯一！`
+        }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    if (!student) {
+      // (B) 再以姓名查詢
+      student = await db.prepare(
+        'SELECT * FROM students WHERE real_name = ?'
+      ).bind(cleanRealName).first();
+
+      if (student) {
+        // 如果此學員已綁定其他學號
+        if (student.student_no && cleanNo && student.student_no.toLowerCase() !== cleanNo.toLowerCase()) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: `學員【${cleanRealName}】先前已綁定學號【${student.student_no}】。學號對應姓名為唯一，不可改用新學號【${cleanNo}】！`
+          }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        // 之前沒輸入學號的幫他把之前輸入過的補齊而不是新增！
+        if (!student.student_no && cleanNo) {
+          await db.prepare('UPDATE students SET student_no = ?, updated_at = datetime(\'now\', \'+8 hours\') WHERE id = ?').bind(cleanNo, student.id).run();
+          student.student_no = cleanNo;
+        }
+      }
+    }
 
     const addMins = parseInt(meditation_minutes) || 0;
     const addSutra = parseInt(sutra_count) || 0;
@@ -49,11 +93,11 @@ export async function onRequestPost({ request, env }) {
     let lotusLevel = 1;
 
     if (!student) {
-      // 新建學員紀錄（法名為選填）
+      // 全新學員建檔
       const insertResult = await db.prepare(`
         INSERT INTO students (student_no, class_type, group_name, real_name, dharma_name, total_checkins, total_meditation_mins, total_sutra_recs, lotus_level, rejoice_count)
         VALUES (?, ?, ?, ?, ?, 1, ?, ?, 1, 0)
-      `).bind(student_no || '', class_type, group_name, real_name, dharma_name || '', addMins, addSutra).run();
+      `).bind(cleanNo, class_type, group_name, cleanRealName, dharma_name || '', addMins, addSutra).run();
 
       studentId = insertResult.meta.last_row_id;
     } else {

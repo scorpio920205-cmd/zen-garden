@@ -263,6 +263,7 @@ function renderCardsGrid(colData) {
             <div class="unlocked-body">
               <div class="unlocked-title">${card.title}</div>
               <div class="unlocked-quote-snippet">「${card.quote}」</div>
+              <div class="unlocked-mobile-tap-hint">🪷 點閱法語</div>
             </div>
             <div class="unlocked-footer">${card.source}</div>
             ${copies > 1 ? `<div class="card-copies-badge">×${copies}</div>` : ''}

@@ -30,10 +30,18 @@ export async function onRequestGet({ request, env }) {
       student = await db.prepare(
         'SELECT * FROM students WHERE LOWER(student_no) = LOWER(?)'
       ).bind(studentNo.trim()).first();
-    } else {
+    }
+    
+    if (!student && realName) {
       student = await db.prepare(
-        'SELECT * FROM students WHERE class_type = ? AND group_name = ? AND real_name = ?'
-      ).bind(classType, groupName, realName).first();
+        'SELECT * FROM students WHERE real_name = ?'
+      ).bind(realName.trim()).first();
+
+      // 之前沒輸入學號的幫他把之前輸入過的補齊而不是新增
+      if (student && !student.student_no && studentNo) {
+        await db.prepare('UPDATE students SET student_no = ?, updated_at = datetime(\'now\', \'+8 hours\') WHERE id = ?').bind(studentNo.trim(), student.id).run();
+        student.student_no = studentNo.trim();
+      }
     }
 
     if (!student) {

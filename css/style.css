@@ -548,7 +548,16 @@ body::before {
 
 @media (max-width: 1024px) {
   .main-garden-layout {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  /* 手機版嚴格順序：1. 個人精進修持數據（上方看板） -> 2. 每日精進修持打卡 -> 3. 說明放在最下面 */
+  .checkin-panel-card {
+    order: 1;
+  }
+  .practice-guide-card {
+    order: 2;
   }
 }
 

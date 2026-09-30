@@ -300,8 +300,16 @@
 
 @media (max-width: 640px) {
   .cards-grid-container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 0.6rem;
+  }
+}
+
+@media (max-width: 340px) {
+  .cards-grid-container {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 6px;
   }
 }
 
@@ -516,6 +524,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: center;
+}
+
+.unlocked-mobile-tap-hint {
+  display: none;
 }
 
 .card-copies-badge {
@@ -825,4 +837,210 @@
   background: #f8fafc;
   color: #64748b;
   font-weight: 700;
+}
+
+/* ════════════════════════════════
+   手機版卡片與開卡詳情全面輕量化最佳化
+   （卡版改小、滑動順暢、點擊開過的卡看完整法語開示）
+   ════════════════════════════════ */
+@media (max-width: 640px) {
+  .collection-container {
+    padding: 0 0.6rem;
+  }
+
+  /* 頂部看板縮減內距，避免佔據手機整頁 */
+  .collection-header-card {
+    padding: 1.2rem 0.9rem;
+    border-radius: 16px;
+    margin-bottom: 0.8rem;
+  }
+
+  .collection-title {
+    font-size: 1.35rem;
+    letter-spacing: 1px;
+    margin-bottom: 0.2rem;
+  }
+
+  .collection-subtitle {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .collection-edition-pill {
+    font-size: 0.76rem;
+    padding: 3px 12px;
+    margin: 0.5rem 0;
+  }
+
+  .collection-progress-wrap {
+    margin: 0.5rem auto 0.8rem auto;
+  }
+
+  .collection-progress-stats {
+    font-size: 0.82rem;
+  }
+
+  .collection-ticket-status {
+    font-size: 0.78rem;
+    padding: 2px 8px;
+  }
+
+  .btn-gacha-main {
+    font-size: 0.92rem;
+    padding: 0.65rem 1.4rem;
+  }
+
+  .btn-rates-outline {
+    font-size: 0.82rem;
+    padding: 0.55rem 1rem;
+  }
+
+  .rarity-tabs-row {
+    gap: 5px;
+    margin: 0.8rem 0;
+  }
+
+  .rarity-pill-btn {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+  }
+
+  /* 手機版卡牌外觀精緻縮小（改小、不臃腫、滑動順暢） */
+  .dharma-card-item {
+    border-radius: 8px;
+  }
+
+  .dharma-card-unlocked, .dharma-card-locked {
+    padding: 6px 6px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .unlocked-header {
+    margin-bottom: 4px;
+  }
+
+  .unlocked-no {
+    font-size: 0.68rem;
+    font-weight: 800;
+  }
+
+  .rarity-badge-pill {
+    font-size: 0.6rem;
+    padding: 1px 5px;
+    font-weight: 800;
+  }
+
+  .unlocked-body {
+    padding: 0 2px;
+  }
+
+  .unlocked-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 2px;
+    max-height: 2.5em;
+  }
+
+  /* 手機小卡隱藏擁擠的摘要，主要靠點開觀照 */
+  .unlocked-quote-snippet {
+    display: none !important;
+  }
+
+  /* 顯示點擊查看提示膠囊 */
+  .unlocked-mobile-tap-hint {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 0.66rem;
+    color: #92400e;
+    background: #fef3c7;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 999px;
+    padding: 1px 6px;
+    margin-top: 3px;
+    font-weight: 700;
+  }
+
+  .unlocked-footer {
+    font-size: 0.62rem;
+    padding-top: 3px;
+  }
+
+  .card-copies-badge {
+    bottom: 4px;
+    right: 4px;
+    font-size: 0.62rem;
+    padding: 0 4px;
+  }
+
+  .locked-card-overlay {
+    padding: 6px 6px;
+  }
+
+  .locked-card-no {
+    font-size: 0.68rem;
+  }
+
+  .locked-center-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+  }
+
+  .locked-card-footer {
+    font-size: 0.62rem;
+  }
+
+  /* ════ 點開後的卡牌詳情彈窗（高質感、流暢滾動、內容完整） ════ */
+  .card-detail-modal-bg {
+    padding: 0.75rem;
+  }
+
+  .card-detail-card-box {
+    padding: 1.3rem 1.1rem;
+    border-radius: 18px;
+    max-height: 86vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .card-detail-title {
+    font-size: 1.18rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .card-detail-quote-box {
+    padding: 0.95rem 0.85rem;
+    margin-bottom: 0.85rem;
+    border-radius: 10px;
+  }
+
+  .card-detail-quote-text {
+    font-size: 0.96rem;
+    line-height: 1.75;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-detail-source {
+    font-size: 0.8rem;
+  }
+
+  .card-detail-insight-box {
+    padding: 0.8rem 0.85rem;
+    margin-bottom: 1.1rem;
+    border-radius: 10px;
+  }
+
+  .card-detail-insight-text {
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .btn-detail-close {
+    padding: 0.65rem 1.5rem;
+    font-size: 0.92rem;
+  }
 }

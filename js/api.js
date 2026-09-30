@@ -177,17 +177,45 @@ const ZenAPI = {
     const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
     const checkins = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.checkins) || '[]');
 
-    // 尋找或建立學員
-    let student = students.find(s => s.class_type === data.class_type && s.group_name === data.group_name && s.real_name === data.real_name);
+    const cleanNo = (data.student_no || '').trim();
+    const cleanRealName = (data.real_name || '').trim();
+
+    // 尋找學員：優先以學號查詢，次以姓名查詢
+    let student = null;
+    if (cleanNo) {
+      student = students.find(s => s.student_no && s.student_no.trim().toLowerCase() === cleanNo.toLowerCase());
+      if (student && student.real_name !== cleanRealName) {
+        return {
+          success: false,
+          error: `學號【${cleanNo}】已登記對應姓名【${student.real_name}】，與輸入的姓名【${cleanRealName}】不符。學號對應姓名為唯一！`
+        };
+      }
+    }
+
+    if (!student) {
+      student = students.find(s => s.real_name === cleanRealName);
+      if (student) {
+        if (student.student_no && cleanNo && student.student_no.toLowerCase() !== cleanNo.toLowerCase()) {
+          return {
+            success: false,
+            error: `學員【${cleanRealName}】已綁定學號【${student.student_no}】。學號對應姓名為唯一！`
+          };
+        }
+        // 之前沒輸入學號的幫他把之前輸入過的補齊而不是新增
+        if (!student.student_no && cleanNo) {
+          student.student_no = cleanNo;
+        }
+      }
+    }
     
     if (!student) {
       student = {
         id: Date.now(),
-        student_no: data.student_no || '',
+        student_no: cleanNo,
         class_type: data.class_type,
         group_name: data.group_name,
-        real_name: data.real_name,
-        dharma_name: data.dharma_name,
+        real_name: cleanRealName,
+        dharma_name: data.dharma_name || '',
         total_checkins: 0,
         total_meditation_mins: 0,
         total_sutra_recs: 0,
@@ -199,7 +227,9 @@ const ZenAPI = {
     } else {
       // 更新法名或學號（如有補填）
       if (data.dharma_name) student.dharma_name = data.dharma_name;
-      if (data.student_no) student.student_no = data.student_no;
+      if (cleanNo && !student.student_no) student.student_no = cleanNo;
+      if (data.class_type) student.class_type = data.class_type;
+      if (data.group_name) student.group_name = data.group_name;
     }
 
     // 累積統計
@@ -319,6 +349,37 @@ const ZenAPI = {
       }
     }
     return found || null;
+  },
+
+  // 2.3 取得系統中所有學員紀錄 (包含預設 Demo)
+  async getAllStudents() {
+    const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
+    if (students.length === 0 && typeof INITIAL_DEMO_STUDENTS !== 'undefined') {
+      localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(INITIAL_DEMO_STUDENTS));
+      return [...INITIAL_DEMO_STUDENTS];
+    }
+    return students;
+  },
+
+  // 2.4 新增學員
+  async createStudent(newStudent) {
+    const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
+    students.push(newStudent);
+    localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
+    return newStudent;
+  },
+
+  // 2.5 更新既有學員資料（例如補齊學號、變更組別等）
+  async updateStudent(updatedStudent) {
+    const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
+    const idx = students.findIndex(s => s.id === updatedStudent.id || (s.real_name === updatedStudent.real_name));
+    if (idx >= 0) {
+      students[idx] = { ...students[idx], ...updatedStudent };
+    } else {
+      students.push(updatedStudent);
+    }
+    localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
+    return updatedStudent;
   },
 
   // 3. 取得「參觀他人花園」清單（安全隱私模式：真實姓名與學號完全脫敏/過濾）

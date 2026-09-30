@@ -181,7 +181,79 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupToolsDockListeners();
   setupFriendsDrawerListeners();
   setupDailyBroadcast();
+  initGardenTouchScroll();
 });
+
+// 手機與桌面全景手勢滑動與拖曳控制
+function initGardenTouchScroll() {
+  const viewport = document.getElementById('gardenSceneViewport');
+  const slideHint = document.getElementById('mobileSlideHint');
+  if (!viewport) return;
+
+  let isDown = false;
+  let startX = 0;
+  let scrollLeft = 0;
+  let hasMoved = false;
+
+  // 滑動/滾動時自動淡出提示
+  const hideHint = () => {
+    if (slideHint) {
+      slideHint.classList.add('fade-out');
+      setTimeout(() => {
+        if (slideHint.parentNode) slideHint.style.display = 'none';
+      }, 800);
+    }
+  };
+
+  viewport.addEventListener('scroll', hideHint, { passive: true });
+  viewport.addEventListener('touchmove', hideHint, { passive: true });
+
+  // 3.5秒後自動淡出提示
+  setTimeout(hideHint, 3500);
+
+  // 支援滑鼠按住拖曳（方便桌機測試與操作）
+  viewport.addEventListener('mousedown', (e) => {
+    if (e.target.closest('button, a, select, input, .top-hud-bar, .drawer-mask-overlay, .friends-edge-handle')) return;
+    isDown = true;
+    startX = e.pageX - viewport.offsetLeft;
+    scrollLeft = viewport.scrollLeft;
+    hasMoved = false;
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDown = false;
+  });
+
+  viewport.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - viewport.offsetLeft;
+    const walk = (x - startX) * 1.25;
+    if (Math.abs(walk) > 6) hasMoved = true;
+    viewport.scrollLeft = scrollLeft - walk;
+  });
+
+  viewport.addEventListener('click', (e) => {
+    if (hasMoved) {
+      e.stopPropagation();
+      hasMoved = false;
+    }
+  }, true);
+
+  // 在手機上初次載入時，將視角微調至蓮花池與花園核心焦點
+  const centerInitialView = () => {
+    if (window.innerWidth <= 1024) {
+      const maxScroll = viewport.scrollWidth - viewport.clientWidth;
+      if (maxScroll > 0) {
+        // 水平滾動定位在花園前 20% 位置，讓蓮池與向陽花完整映入眼簾
+        viewport.scrollLeft = Math.round(maxScroll * 0.18);
+      }
+    }
+  };
+
+  setTimeout(centerInitialView, 120);
+  window.addEventListener('resize', centerInitialView);
+}
 
 // 1. 依據學員歷史打卡天數自動判定生長階段 (線性等差：49, 110, 183, 268, 365天)
 function determineInitialStage() {

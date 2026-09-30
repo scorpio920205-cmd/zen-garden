@@ -23,6 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initFormDateTime();
   checkLoginSession();
   setupQuoteWoodenSign();
+  if (window.innerWidth <= 768) {
+    const guideDetails = document.getElementById('mainGuideDetails');
+    if (guideDetails) guideDetails.open = false;
+  }
 });
 
 // 1. 檢查登入狀態 (未登入顯示登入門檻，已登入展開花園與打卡)
@@ -117,110 +121,257 @@ function handleGateMasterLogin() {
 }
 
 // 2. 登入 / 註冊提交處理（支援：已有學號者僅需輸入學號一鍵登入；初次未填學號者填寫班級、組別、姓名三個即可登入，法名非必要填寫）
+// 2. 登入 / 註冊提交處理
+// 嚴格規則：
+// 1. 學號只能對應一個姓名、班級組別，不能有相同的姓名加學號。
+// 2. 之前沒輸入學號的幫他把之前輸入過的補齊而不是新增。
+// 3. 輸入錯誤告知是否要更改，但學號對應姓名是唯一。
 async function handleLoginOrRegister(e) {
   if (e) e.preventDefault();
 
-  const studentNo = (document.getElementById('gateStudentNo')?.value || '').trim();
-  const classType = (document.getElementById('gateClassType')?.value || '').trim();
-  const groupName = (document.getElementById('gateGroupName')?.value || '').trim();
-  const realName = (document.getElementById('gateRealName')?.value || '').trim();
-  const dharmaName = (document.getElementById('gateDharmaName')?.value || '').trim();
+  const studentNoInput = document.getElementById('gateStudentNo');
+  const classTypeInput = document.getElementById('gateClassType');
+  const groupNameInput = document.getElementById('gateGroupName');
+  const realNameInput = document.getElementById('gateRealName');
+  const dharmaNameInput = document.getElementById('gateDharmaName');
+
+  const studentNo = (studentNoInput?.value || '').trim();
+  const classType = (classTypeInput?.value || '').trim();
+  const groupName = (groupNameInput?.value || '').trim();
+  const realName = (realNameInput?.value || '').trim();
+  const dharmaName = (dharmaNameInput?.value || '').trim();
+
   const errEl = document.getElementById('gateErrorMsg');
-  if (errEl) errEl.style.display = 'none';
+  if (errEl) {
+    errEl.style.display = 'none';
+    errEl.innerHTML = '';
+  }
 
-  // ════ 優先狀況 1：同修輸入了學號 ════
-  if (studentNo) {
-    const existingByNo = await ZenAPI.getStudentByStudentNo(studentNo);
-    if (existingByNo) {
-      // 曾填寫過學號，直接以此學號一鍵登入！
-      // 若同修在表單中也填了或修改了其他欄位，順道同步更新
-      if (classType) existingByNo.class_type = classType;
-      if (groupName) existingByNo.group_name = groupName;
-      if (realName) existingByNo.real_name = realName;
-      if (dharmaName) existingByNo.dharma_name = dharmaName;
+  // 1. 完全未填學號與姓名
+  if (!studentNo && !realName) {
+    showGateError('請輸入學號，或填寫「姓名」、「班級」與「組別」。');
+    studentNoInput?.focus();
+    return;
+  }
 
-      const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
-      const idx = students.findIndex(item => item.id === existingByNo.id || (item.student_no && item.student_no.toLowerCase() === studentNo.toLowerCase()));
-      if (idx >= 0) {
-        students[idx] = existingByNo;
-      } else {
-        students.push(existingByNo);
-      }
-      localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
-
-      loginSuccess(existingByNo);
+  // 2. 僅填寫學號（未填姓名）：一鍵快速登入情境
+  if (studentNo && !realName) {
+    const student = await ZenAPI.getStudentByStudentNo(studentNo);
+    if (student) {
+      // 成功以學號一鍵登入
+      loginSuccess(student);
       return;
     } else {
-      // 此學號尚無紀錄（初次填寫此學號建檔）：
-      // 依規則：必須填寫【班級】、【組別】、【姓名】三項（法名非必要）以完成建檔
-      if (!classType || !groupName || !realName) {
-        showGateError(`系統尚無學號【${studentNo}】的紀錄。初次建檔請填寫下方「班級」、「組別」與「姓名」（法名選填），完成後日後即可僅憑此學號直接登入！`);
-        if (!classType) document.getElementById('gateClassType')?.focus();
-        else if (!groupName) document.getElementById('gateGroupName')?.focus();
-        else if (!realName) document.getElementById('gateRealName')?.focus();
-        return;
-      }
+      showGateError(`系統查無學號【${studentNo}】之建檔紀錄。<br>若您是初次建檔，請填寫下方「班級」、「組別」與「姓名」（法名選填），完成後日後即可僅憑此學號一鍵登入！`);
+      if (!classType) classTypeInput?.focus();
+      else if (!groupName) groupNameInput?.focus();
+      else realNameInput?.focus();
+      return;
     }
   }
 
-  // ════ 狀況 2：未填學號，或初次使用新學號建檔 ════
-  // 核心規則：如果第一次沒填學號就是班級組別姓名三個填寫就可登入，法名非必要填寫
+  // 3. 有輸入姓名（必填班級、組別、姓名）
   if (!classType) {
     showGateError('請選擇您的班級（日高 或 夜高）');
-    document.getElementById('gateClassType')?.focus();
+    classTypeInput?.focus();
     return;
   }
   if (!groupName) {
     showGateError('請選擇您的組別');
-    document.getElementById('gateGroupName')?.focus();
+    groupNameInput?.focus();
     return;
   }
   if (!realName) {
-    showGateError('請填寫姓名');
-    document.getElementById('gateRealName')?.focus();
+    showGateError('請填寫真實姓名');
+    realNameInput?.focus();
     return;
   }
-  // 法名非必要填寫，不阻擋
 
-  // 查詢資料庫中是否已有該 (班級 + 組別 + 姓名) 的學員
-  const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
-  let s = students.find(item => item.class_type === classType && item.group_name === groupName && item.real_name === realName);
+  // 取得全部學員清單進行唯一性核驗
+  const students = await ZenAPI.getAllStudents();
 
-  if (!s && typeof INITIAL_DEMO_STUDENTS !== 'undefined') {
-    const demo = INITIAL_DEMO_STUDENTS.find(item => item.class_type === classType && item.group_name === groupName && item.real_name === realName);
-    if (demo) {
-      s = { ...demo };
-      students.push(s);
+  // (A) 是否已有該學號
+  const existingByNo = studentNo
+    ? students.find(s => s.student_no && s.student_no.trim().toLowerCase() === studentNo.toLowerCase())
+    : null;
+
+  // (B) 是否已有該姓名 (學號對應姓名是唯一，不能有相同姓名綁多個學號)
+  const existingByName = students.find(s => s.real_name && s.real_name.trim() === realName);
+
+  // ═══════════════════════════════════════════════════════════════
+  // 狀況 1：學號已被其他人登記，但姓名不符
+  // 規範：學號對應姓名是唯一，輸入錯誤告知是否要更改
+  // ═══════════════════════════════════════════════════════════════
+  if (existingByNo && existingByNo.real_name !== realName) {
+    showGateConflict({
+      title: '⚠️ 學號與姓名不符（學號對應姓名為唯一）',
+      message: `學號【<strong>${studentNo}</strong>】在系統中已登記對應姓名為【<strong>${existingByNo.real_name}</strong>】（${existingByNo.class_type} ${existingByNo.group_name}）。<br><br>依精舍規定，<strong>學號對應姓名為唯一</strong>，無法將此學號登記為【${realName}】。<br>請問是否為學號輸入錯誤？`,
+      options: [
+        {
+          text: `🌸 更正姓名為【${existingByNo.real_name}】並登入`,
+          btnClass: 'gate-btn-conflict-action',
+          callback: () => {
+            if (realNameInput) realNameInput.value = existingByNo.real_name;
+            if (classTypeInput) classTypeInput.value = existingByNo.class_type;
+            if (groupNameInput) groupNameInput.value = existingByNo.group_name;
+            if (dharmaNameInput && existingByNo.dharma_name) dharmaNameInput.value = existingByNo.dharma_name;
+            loginSuccess(existingByNo);
+          }
+        },
+        {
+          text: `✏️ 重新輸入學號`,
+          btnClass: 'gate-btn-conflict-cancel',
+          callback: () => {
+            if (studentNoInput) {
+              studentNoInput.value = '';
+              studentNoInput.focus();
+            }
+            if (errEl) errEl.style.display = 'none';
+          }
+        }
+      ]
+    });
+    return;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // 狀況 2：姓名已被登記，但已綁定其他學號
+  // 規範：學號對應姓名是唯一，不能有相同的姓名加不同學號
+  // ═══════════════════════════════════════════════════════════════
+  if (existingByName && existingByName.student_no && studentNo && existingByName.student_no.trim().toLowerCase() !== studentNo.toLowerCase()) {
+    showGateConflict({
+      title: '⚠️ 姓名已綁定其他學號（學號對應姓名為唯一）',
+      message: `學員【<strong>${realName}</strong>】先前已在系統綁定學號【<strong>${existingByName.student_no}</strong>】。<br><br><strong>學號對應姓名為唯一</strong>，不可重複使用新學號【${studentNo}】。<br>請問是否更改為原綁定學號登入？`,
+      options: [
+        {
+          text: `🌸 更正為原學號【${existingByName.student_no}】並登入`,
+          btnClass: 'gate-btn-conflict-action',
+          callback: () => {
+            if (studentNoInput) studentNoInput.value = existingByName.student_no;
+            if (classTypeInput) classTypeInput.value = existingByName.class_type;
+            if (groupNameInput) groupNameInput.value = existingByName.group_name;
+            if (dharmaNameInput && existingByName.dharma_name) dharmaNameInput.value = existingByName.dharma_name;
+            loginSuccess(existingByName);
+          }
+        },
+        {
+          text: `✏️ 重新檢查輸入`,
+          btnClass: 'gate-btn-conflict-cancel',
+          callback: () => {
+            if (studentNoInput) {
+              studentNoInput.focus();
+            }
+            if (errEl) errEl.style.display = 'none';
+          }
+        }
+      ]
+    });
+    return;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // 狀況 3：之前沒輸入學號的，幫他把之前輸入過的「補齊」而不是新增！
+  // ═══════════════════════════════════════════════════════════════
+  if (existingByName && (!existingByName.student_no || existingByName.student_no.trim() === '')) {
+    if (studentNo) {
+      // 補齊學號到既有紀錄，完全保留歷史修持次數與蓮花等級
+      existingByName.student_no = studentNo;
+      if (classType) existingByName.class_type = classType;
+      if (groupName) existingByName.group_name = groupName;
+      if (dharmaName) existingByName.dharma_name = dharmaName;
+
+      await ZenAPI.updateStudent(existingByName);
+
+      alert(`✨ 歡迎！已為您成功補齊綁定學號【${studentNo}】！\n您過往累積的修持打卡（共 ${existingByName.total_checkins || 0} 次）已完整為您保留。\n日後即可僅憑此學號一鍵快速登入。`);
+      loginSuccess(existingByName);
+      return;
+    } else {
+      // 本次依然未輸入學號，直接以原有帳號登入
+      if (classType) existingByName.class_type = classType;
+      if (groupName) existingByName.group_name = groupName;
+      if (dharmaName) existingByName.dharma_name = dharmaName;
+      await ZenAPI.updateStudent(existingByName);
+      loginSuccess(existingByName);
+      return;
     }
   }
 
-  if (!s) {
-    // 首次新學員建檔：
-    // 若本次有填學號則綁定，日後可僅憑學號登入；法名為選填
-    s = {
-      id: Date.now(),
-      student_no: studentNo || '',
-      class_type: classType,
-      group_name: groupName,
-      real_name: realName,
-      dharma_name: dharmaName || '',
-      total_checkins: 0,
-      total_meditation_mins: 0,
-      total_sutra_recs: 0,
-      lotus_level: 1,
-      rejoice_count: 0,
-      created_at: new Date().toISOString().replace('T', ' ').substring(0, 19)
-    };
-    students.push(s);
-  } else {
-    // 既有學員以「班級＋組別＋姓名」登入：
-    // 若本次有補填學號，更新綁定學號，以後就可以只用學號登入！
-    if (studentNo) s.student_no = studentNo;
-    if (dharmaName) s.dharma_name = dharmaName;
+  // ═══════════════════════════════════════════════════════════════
+  // 狀況 4：學號與姓名相符，但班級或組別有變更
+  // 規範：告知是否要更改
+  // ═══════════════════════════════════════════════════════════════
+  const matchedStudent = existingByNo || existingByName;
+  if (matchedStudent) {
+    const isClassChanged = (matchedStudent.class_type !== classType) || (matchedStudent.group_name !== groupName);
+    if (isClassChanged) {
+      const confirmChange = confirm(`學號【${matchedStudent.student_no || '未填'}】（${matchedStudent.real_name}）原登記為【${matchedStudent.class_type} ${matchedStudent.group_name}】。\n\n您本次所選為【${classType} ${groupName}】。\n\n請問是否要更改班級組別為【${classType} ${groupName}】？`);
+      if (confirmChange) {
+        matchedStudent.class_type = classType;
+        matchedStudent.group_name = groupName;
+      }
+    }
+
+    if (dharmaName) matchedStudent.dharma_name = dharmaName;
+    if (studentNo && !matchedStudent.student_no) matchedStudent.student_no = studentNo;
+
+    await ZenAPI.updateStudent(matchedStudent);
+    loginSuccess(matchedStudent);
+    return;
   }
 
-  localStorage.setItem(API_CONFIG.storageKeys.students, JSON.stringify(students));
-  loginSuccess(s);
+  // ═══════════════════════════════════════════════════════════════
+  // 狀況 5：全新學員初次建檔
+  // ═══════════════════════════════════════════════════════════════
+  const newStudent = {
+    id: Date.now(),
+    student_no: studentNo || '',
+    class_type: classType,
+    group_name: groupName,
+    real_name: realName,
+    dharma_name: dharmaName || '',
+    total_checkins: 0,
+    total_meditation_mins: 0,
+    total_sutra_recs: 0,
+    lotus_level: 1,
+    rejoice_count: 0,
+    created_at: new Date().toISOString().replace('T', ' ').substring(0, 19)
+  };
+
+  await ZenAPI.createStudent(newStudent);
+  loginSuccess(newStudent);
+}
+
+// 顯示登入衝突或錯誤提撕彈出提示
+function showGateConflict(options) {
+  const errEl = document.getElementById('gateErrorMsg');
+  if (!errEl) return;
+
+  let btnsHtml = '';
+  options.options.forEach((opt, idx) => {
+    btnsHtml += `
+      <button type="button" id="btnGateConflictOpt_${idx}" style="padding: 6px 14px; border-radius: 8px; border: none; font-weight: 700; font-size: 0.82rem; cursor: pointer; margin-right: 8px; margin-top: 6px; ${opt.btnClass === 'gate-btn-conflict-action' ? 'background: #2e7d32; color: #ffffff;' : 'background: #e0e0e0; color: #333333;'}">
+        ${opt.text}
+      </button>
+    `;
+  });
+
+  errEl.innerHTML = `
+    <div style="font-size: 0.95rem; font-weight: 800; margin-bottom: 6px; color: #b71c1c;">${options.title}</div>
+    <div style="font-size: 0.85rem; line-height: 1.6; margin-bottom: 8px; color: #424242;">${options.message}</div>
+    <div style="display: flex; flex-wrap: wrap; align-items: center;">${btnsHtml}</div>
+  `;
+
+  errEl.style.display = 'block';
+
+  // 綁定按鈕點擊事件
+  options.options.forEach((opt, idx) => {
+    const btn = document.getElementById(`btnGateConflictOpt_${idx}`);
+    if (btn && opt.callback) {
+      btn.onclick = () => {
+        opt.callback();
+      };
+    }
+  });
 }
 
 // 登入成功通用處理 (學員修持打卡身分)
@@ -252,8 +403,10 @@ async function handleStudentNoInput(val) {
   const badgeInfo = document.getElementById('gateFoundInfo');
   const statusEl = document.getElementById('gateStudentNoStatus');
   const errEl = document.getElementById('gateErrorMsg');
+  const mismatchHint = document.getElementById('gateRealNameMismatchHint');
 
   if (errEl) errEl.style.display = 'none';
+  if (mismatchHint) mismatchHint.style.display = 'none';
 
   if (!clean) {
     if (badge) badge.style.display = 'none';
@@ -282,10 +435,31 @@ async function handleStudentNoInput(val) {
   }
 }
 
+// 姓名即時核驗（若學號已填，檢查輸入的姓名是否與學號唯一對應）
+async function handleRealNameInput(val) {
+  const cleanName = (val || '').trim();
+  const studentNo = (document.getElementById('gateStudentNo')?.value || '').trim();
+  const mismatchHint = document.getElementById('gateRealNameMismatchHint');
+  if (!mismatchHint) return;
+
+  if (!studentNo || !cleanName) {
+    mismatchHint.style.display = 'none';
+    return;
+  }
+
+  const s = await ZenAPI.getStudentByStudentNo(studentNo);
+  if (s && s.real_name && s.real_name !== cleanName) {
+    mismatchHint.innerHTML = `⚠️ 學號對應姓名為唯一！學號【${studentNo}】已登記為【${s.real_name}】`;
+    mismatchHint.style.display = 'block';
+  } else {
+    mismatchHint.style.display = 'none';
+  }
+}
+
 function showGateError(msg) {
   const errEl = document.getElementById('gateErrorMsg');
   if (errEl) {
-    errEl.textContent = `⚠️ ${msg}`;
+    errEl.innerHTML = `⚠️ ${msg}`;
     errEl.style.display = 'block';
   }
 }

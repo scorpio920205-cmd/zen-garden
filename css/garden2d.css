@@ -38,6 +38,39 @@ body.garden-2d-body {
 }
 
 /* ════════════════════════════════
+   可滑動視圖容器與舞台 (支援手機手勢滑動與拖曳)
+   ════════════════════════════════ */
+.garden-scene-viewport {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  z-index: 10;
+  cursor: grab;
+}
+
+.garden-scene-viewport:active {
+  cursor: grabbing;
+}
+
+.garden-scene-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.garden-world-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 100vw;
+}
+
+/* ════════════════════════════════
    高解析度畫布全景背景層 (支援漸層平滑切換)
    ════════════════════════════════ */
 .garden-bg-viewport {
@@ -981,4 +1014,118 @@ body.garden-2d-body {
   font-size: 1.4rem;
   cursor: pointer;
   color: #9e9e9e;
+}
+
+/* ════════════════════════════════
+   手機版 2D 畫面手勢滑動與響應式最佳化
+   ════════════════════════════════ */
+@media (max-aspect-ratio: 16/9), (max-width: 1024px) {
+  .garden-world-stage {
+    /* 保持 16:9 全景畫布比例，讓手機手勢滑動瀏覽全景 */
+    width: calc(100vh * 1.7778);
+    min-width: calc(100vh * 1.7778);
+    height: 100vh;
+  }
+}
+
+/* 手機版滑動提示膠囊 (手滑動後自動淡出) */
+.mobile-slide-hint {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 45;
+  background: rgba(43, 16, 28, 0.88);
+  border: 1.5px solid #dfb36c;
+  color: #f7f5f0;
+  padding: 6px 18px;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  animation: slideHintPulse 2s infinite ease-in-out;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.mobile-slide-hint.fade-out {
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
+}
+
+@keyframes slideHintPulse {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.04); }
+}
+
+@media (min-width: 1025px) and (min-aspect-ratio: 16/9) {
+  .mobile-slide-hint {
+    display: none;
+  }
+}
+
+/* 手機版頂部 HUD 狀態列自適應縮小，避免遮擋或換行過多 */
+@media (max-width: 768px) {
+  .top-hud-bar {
+    top: 6px;
+    left: 8px;
+    right: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .hud-profile-card {
+    padding: 3px 10px 3px 6px;
+    gap: 6px;
+  }
+
+  .stage-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .stage-avatar .num {
+    font-size: 0.95rem;
+  }
+
+  .user-dharma-title {
+    font-size: 0.85rem;
+  }
+
+  .exp-bar-container {
+    width: 90px;
+  }
+
+  .hud-action-group {
+    margin-right: 0;
+    gap: 5px;
+  }
+
+  .hud-back-btn {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+  }
+
+  .hud-round-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 1.05rem;
+  }
+
+  .hud-logout-btn {
+    padding: 5px 10px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .hud-flower-counter {
+    padding: 2px 8px !important;
+    font-size: 0.82rem !important;
+  }
+
+  .flower-stage-cards {
+    grid-template-columns: 1fr;
+  }
 }
