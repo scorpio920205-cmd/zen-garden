@@ -365,14 +365,15 @@ body.garden-2d-body {
   background: rgba(255, 248, 225, 0.95);
   border: 1.5px solid #ffe082;
   border-radius: 9999px;
-  padding: 6px 16px;
-  max-width: 380px;
+  padding: 6px 14px;
+  max-width: 320px;
   display: flex;
   align-items: center;
   gap: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   cursor: pointer;
   transition: transform 0.2s ease;
+  flex-shrink: 1;
 }
 
 .hud-dharma-speaker:hover {
@@ -397,6 +398,8 @@ body.garden-2d-body {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  margin-right: 16px;
 }
 
 .hud-back-btn {
