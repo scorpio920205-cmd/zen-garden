@@ -483,6 +483,10 @@ function handleLogout() {
 function updateUserHeaderUI(student) {
   const nameEl = document.getElementById('navStudentTitle');
   const countEl = document.getElementById('navCheckinCount');
+  const brandStudentNoEl = document.getElementById('brandStudentNo');
+  if (brandStudentNoEl) {
+    brandStudentNoEl.textContent = student.student_no ? `學號：${student.student_no}` : '學號：未填';
+  }
   if (nameEl) {
     const displayName = student.dharma_name || student.real_name || '精進學員';
     nameEl.textContent = `【${student.class_type}】${student.group_name} · ${displayName}`;
@@ -1215,6 +1219,7 @@ function exitVisitingMode() {
   if (banner) banner.style.display = 'none';
 
   if (currentStudent) {
+    updateUserHeaderUI(currentStudent);
     renderGardenFlowers(currentStudent.total_checkins || 0);
   }
 
