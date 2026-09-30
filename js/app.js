@@ -479,13 +479,114 @@ function handleLogout() {
   }
 }
 
+// 點擊頂部「學號：未填」或「學號」跳出補填/更正學號視窗
+function handleBrandStudentNoClick(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  openBindStudentNoModal();
+}
+
+function openBindStudentNoModal() {
+  if (!currentStudent) return;
+  const modal = document.getElementById('bindStudentNoModal');
+  const titleEl = document.getElementById('bindModalTitle');
+  const descEl = document.getElementById('bindModalDesc');
+  const nameEl = document.getElementById('bindStudentProfileName');
+  const inputEl = document.getElementById('inputBindStudentNo');
+  const errEl = document.getElementById('bindStudentNoErr');
+
+  if (nameEl) {
+    nameEl.textContent = `【${currentStudent.class_type}】${currentStudent.group_name} · ${currentStudent.real_name}${currentStudent.dharma_name ? `（${currentStudent.dharma_name}）` : ''}`;
+  }
+
+  if (currentStudent.student_no) {
+    if (titleEl) titleEl.textContent = '更正綁定學號';
+    if (descEl) descEl.innerHTML = `您好，<strong style="color: var(--pine-green);">${currentStudent.real_name}</strong>！<br>您當前綁定的學號為【<strong>${currentStudent.student_no}</strong>】。<br>學號對應姓名為唯一，若需更正請於下方輸入：`;
+    if (inputEl) inputEl.value = currentStudent.student_no;
+  } else {
+    if (titleEl) titleEl.textContent = '補填綁定學號';
+    if (descEl) descEl.innerHTML = `您好，<strong style="color: var(--pine-green);">${currentStudent.real_name}</strong>！<br>為您先前輸入的修持紀錄補齊學號，過往打卡總數與蓮花等級將<strong>完整保留</strong>，日後即可僅憑學號一鍵快速登入！`;
+    if (inputEl) inputEl.value = '';
+  }
+
+  if (errEl) errEl.style.display = 'none';
+
+  if (modal) {
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      inputEl?.focus();
+      inputEl?.select();
+    }, 100);
+  }
+}
+
+function closeBindStudentNoModal() {
+  const modal = document.getElementById('bindStudentNoModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function executeBindStudentNo() {
+  if (!currentStudent) return;
+  const inputEl = document.getElementById('inputBindStudentNo');
+  const errEl = document.getElementById('bindStudentNoErr');
+  const cleanNo = (inputEl?.value || '').trim();
+
+  if (!cleanNo) {
+    if (errEl) {
+      errEl.textContent = '請輸入要綁定的學號';
+      errEl.style.display = 'block';
+    }
+    inputEl?.focus();
+    return;
+  }
+
+  // 1. 檢核學號唯一性：不可已被其他姓名登記
+  const students = await ZenAPI.getAllStudents();
+  const existingByNo = students.find(s => 
+    s.student_no && 
+    s.student_no.trim().toLowerCase() === cleanNo.toLowerCase() &&
+    s.real_name !== currentStudent.real_name
+  );
+
+  if (existingByNo) {
+    if (errEl) {
+      errEl.innerHTML = `⚠️ 學號【${cleanNo}】已登記對應姓名【${existingByNo.real_name}】（${existingByNo.class_type} ${existingByNo.group_name}）。<br>學號對應姓名為唯一，請確認是否輸入錯誤！`;
+      errEl.style.display = 'block';
+    }
+    inputEl?.focus();
+    return;
+  }
+
+  // 2. 補齊/更新當前學員紀錄
+  currentStudent.student_no = cleanNo;
+  await ZenAPI.updateStudent(currentStudent);
+
+  localStorage.setItem(STORAGE_SESSION_KEY, JSON.stringify(currentStudent));
+  localStorage.setItem(API_CONFIG.storageKeys.currentStudent, JSON.stringify(currentStudent));
+
+  updateUserHeaderUI(currentStudent);
+  closeBindStudentNoModal();
+
+  alert(`✨ 補齊學號成功！\n\n學號【${cleanNo}】已成功綁定至【${currentStudent.class_type} ${currentStudent.group_name} · ${currentStudent.real_name}】。\n過往 ${currentStudent.total_checkins || 0} 次修持紀錄完整保留，日後即可憑此學號一鍵快速登入！`);
+}
+
 // 更新頂部登入者狀態與統計數據看板
 function updateUserHeaderUI(student) {
   const nameEl = document.getElementById('navStudentTitle');
   const countEl = document.getElementById('navCheckinCount');
   const brandStudentNoEl = document.getElementById('brandStudentNo');
   if (brandStudentNoEl) {
-    brandStudentNoEl.textContent = student.student_no ? `學號：${student.student_no}` : '學號：未填';
+    if (student.student_no) {
+      brandStudentNoEl.innerHTML = `學號：${student.student_no}`;
+      brandStudentNoEl.style.cursor = 'pointer';
+      brandStudentNoEl.title = `學號：${student.student_no}（點擊可查看或更正）`;
+    } else {
+      brandStudentNoEl.innerHTML = `學號：未填 <span style="font-size: 0.68rem; background: #fee2e2; color: #b91c1c; padding: 1px 6px; border-radius: 4px; font-weight: 700; margin-left: 2px;">✏️ 點此補填</span>`;
+      brandStudentNoEl.style.cursor = 'pointer';
+      brandStudentNoEl.title = '尚未綁定學號，點擊此處立即補填學號！';
+    }
   }
   if (nameEl) {
     const displayName = student.dharma_name || student.real_name || '精進學員';

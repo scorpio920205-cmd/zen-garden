@@ -371,6 +371,15 @@ const ZenAPI = {
 
   // 2.5 更新既有學員資料（例如補齊學號、變更組別等）
   async updateStudent(updatedStudent) {
+    const isCloud = await this.isCloudflareBackendAvailable();
+    if (isCloud && updatedStudent.student_no && updatedStudent.real_name) {
+      try {
+        await fetch(`/api/my-garden?student_no=${encodeURIComponent(updatedStudent.student_no)}&name=${encodeURIComponent(updatedStudent.real_name)}&class=${encodeURIComponent(updatedStudent.class_type || '')}&group=${encodeURIComponent(updatedStudent.group_name || '')}`);
+      } catch (e) {
+        console.warn('雲端更新失敗，降級本地儲存', e);
+      }
+    }
+
     const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
     const idx = students.findIndex(s => s.id === updatedStudent.id || (s.real_name === updatedStudent.real_name));
     if (idx >= 0) {

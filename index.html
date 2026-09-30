@@ -144,7 +144,7 @@
           <div class="brand-icon-circle">慶</div>
           <div class="brand-name-group">
             <h1>精進花園</h1>
-            <span id="brandStudentNo">學號</span>
+            <span id="brandStudentNo" onclick="handleBrandStudentNoClick(event)" title="點擊補填學號">學號</span>
           </div>
         </a>
 
@@ -705,6 +705,44 @@
       <div style="display: flex; justify-content: flex-end;">
         <button type="button" class="btn-primary" onclick="closeWoodenQuoteModal()" style="padding: 0.48rem 1.6rem; font-size: 0.95rem;">
           合掌領受 🙏
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 補填學號互動彈窗 (點擊「學號：未填」時彈出) -->
+  <div class="zen-quote-overlay" id="bindStudentNoModal" style="display: none;" onclick="if(event.target===this) closeBindStudentNoModal()">
+    <div class="zen-quote-dialog" style="max-width: 440px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 0.8rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.3rem;">✏️</span>
+          <h3 id="bindModalTitle" style="font-size: 1.15rem; font-weight: 700; color: var(--ink-deep); margin: 0;">補填綁定學號</h3>
+        </div>
+        <button type="button" onclick="closeBindStudentNoModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--ink-muted); cursor: pointer;">&times;</button>
+      </div>
+
+      <div style="margin: 1.2rem 0;">
+        <p id="bindModalDesc" style="font-size: 0.88rem; color: #4b5563; line-height: 1.6; margin-bottom: 0.8rem;">
+          您好，<strong id="bindStudentProfileName" style="color: var(--pine-green);"></strong>！<br>
+          為您先前輸入的修持紀錄補齊學號，過往打卡總數與蓮花等級將<strong>完整保留</strong>，日後即可僅憑學號一鍵快速登入！
+        </p>
+
+        <div id="bindStudentNoErr" style="display: none; background: #fee2e2; border: 1px solid #f87171; border-radius: 8px; padding: 0.5rem 0.8rem; color: #b91c1c; font-size: 0.84rem; margin-bottom: 0.8rem; font-weight: 600; line-height: 1.5;"></div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="inputBindStudentNo" style="font-size: 0.88rem; font-weight: 700; margin-bottom: 0.4rem; display: block;">
+            請輸入學號 <strong style="color: var(--vermilion);">*</strong>
+          </label>
+          <input type="text" id="inputBindStudentNo" class="form-control" placeholder="例如：NT2026-088" style="font-size: 1rem; padding: 0.65rem 0.9rem;" autocomplete="off" onkeydown="if(event.key==='Enter') executeBindStudentNo()">
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-secondary" onclick="closeBindStudentNoModal()" style="padding: 0.5rem 1.2rem; font-size: 0.9rem;">
+          取消
+        </button>
+        <button type="button" class="btn-primary" onclick="executeBindStudentNo()" style="padding: 0.5rem 1.4rem; font-size: 0.9rem;">
+          🌸 確認補齊綁定
         </button>
       </div>
     </div>
