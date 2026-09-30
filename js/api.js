@@ -7,7 +7,7 @@
  */
 
 const API_CONFIG = {
-  adminPasswordDefault: "ZhongTai#ZenGarden2026!",
+  adminPasswordDefault: "ZhongTai#2026",
   storageKeys: {
     students: "zen_garden_students_v1",
     checkins: "zen_garden_checkins_v1",
@@ -448,8 +448,8 @@ const ZenAPI = {
       }
     }
 
-    // 本機高強度密碼檢驗（支援法師正統高強度金鑰與快捷碼）
-    const validPasswords = [API_CONFIG.adminPasswordDefault, "zen2026", "admin"];
+    // 本機高強度密碼檢驗
+    const validPasswords = [API_CONFIG.adminPasswordDefault];
     const isValid = validPasswords.includes(password);
     if (isValid) {
       sessionStorage.setItem(API_CONFIG.storageKeys.adminSession, password);
@@ -470,8 +470,8 @@ const ZenAPI = {
       }
     }
 
-    const validPasswords = [API_CONFIG.adminPasswordDefault, "zen2026", "admin"];
-    const isMasterAuth = localStorage.getItem('zen_master_authenticated') === '1';
+    const validPasswords = [API_CONFIG.adminPasswordDefault];
+    const isMasterAuth = (localStorage.getItem('zen_master_authenticated') === '1' && pwd === API_CONFIG.adminPasswordDefault);
     if (!validPasswords.includes(pwd) && !isMasterAuth) {
       return { success: false, error: "無管理權限" };
     }

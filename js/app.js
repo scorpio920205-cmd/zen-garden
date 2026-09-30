@@ -93,17 +93,18 @@ function handleGateMasterLogin() {
   const errEl = document.getElementById('gateMasterErr');
   const pwd = (pwdInput?.value || '').trim();
 
-  // 支援法師正統管理密碼與快捷管理碼
-  if (pwd === 'ZhongTai#ZenGarden2026!' || pwd === 'zen2026' || pwd === 'admin') {
+  // 僅支援指導法師專屬管理金鑰
+  if (pwd === 'ZhongTai#2026') {
     if (errEl) errEl.style.display = 'none';
     localStorage.setItem('zen_master_authenticated', '1');
     localStorage.setItem('zen_active_role', 'master');
     sessionStorage.setItem('zen_garden_admin_token_v1', pwd);
+    sessionStorage.setItem('zen_garden_admin_session_v1', pwd);
     sessionStorage.removeItem('zen_logged_out');
     window.location.href = 'admin.html';
   } else {
     if (errEl) {
-      errEl.textContent = '❌ 指導法師管理密碼不正確，請重新輸入（預設：zen2026）';
+      errEl.textContent = '❌ 指導法師管理密碼不正確，請重新輸入';
       errEl.style.display = 'block';
     }
     if (pwdInput) {

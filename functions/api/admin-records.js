@@ -6,10 +6,10 @@ export async function onRequestGet({ request, env }) {
   try {
     const url = new URL(request.url);
     const pwd = url.searchParams.get('pwd');
-    const correctPassword = env.ADMIN_PASSWORD || 'ZhongTai#ZenGarden2026!';
+    const correctPassword = env.ADMIN_PASSWORD || 'ZhongTai#2026';
 
     if (pwd !== correctPassword) {
-      return new Response(JSON.stringify({ success: false, error: '未授權訪問' }), {
+      return new Response(JSON.stringify({ success: false, error: '未授權訪問：指導法師密碼錯誤' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' }
       });

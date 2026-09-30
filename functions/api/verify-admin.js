@@ -5,7 +5,7 @@
 export async function onRequestPost({ request, env }) {
   try {
     const { password } = await request.json();
-    const correctPassword = env.ADMIN_PASSWORD || 'ZhongTai#ZenGarden2026!';
+    const correctPassword = env.ADMIN_PASSWORD || 'ZhongTai#2026';
 
     if (password === correctPassword) {
       return new Response(JSON.stringify({ success: true }), {

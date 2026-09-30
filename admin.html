@@ -72,10 +72,17 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 0.8rem; align-items: center;">
-        <a href="garden2d.html?admin=1" class="btn-primary" style="padding: 0.45rem 1.1rem; font-size: 0.88rem;">
-          🌸 開心花園 (2D) 全景巡檢
+      <!-- 僅在指導法師成功驗證密碼後才顯示巡檢與登出按鈕（未登入前徹底隱藏） -->
+      <div id="adminHeaderActions" style="display: none; gap: 0.9rem; align-items: center;">
+        <span style="background: #e6f4ea; color: #137333; font-weight: 700; padding: 5px 12px; border-radius: 20px; font-size: 0.84rem; border: 1px solid #ceead6; display: flex; align-items: center; gap: 4px;">
+          🔑 最高權限已解鎖
+        </span>
+        <a href="garden2d.html?admin=1" class="btn-primary" style="padding: 0.45rem 1.1rem; font-size: 0.88rem; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+          <span>🌸</span> 開心花園 (2D) 全景巡檢
         </a>
+        <button type="button" onclick="handleAdminLogout()" class="btn-admin-logout-header" style="background: #d93025; color: #ffffff; border: none; padding: 0.48rem 1.15rem; border-radius: 6px; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(217,48,37,0.35); transition: all 0.2s;" onmouseover="this.style.background='#b31412'" onmouseout="this.style.background='#d93025'">
+          <span>🚪</span> 登出最高權限
+        </button>
       </div>
     </div>
   </header>
@@ -99,9 +106,9 @@
               <span>最高權限密碼</span>
               <span class="required">（高安全防護）</span>
             </label>
-            <input type="password" id="adminPassword" class="form-control" placeholder="請輸入管理密碼" required autofocus />
-            <div style="font-size: 0.78rem; color: var(--ink-faint); margin-top: 0.4rem;">
-              預設高強度金鑰：<code>ZhongTai#ZenGarden2026!</code> 或 <code>zen2026</code>
+            <input type="password" id="adminPassword" class="form-control" placeholder="請輸入指導法師專屬管理密碼" required autofocus />
+            <div style="font-size: 0.8rem; color: var(--ink-muted); margin-top: 0.4rem;">
+              請輸入指導法師專屬管理金鑰
             </div>
           </div>
 
@@ -284,8 +291,8 @@
             <button type="button" class="btn-secondary" style="font-size: 0.88rem;" onclick="exportAllDataJSON()">
               📥 匯出資料備份 (JSON)
             </button>
-            <button type="button" class="btn-secondary" style="font-size: 0.88rem; border-color: var(--vermilion); color: var(--vermilion);" onclick="handleAdminLogout()">
-              🔒 鎖定退出
+            <button type="button" style="background: #fdf2f2; color: #b91c1c; border: 1.5px solid #f87171; padding: 0.45rem 1.1rem; border-radius: 6px; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px;" onclick="handleAdminLogout()">
+              <span>🚪</span> 登出最高權限
             </button>
           </div>
         </div>

@@ -204,18 +204,23 @@ async function setupURLQuery() {
   const params = new URLSearchParams(window.location.search);
   const isVisitorParam = params.get('visitor') === '1';
   
-  // 嚴格判定指導法師最高權限：
-  // 只要 URL 帶有 admin=1 或 本地具有法師驗證狀態，均鎖定為指導法師管理模式
-  const isMasterFromStorage = (localStorage.getItem('zen_master_authenticated') === '1' && localStorage.getItem('zen_active_role') === 'master') || 
-                              !!sessionStorage.getItem(API_CONFIG.storageKeys.adminSession);
-  const isAdminParam = (params.get('admin') === '1') || isMasterFromStorage;
+  // 嚴格資安防護：判定是否為已登入驗證之指導法師
+  const adminToken = sessionStorage.getItem(API_CONFIG.storageKeys.adminSession) || sessionStorage.getItem('zen_garden_admin_token_v1');
+  const isMasterAuthenticated = (localStorage.getItem('zen_master_authenticated') === '1' && 
+                                 localStorage.getItem('zen_active_role') === 'master') && 
+                                (adminToken === 'ZhongTai#2026');
 
-  // 若由後台帶 admin=1 進入，持久化法師身分，確保任何後續點擊不丟失權限
+  // 若使用者在 URL 帶有 admin=1：
   if (params.get('admin') === '1') {
-    localStorage.setItem('zen_master_authenticated', '1');
-    localStorage.setItem('zen_active_role', 'master');
-    sessionStorage.setItem(API_CONFIG.storageKeys.adminSession, 'zen2026');
+    // 嚴格資安防護：必須已經通過密碼驗證！絕對不可單憑 URL 參數就自動授予管理員權限！
+    if (!isMasterAuthenticated && adminToken !== 'ZhongTai#2026') {
+      alert("🔒 安全防護：尚未登入指導法師最高權限，請先由管理端輸入密碼登入！");
+      window.location.href = 'admin.html';
+      return;
+    }
   }
+
+  const isAdminParam = (params.get('admin') === '1' || isMasterAuthenticated) && (adminToken === 'ZhongTai#2026');
 
   const stageParam = params.get('stage');
   const studentId = params.get('id');
@@ -228,6 +233,7 @@ async function setupURLQuery() {
   const stageBanner = document.getElementById('studentStageBanner');
   const backToCheckinBtn = document.getElementById('btnBackToCheckin');
   const adminEntranceBtn = document.getElementById('btnAdminEntrance');
+  const hudLogoutBtn = document.getElementById('hudLogoutBtn');
 
   // 學員與法師管理端嚴格區隔：法師巡檢時右上角永遠返回後台 admin.html，學員端顯示返回打卡區
   if (isAdminParam) {
@@ -237,12 +243,20 @@ async function setupURLQuery() {
       backToCheckinBtn.href = 'admin.html';
       backToCheckinBtn.title = '返回指導法師管理後台';
     }
+    if (hudLogoutBtn) {
+      hudLogoutBtn.innerHTML = '<span>🚪</span> 登出管理權限';
+      hudLogoutBtn.title = '退出指導法師管理權限並鎖定';
+    }
   } else {
     if (adminEntranceBtn) adminEntranceBtn.style.display = 'none';
     if (backToCheckinBtn) {
       backToCheckinBtn.innerHTML = '<span>🏠</span> 返回打卡區';
       backToCheckinBtn.href = 'index.html';
       backToCheckinBtn.title = '返回修持打卡區';
+    }
+    if (hudLogoutBtn) {
+      hudLogoutBtn.innerHTML = '<span>🚪</span> 登出';
+      hudLogoutBtn.title = '登出學員修持系統';
     }
   }
 
@@ -1110,9 +1124,8 @@ async function loadFriendsDrawerList(classFilter = '') {
 
 function visitFriendGarden(studentId) {
   const params = new URLSearchParams(window.location.search);
-  const isAdmin = (params.get('admin') === '1') || 
-                  localStorage.getItem('zen_master_authenticated') === '1' ||
-                  localStorage.getItem('zen_active_role') === 'master';
+  const adminToken = sessionStorage.getItem(API_CONFIG.storageKeys.adminSession) || sessionStorage.getItem('zen_garden_admin_token_v1');
+  const isAdmin = (params.get('admin') === '1' || localStorage.getItem('zen_master_authenticated') === '1') && adminToken === 'ZhongTai#2026';
   if (isAdmin) {
     window.location.href = `garden2d.html?admin=1&visitor=1&id=${studentId}`;
   } else {
@@ -1122,9 +1135,8 @@ function visitFriendGarden(studentId) {
 
 function returnToMyGarden() {
   const params = new URLSearchParams(window.location.search);
-  const isAdmin = (params.get('admin') === '1') || 
-                  localStorage.getItem('zen_master_authenticated') === '1' ||
-                  localStorage.getItem('zen_active_role') === 'master';
+  const adminToken = sessionStorage.getItem(API_CONFIG.storageKeys.adminSession) || sessionStorage.getItem('zen_garden_admin_token_v1');
+  const isAdmin = (params.get('admin') === '1' || localStorage.getItem('zen_master_authenticated') === '1') && adminToken === 'ZhongTai#2026';
   if (isAdmin) {
     window.location.href = 'admin.html';
   } else {
@@ -1223,14 +1235,23 @@ function showFloatingEffect(targetEl, text) {
   setTimeout(() => notice.remove(), 1500);
 }
 
-// 登出系統 (若為指導法師返回 admin.html，若為學員返回 index.html)
+// 登出系統 (若為指導法師退出管理權限並鎖定 admin.html，若為學員清除登入並返回 index.html)
 function handle2DLogout() {
   const params = new URLSearchParams(window.location.search);
+  const adminToken = sessionStorage.getItem(API_CONFIG.storageKeys.adminSession) || sessionStorage.getItem('zen_garden_admin_token_v1');
   const isAdmin = (params.get('admin') === '1') || 
                   localStorage.getItem('zen_master_authenticated') === '1' ||
-                  localStorage.getItem('zen_active_role') === 'master';
+                  localStorage.getItem('zen_active_role') === 'master' ||
+                  adminToken === 'ZhongTai#2026';
+
   if (isAdmin) {
-    if (confirm("確定要返回指導法師管理後台嗎？")) {
+    if (confirm("確定要退出指導法師管理後台嗎？\n退出後將鎖定後台，需重新輸入管理密碼。")) {
+      localStorage.removeItem('zen_master_authenticated');
+      localStorage.removeItem('zen_active_role');
+      sessionStorage.removeItem(API_CONFIG.storageKeys.adminSession);
+      sessionStorage.removeItem('zen_garden_admin_token_v1');
+      sessionStorage.removeItem('zen_garden_admin_session_v1');
+      sessionStorage.setItem('zen_logged_out', '1');
       window.location.href = 'admin.html';
     }
   } else {

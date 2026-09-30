@@ -71,8 +71,8 @@ CREATE TABLE IF NOT EXISTS admin_config (
   updated_at DATETIME DEFAULT (datetime('now', '+8 hours'))
 );
 
--- 預設插入最高權限管理員密碼（預設密碼：zen2026 或 ZhongTai#ZenGarden2026!）
-INSERT OR IGNORE INTO admin_config (key, value) VALUES ('admin_password', 'zen2026');
+-- 預設插入最高權限管理員密碼（預設密碼：ZhongTai#2026）
+INSERT OR REPLACE INTO admin_config (key, value) VALUES ('admin_password', 'ZhongTai#2026');
 
 -- 5. 初始化示範學員資料 (供上線初次巡視與公開參觀展現)
 INSERT OR IGNORE INTO students (id, student_no, class_type, group_name, real_name, dharma_name, total_checkins, total_meditation_mins, total_sutra_recs, lotus_level, rejoice_count)

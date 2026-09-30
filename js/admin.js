@@ -15,21 +15,24 @@ function checkAdminSession() {
   let token = sessionStorage.getItem(ADMIN_STORAGE_KEY);
   
   if (isMasterAuth && !token) {
-    token = 'zen2026';
+    token = 'ZhongTai#2026';
     sessionStorage.setItem(ADMIN_STORAGE_KEY, token);
   }
 
   const lockScreen = document.getElementById('adminLockScreen');
   const mainDashboard = document.getElementById('adminDashboard');
+  const headerActions = document.getElementById('adminHeaderActions');
 
-  if (isMasterAuth || token) {
+  if ((isMasterAuth || token) && token === 'ZhongTai#2026') {
     if (lockScreen) lockScreen.style.display = 'none';
     if (mainDashboard) mainDashboard.style.display = 'block';
+    if (headerActions) headerActions.style.display = 'flex';
     loadAdminDashboardData();
   } else {
     // 獨立後台模式：未登入時展示本頁之鎖定密碼門檻，不強制跳轉
     if (lockScreen) lockScreen.style.display = 'block';
     if (mainDashboard) mainDashboard.style.display = 'none';
+    if (headerActions) headerActions.style.display = 'none';
   }
 }
 
@@ -75,16 +78,20 @@ function showAuthError(msg) {
 
 // 登出指導法師最高權限（退回本頁鎖定畫面）
 function handleAdminLogout() {
-  if (!confirm("確定要鎖定退出指導法師管理後台嗎？\n退出後需重新輸入管理密碼。")) return;
+  if (!confirm("確定要退出指導法師管理後台嗎？\n退出後將立即鎖定畫面，需重新輸入管理密碼。")) return;
   localStorage.removeItem('zen_master_authenticated');
   localStorage.removeItem('zen_active_role');
   sessionStorage.removeItem(ADMIN_STORAGE_KEY);
+  sessionStorage.removeItem('zen_garden_admin_token_v1');
+  sessionStorage.removeItem('zen_garden_admin_session_v1');
   sessionStorage.setItem('zen_logged_out', '1');
   
   const lockScreen = document.getElementById('adminLockScreen');
   const mainDashboard = document.getElementById('adminDashboard');
+  const headerActions = document.getElementById('adminHeaderActions');
   if (lockScreen) lockScreen.style.display = 'block';
   if (mainDashboard) mainDashboard.style.display = 'none';
+  if (headerActions) headerActions.style.display = 'none';
   const pwdInput = document.getElementById('adminPassword');
   if (pwdInput) {
     pwdInput.value = "";
@@ -100,10 +107,10 @@ let currentAdminClassFilter = '';
 async function loadAdminDashboardData() {
   let pwd = sessionStorage.getItem(ADMIN_STORAGE_KEY);
   if (!pwd && localStorage.getItem('zen_master_authenticated') === '1') {
-    pwd = 'zen2026';
+    pwd = 'ZhongTai#2026';
     sessionStorage.setItem(ADMIN_STORAGE_KEY, pwd);
   }
-  if (!pwd) {
+  if (!pwd || pwd !== 'ZhongTai#2026') {
     checkAdminSession();
     return;
   }
@@ -194,7 +201,7 @@ async function handleDeleteStudent(studentId, dharmaName, realName) {
   const confirmMsg = `【指導法師最高權限確認】\n\n確定要刪除學員【${targetLabel}】嗎？\n\n⚠️ 此操作將永久移除該學員之基本建檔及其所有歷史修持打卡紀錄，不可撤銷！`;
   if (!confirm(confirmMsg)) return;
 
-  const pwd = sessionStorage.getItem(ADMIN_STORAGE_KEY) || 'zen2026';
+  const pwd = sessionStorage.getItem(ADMIN_STORAGE_KEY) || 'ZhongTai#2026';
   const res = await ZenAPI.deleteStudent(studentId, pwd);
   if (res.success) {
     alert(`✅ 學員【${dharmaName}】及其關聯修持打卡紀錄已成功刪除！`);
@@ -269,7 +276,7 @@ async function handleDeleteCheckin(checkinId, dharmaName, practiceItem, recordTi
   const confirmMsg = `【最高權限確認】\n\n確定要刪除學員【${dharmaName}】於 ${recordTime} 之【${practiceItem}】修持紀錄嗎？\n\n刪除後該學員之累積打卡與禪坐時數將自動重新校正計算。`;
   if (!confirm(confirmMsg)) return;
 
-  const pwd = sessionStorage.getItem(ADMIN_STORAGE_KEY) || 'zen2026';
+  const pwd = sessionStorage.getItem(ADMIN_STORAGE_KEY) || 'ZhongTai#2026';
   const res = await ZenAPI.deleteCheckin(checkinId, pwd);
   if (res.success) {
     alert("✅ 該筆修持打卡紀錄已成功刪除！");

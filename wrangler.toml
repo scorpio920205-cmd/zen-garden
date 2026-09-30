@@ -10,4 +10,4 @@ database_id = "00644369-786a-4b1e-9973-53e9768a6e1d"
 
 [vars]
 # 預設最高權限管理員密碼（部署上線後可在 Cloudflare Dashboard > Settings > Variables 中以 Secret 形式覆蓋）
-ADMIN_PASSWORD = "zen2026"
+ADMIN_PASSWORD = "ZhongTai#2026"

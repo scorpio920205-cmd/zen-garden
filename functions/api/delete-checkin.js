@@ -5,9 +5,9 @@
 export async function onRequestPost({ request, env }) {
   try {
     const { checkin_id, pwd } = await request.json();
-    const correctPassword = env.ADMIN_PASSWORD || 'zen2026';
+    const correctPassword = env.ADMIN_PASSWORD || 'ZhongTai#2026';
 
-    if (pwd !== correctPassword && pwd !== 'ZhongTai#ZenGarden2026!' && pwd !== 'admin') {
+    if (pwd !== correctPassword) {
       return new Response(JSON.stringify({ success: false, error: '未授權訪問：指導法師密碼錯誤' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' }
