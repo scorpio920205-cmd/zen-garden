@@ -1122,3 +1122,34 @@ function setupURLParameters() {
     visitFriendGarden(id);
   }
 }
+
+// ════ 指南摺疊手風琴控制邏輯 ════
+function handleMainGuideToggle(detailsEl) {
+  if (!detailsEl) return;
+  const toggleText = detailsEl.querySelector('.toggle-text');
+  const toggleArrow = detailsEl.querySelector('.toggle-arrow');
+  if (detailsEl.open) {
+    if (toggleText) toggleText.textContent = '點擊收合說明';
+    if (toggleArrow) toggleArrow.textContent = '▲';
+  } else {
+    if (toggleText) toggleText.textContent = '點擊展開說明';
+    if (toggleArrow) toggleArrow.textContent = '▼';
+  }
+}
+
+function toggleAllGuideAccordions() {
+  const items = document.querySelectorAll('.guide-accordion-item');
+  if (!items.length) return;
+  const anyOpen = Array.from(items).some(item => item.hasAttribute('open'));
+  items.forEach(item => {
+    if (anyOpen) {
+      item.removeAttribute('open');
+    } else {
+      item.setAttribute('open', '');
+    }
+  });
+  const btn = document.getElementById('btnToggleAllGuide');
+  if (btn) {
+    btn.innerHTML = anyOpen ? '<span>➕</span> 全部展開' : '<span>➖</span> 全部收合';
+  }
+}

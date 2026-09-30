@@ -264,215 +264,260 @@
     <!-- 主內容區 (左右兩欄：花園畫布 ＋ 每日修持打卡) -->
     <main class="main-garden-layout">
 
-      <!-- 左欄：精進修持指南與系統使用說明 -->
+      <!-- 左欄：精進修持指南與系統使用說明 (支援摺疊標題) -->
       <section class="practice-guide-card" id="practiceGuideArea">
         
-        <!-- 頂部標題與個人進度徽章 -->
-        <div class="guide-header">
-          <div class="guide-header-title-row">
-            <div style="display: flex; align-items: center; gap: 0.6rem;">
-              <span class="guide-icon-badge">📖</span>
-              <div>
-                <h2 class="guide-title">精進修持指南與使用說明</h2>
-                <p class="guide-subtitle">步步踏實 · 五階演化 · 善法開花 · 般若相應</p>
+        <!-- 外層大標題摺疊容器 -->
+        <details class="main-guide-details" id="mainGuideDetails" open ontoggle="handleMainGuideToggle(this)">
+          <summary class="main-guide-summary" title="點擊收合或展開修持指南">
+            <div class="guide-header-title-row">
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span class="guide-icon-badge">📖</span>
+                <div>
+                  <h2 class="guide-title">精進修持指南與使用說明</h2>
+                  <p class="guide-subtitle">步步踏實 · 五階演化 · 善法開花 · 般若相應</p>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span class="linear-badge" style="background: rgba(45,76,66,0.1); border: 1px solid var(--pine-green); color: var(--pine-green); font-size: 0.75rem; padding: 3px 10px; border-radius: 9999px; font-weight: 700;">線性等差成長 (+12天/階)</span>
+                <span class="guide-toggle-pill">
+                  <span class="toggle-text">點擊收合說明</span>
+                  <span class="toggle-arrow">▲</span>
+                </span>
               </div>
             </div>
-            <span class="linear-badge" style="background: rgba(45,76,66,0.1); border: 1px solid var(--pine-green); color: var(--pine-green); font-size: 0.75rem; padding: 3px 10px; border-radius: 9999px; font-weight: 700;">線性等差成長 (+12天/階)</span>
-          </div>
+          </summary>
 
-          <!-- 學員當前修持進度動態提示條 -->
-          <div class="guide-user-progress-bar" id="indexStudentProgressNotice">
-            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-              <span>🌸</span>
-              <span style="font-weight: 700; color: var(--pine-green);">當前境界：<strong id="guideCurrentStage">第一階段 · 春生初萌</strong></span>
-              <span class="guide-divider">｜</span>
-              <span id="indexStageProgressText">累積打卡 1 天 ｜ 距下一階段（50天）還差 49 天</span>
-            </div>
-            <a href="garden2d.html" class="guide-view-garden-link">
-              <span>🌸</span> 進入 2D 開心花園 &rarr;
-            </a>
-          </div>
-        </div>
+          <!-- 展開後之核心內容本體 -->
+          <div class="main-guide-body" id="mainGuideBody">
 
-        <!-- 今日惟覺老和尚開示木牌專區 (點擊合掌領受) -->
-        <div class="guide-daily-quote-card" onclick="handleWoodenSignClick()" title="點擊恭讀惟覺老和尚開示法語">
-          <div class="guide-quote-header">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="font-size: 1.15rem;">📜</span>
-              <strong style="color: #92400e; font-size: 0.95rem;">惟覺老和尚今日開示 · 每日法語</strong>
-            </div>
-            <button type="button" class="btn-quote-rejoice" onclick="event.stopPropagation(); handleWoodenSignClick()">
-              <span>🙏</span> 合掌領受
-            </button>
-          </div>
-          <div class="guide-quote-body">
-            <div class="guide-quote-text" id="guideDailyQuoteSnippet">「人在哪裡，心就在哪裡。做任何事都能專心，這就是定。定中生慧，得大自在。」</div>
-            <div class="guide-quote-source" id="guideDailyQuoteSource">—— 《中台月刊》惟覺安公老和尚開示</div>
-          </div>
-        </div>
-
-        <!-- 說明區塊 1：每日修持打卡規範 -->
-        <div class="guide-section-block">
-          <div class="guide-section-title">
-            <span style="font-size: 1.15rem;">✍️</span>
-            <h3>每日精進打卡規範</h3>
-          </div>
-          <div class="guide-grid-two">
-            <div class="guide-item-card">
-              <div class="guide-item-title">
-                <span>🧘</span>
-                <strong>靜坐調心（滋養蓮花）</strong>
+            <!-- 學員當前修持進度動態提示條 -->
+            <div class="guide-user-progress-bar" id="indexStudentProgressNotice">
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <span>🌸</span>
+                <span style="font-weight: 700; color: var(--pine-green);">當前境界：<strong id="guideCurrentStage">第一階段 · 春生初萌</strong></span>
+                <span class="guide-divider">｜</span>
+                <span id="indexStageProgressText">累積打卡 1 天 ｜ 距下一階段（50天）還差 49 天</span>
               </div>
-              <p class="guide-item-desc">
-                登記每日禪坐時長，亦可啟用線上引磬計時器沉澱心緒。打卡功德將注入蓮池，長出清淨白蓮。
-              </p>
+              <a href="garden2d.html" class="guide-view-garden-link">
+                <span>🌸</span> 進入 2D 開心花園 &rarr;
+              </a>
             </div>
 
-            <div class="guide-item-card">
-              <div class="guide-item-title">
-                <span>📖</span>
-                <strong>每日誦經（盛開太陽花）</strong>
+            <!-- 今日惟覺老和尚開示木牌專區 (點擊合掌領受) -->
+            <div class="guide-daily-quote-card" onclick="handleWoodenSignClick()" title="點擊恭讀惟覺老和尚開示法語">
+              <div class="guide-quote-header">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="font-size: 1.15rem;">📜</span>
+                  <strong style="color: #92400e; font-size: 0.95rem;">惟覺老和尚今日開示 · 每日法語</strong>
+                </div>
+                <button type="button" class="btn-quote-rejoice" onclick="event.stopPropagation(); handleWoodenSignClick()">
+                  <span>🙏</span> 合掌領受
+                </button>
               </div>
-              <p class="guide-item-desc">
-                可選讀《金剛經》、《藥師經》、《普門品》或自填經典，無卷數壓力。智慧甘露滋潤草皮盛開向陽花。
-              </p>
-            </div>
-          </div>
-
-          <div class="guide-tips-note">
-            <span>💡</span>
-            <div><strong>彈性發心與補填</strong>：靜坐與誦經預設皆不勾選，可單修、可雙修；若前日忙碌，可勾選「補打卡之前時間」補填過往修持。</div>
-          </div>
-        </div>
-
-        <!-- 說明區塊 2：2D 開心花園生長規則 -->
-        <div class="guide-section-block">
-          <div class="guide-section-title">
-            <span style="font-size: 1.15rem;">🌸</span>
-            <h3>2D 開心花園生長規則</h3>
-          </div>
-          <p class="guide-section-intro">
-            修行如春雨潤物，修持打卡<strong>每 3 天</strong>長成 1 朵完全盛開的花朵，分為三個階段次第生長：
-          </p>
-          <div class="guide-flower-steps">
-            <div class="flower-step-item">
-              <div class="flower-step-badge">第 1 天</div>
-              <div class="flower-step-icon">🌱</div>
-              <div class="flower-step-name">初萌種子 / 嫩芽</div>
-              <div class="flower-step-sub">破土新綠 · 初發善心</div>
-            </div>
-            <div class="flower-step-arrow">&rarr;</div>
-            <div class="flower-step-item">
-              <div class="flower-step-badge">第 2 天</div>
-              <div class="flower-step-icon">🌿</div>
-              <div class="flower-step-name">含苞待放 / 圓蕾</div>
-              <div class="flower-step-sub">翠綠立苞 · 精進相續</div>
-            </div>
-            <div class="flower-step-arrow">&rarr;</div>
-            <div class="flower-step-item active">
-              <div class="flower-step-badge">第 3 天</div>
-              <div class="flower-step-icon">🪷</div>
-              <div class="flower-step-name">萬德盛開（完成 1 朵）</div>
-              <div class="flower-step-sub">完全盛開 · 得抽卡次數</div>
-            </div>
-          </div>
-          <p style="font-size: 0.82rem; color: var(--ink-faint); margin-top: 0.6rem;">
-            ※ 靜坐長成池中蓮花、誦經長成草皮向陽花。點擊「進入 2D 開心花園」可觀看生動微風動態與飄櫻落楓粒子。
-          </p>
-        </div>
-
-        <!-- 說明區塊 3：五大修行階段 · 線性等差成長 -->
-        <div class="guide-section-block">
-          <div class="guide-section-title">
-            <span style="font-size: 1.15rem;">🌿</span>
-            <h3>五大生長境界 · 線性等差體系（每階 +12 天）</h3>
-          </div>
-          <p class="guide-section-intro">
-            修持不急不退，隨功行累積循序漸進，整年 365 天四季演化圓融：
-          </p>
-          <div class="guide-stages-list">
-            <div class="guide-stage-row">
-              <div class="stage-tag s1">第一階段</div>
-              <div class="stage-info">
-                <strong>春生初萌（累積 1 ～ 49 天 · 維持 49 天）</strong>
-                <p>初耕心地，澄澈池水與無泥草皮，善法金種深植心田，老和尚木牌法語指引初心。</p>
+              <div class="guide-quote-body">
+                <div class="guide-quote-text" id="guideDailyQuoteSnippet">「人在哪裡，心就在哪裡。做任何事都能專心，這就是定。定中生慧，得大自在。」</div>
+                <div class="guide-quote-source" id="guideDailyQuoteSource">—— 《中台月刊》惟覺安公老和尚開示</div>
               </div>
             </div>
 
-            <div class="guide-stage-row">
-              <div class="stage-tag s2">第二階段</div>
-              <div class="stage-info">
-                <strong>庭園初展（累積 50 ～ 110 天 · 維持 61 天）</strong>
-                <p>庭園開展，石徑延展，池面澄明，菩提生機日盛，定中生慧得大自在。</p>
-              </div>
+            <!-- 說明章節摺疊控制列 -->
+            <div class="guide-toggle-bar-row">
+              <span style="font-size: 0.85rem; font-weight: 700; color: var(--pine-green);">📚 核心修持指引（點擊標題可單獨摺疊）</span>
+              <button type="button" class="btn-toggle-all-guide" id="btnToggleAllGuide" onclick="toggleAllGuideAccordions()">
+                <span>➕</span> 全部展開 / 收合
+              </button>
             </div>
 
-            <div class="guide-stage-row">
-              <div class="stage-tag s3">第三階段</div>
-              <div class="stage-info">
-                <strong>菩提成林（累積 111 ～ 183 天 · 維持 73 天）</strong>
-                <p>茂林修竹，樹林漸密，草房日益寬廣，同位置澄澈蓮池，甘露法流不息。</p>
+            <!-- 說明區塊 1：每日修持打卡規範 (摺疊標題) -->
+            <details class="guide-accordion-item" open>
+              <summary class="guide-accordion-summary">
+                <div class="guide-summary-left">
+                  <span style="font-size: 1.15rem;">✍️</span>
+                  <h3 class="guide-summary-title">每日精進打卡規範</h3>
+                  <span class="guide-summary-sub">（靜坐調心 ＆ 每日誦經）</span>
+                </div>
+                <span class="guide-accordion-arrow">▼</span>
+              </summary>
+              <div class="guide-accordion-content">
+                <div class="guide-grid-two">
+                  <div class="guide-item-card">
+                    <div class="guide-item-title">
+                      <span>🧘</span>
+                      <strong>靜坐調心（滋養蓮花）</strong>
+                    </div>
+                    <p class="guide-item-desc">
+                      登記每日禪坐時長，亦可啟用線上引磬計時器沉澱心緒。打卡功德將注入蓮池，長出清淨白蓮。
+                    </p>
+                  </div>
+
+                  <div class="guide-item-card">
+                    <div class="guide-item-title">
+                      <span>📖</span>
+                      <strong>每日誦經（盛開太陽花）</strong>
+                    </div>
+                    <p class="guide-item-desc">
+                      可選讀《金剛經》、《藥師經》、《普門品》或自填經典，無卷數壓力。智慧甘露滋潤草皮盛開向陽花。
+                    </p>
+                  </div>
+                </div>
+
+                <div class="guide-tips-note">
+                  <span>💡</span>
+                  <div><strong>彈性發心與補填</strong>：靜坐與誦經預設皆不勾選，可單修、可雙修；若前日忙碌，可勾選「補打卡之前時間」補填過往修持。</div>
+                </div>
               </div>
+            </details>
+
+            <!-- 說明區塊 2：2D 開心花園生長規則 (摺疊標題) -->
+            <details class="guide-accordion-item" open>
+              <summary class="guide-accordion-summary">
+                <div class="guide-summary-left">
+                  <span style="font-size: 1.15rem;">🌸</span>
+                  <h3 class="guide-summary-title">2D 開心花園生長規則</h3>
+                  <span class="guide-summary-sub">（每 3 天修持盛開 1 朵花）</span>
+                </div>
+                <span class="guide-accordion-arrow">▼</span>
+              </summary>
+              <div class="guide-accordion-content">
+                <p class="guide-section-intro">
+                  修行如春雨潤物，修持打卡<strong>每 3 天</strong>長成 1 朵完全盛開的花朵，分為三個階段次第生長：
+                </p>
+                <div class="guide-flower-steps">
+                  <div class="flower-step-item">
+                    <div class="flower-step-badge">第 1 天</div>
+                    <div class="flower-step-icon">🌱</div>
+                    <div class="flower-step-name">初萌種子 / 嫩芽</div>
+                    <div class="flower-step-sub">破土新綠 · 初發善心</div>
+                  </div>
+                  <div class="flower-step-arrow">&rarr;</div>
+                  <div class="flower-step-item">
+                    <div class="flower-step-badge">第 2 天</div>
+                    <div class="flower-step-icon">🌿</div>
+                    <div class="flower-step-name">含苞待放 / 圓蕾</div>
+                    <div class="flower-step-sub">翠綠立苞 · 精進相續</div>
+                  </div>
+                  <div class="flower-step-arrow">&rarr;</div>
+                  <div class="flower-step-item active">
+                    <div class="flower-step-badge">第 3 天</div>
+                    <div class="flower-step-icon">🪷</div>
+                    <div class="flower-step-name">萬德盛開（完成 1 朵）</div>
+                    <div class="flower-step-sub">完全盛開 · 得抽卡次數</div>
+                  </div>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--ink-faint); margin-top: 0.6rem;">
+                  ※ 靜坐長成池中蓮花、誦經長成草皮向陽花。點擊「進入 2D 開心花園」可觀看生動微風動態與飄櫻落楓粒子。
+                </p>
+              </div>
+            </details>
+
+            <!-- 說明區塊 3：五大修行階段 · 線性等差成長 (摺疊標題) -->
+            <details class="guide-accordion-item" open>
+              <summary class="guide-accordion-summary">
+                <div class="guide-summary-left">
+                  <span style="font-size: 1.15rem;">🌿</span>
+                  <h3 class="guide-summary-title">五大生長境界 · 線性等差體系</h3>
+                  <span class="guide-summary-sub">（每階 +12 天等差演化）</span>
+                </div>
+                <span class="guide-accordion-arrow">▼</span>
+              </summary>
+              <div class="guide-accordion-content">
+                <p class="guide-section-intro">
+                  修持不急不退，隨功行累積循序漸進，整年 365 天四季演化圓融：
+                </p>
+                <div class="guide-stages-list">
+                  <div class="guide-stage-row">
+                    <div class="stage-tag s1">第一階段</div>
+                    <div class="stage-info">
+                      <strong>春生初萌（累積 1 ～ 49 天 · 維持 49 天）</strong>
+                      <p>初耕心地，澄澈池水與無泥草皮，善法金種深植心田，老和尚木牌法語指引初心。</p>
+                    </div>
+                  </div>
+
+                  <div class="guide-stage-row">
+                    <div class="stage-tag s2">第二階段</div>
+                    <div class="stage-info">
+                      <strong>庭園初展（累積 50 ～ 110 天 · 維持 61 天）</strong>
+                      <p>庭園開展，石徑延展，池面澄明，菩提生機日盛，定中生慧得大自在。</p>
+                    </div>
+                  </div>
+
+                  <div class="guide-stage-row">
+                    <div class="stage-tag s3">第三階段</div>
+                    <div class="stage-info">
+                      <strong>菩提成林（累積 111 ～ 183 天 · 維持 73 天）</strong>
+                      <p>茂林修竹，樹林漸密，草房日益寬廣，同位置澄澈蓮池，甘露法流不息。</p>
+                    </div>
+                  </div>
+
+                  <div class="guide-stage-row">
+                    <div class="stage-tag s4">第四階段</div>
+                    <div class="stage-info">
+                      <strong>金秋豐收（累積 184 ～ 268 天 · 維持 85 天）</strong>
+                      <p>丹楓金杏，秋林深密，大禪堂莊嚴安住，行一切善法，心中無住。</p>
+                    </div>
+                  </div>
+
+                  <div class="guide-stage-row">
+                    <div class="stage-tag s5">第五階段</div>
+                    <div class="stage-info">
+                      <strong>冬藏圓滿（累積 269 ～ 365+ 天 · 維持 97 天）</strong>
+                      <p>一整年修持圓滿大成！純白雪境，深林環抱，自性純淨圓融，花開見佛。</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <!-- 說明區塊 4：妙法寶匣 · 抽取法語卡規範 (摺疊標題) -->
+            <details class="guide-accordion-item" open>
+              <summary class="guide-accordion-summary">
+                <div class="guide-summary-left">
+                  <span style="font-size: 1.15rem;">🎴</span>
+                  <h3 class="guide-summary-title">妙法寶匣 · 抽取法語卡規範</h3>
+                  <span class="guide-summary-sub">（迎新 5 包 ＋ 開花再獲 1 包）</span>
+                </div>
+                <span class="guide-accordion-arrow">▼</span>
+              </summary>
+              <div class="guide-accordion-content">
+                <div class="guide-gacha-info-box">
+                  <div class="gacha-rule-pill">
+                    <span>🎁</span>
+                    <div>
+                      <strong>登入迎新禮</strong>
+                      <div>初次登入立即免費獲贈 <strong>5 包</strong> 法語卡包。</div>
+                    </div>
+                  </div>
+                  <div class="gacha-rule-pill">
+                    <span>🪷</span>
+                    <div>
+                      <strong>2D 花園開花得抽卡次數</strong>
+                      <div>開心花園中<strong>每長成 1 朵完全盛開花</strong>（修持打卡每 3 天），即可再開啟 <strong>1 包</strong>！</div>
+                    </div>
+                  </div>
+                  <div class="gacha-rule-pill">
+                    <span>🌟</span>
+                    <div>
+                      <strong>70 張殊勝法語卡 ＆ 保底機制</strong>
+                      <div>分為 R、SR、SSR、UR、USR；每 15 抽未得 SSR，第 16 抽必出 SSR 以上圓滿卡。</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <!-- 快捷入口按鈕列 -->
+            <div class="guide-action-buttons">
+              <a href="garden2d.html" class="btn-primary" style="text-decoration: none;">
+                <span>🌸</span> 進入 2D 開心花園全景
+              </a>
+              <button type="button" class="btn-secondary" onclick="switchMainTab('collection')">
+                <span>🎴</span> 開啟般若收集冊（抽卡與圖鑑）
+              </button>
             </div>
 
-            <div class="guide-stage-row">
-              <div class="stage-tag s4">第四階段</div>
-              <div class="stage-info">
-                <strong>金秋豐收（累積 184 ～ 268 天 · 維持 85 天）</strong>
-                <p>丹楓金杏，秋林深密，大禪堂莊嚴安住，行一切善法，心中無住。</p>
-              </div>
-            </div>
-
-            <div class="guide-stage-row">
-              <div class="stage-tag s5">第五階段</div>
-              <div class="stage-info">
-                <strong>冬藏圓滿（累積 269 ～ 365+ 天 · 維持 97 天）</strong>
-                <p>一整年修持圓滿大成！純白雪境，深林環抱，自性純淨圓融，花開見佛。</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 說明區塊 4：妙法寶匣 · 般若智慧卡抽取 -->
-        <div class="guide-section-block">
-          <div class="guide-section-title">
-            <span style="font-size: 1.15rem;">🎴</span>
-            <h3>妙法寶匣 · 抽取法語卡規範</h3>
-          </div>
-          <div class="guide-gacha-info-box">
-            <div class="gacha-rule-pill">
-              <span>🎁</span>
-              <div>
-                <strong>登入迎新禮</strong>
-                <div>初次登入立即免費獲贈 <strong>5 包</strong> 法語卡包。</div>
-              </div>
-            </div>
-            <div class="gacha-rule-pill">
-              <span>🪷</span>
-              <div>
-                <strong>2D 花園開花得抽卡次數</strong>
-                <div>開心花園中<strong>每長成 1 朵完全盛開花</strong>（修持打卡每 3 天），即可再開啟 <strong>1 包</strong>！</div>
-              </div>
-            </div>
-            <div class="gacha-rule-pill">
-              <span>🌟</span>
-              <div>
-                <strong>70 張殊勝法語卡 ＆ 保底機制</strong>
-                <div>分為 R、SR、SSR、UR、USR；每 15 抽未得 SSR，第 16 抽必出 SSR 以上圓滿卡。</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 快捷入口按鈕列 -->
-        <div class="guide-action-buttons">
-          <a href="garden2d.html" class="btn-primary" style="text-decoration: none;">
-            <span>🌸</span> 進入 2D 開心花園全景
-          </a>
-          <button type="button" class="btn-secondary" onclick="switchMainTab('collection')">
-            <span>🎴</span> 開啟般若收集冊（抽卡與圖鑑）
-          </button>
-        </div>
+          </div> <!-- end #mainGuideBody -->
+        </details>
 
       </section>
 

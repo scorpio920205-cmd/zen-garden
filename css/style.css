@@ -565,6 +565,149 @@ body::before {
   gap: 1.35rem;
 }
 
+/* 主指南卡外層摺疊 (Main Guide Collapsible) */
+.main-guide-details {
+  width: 100%;
+}
+
+.main-guide-summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.main-guide-summary::-webkit-details-marker {
+  display: none;
+}
+
+.guide-toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card-sub);
+  border: 1px solid rgba(45, 76, 66, 0.25);
+  color: var(--pine-green);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.main-guide-summary:hover .guide-toggle-pill {
+  background: var(--pine-light);
+  border-color: var(--pine-green);
+}
+
+.main-guide-body {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: fadeInAccordion 0.25s ease-out;
+}
+
+/* 內部章節摺疊手風琴 (Section Accordions) */
+.guide-accordion-item {
+  border-top: 1px solid var(--border-light);
+  padding: 0.2rem 0;
+  transition: all 0.25s ease;
+}
+
+.guide-accordion-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.6rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: background-color 0.2s ease;
+}
+
+.guide-accordion-summary::-webkit-details-marker {
+  display: none;
+}
+
+.guide-accordion-summary:hover {
+  background-color: var(--bg-card-sub);
+}
+
+.guide-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.guide-summary-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink-deep);
+  margin: 0;
+}
+
+.guide-summary-sub {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  font-weight: normal;
+}
+
+.guide-accordion-arrow {
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  background: var(--bg-card-sub);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  border: 1px solid var(--border-light);
+  transition: transform 0.25s ease, background 0.2s, color 0.2s;
+}
+
+.guide-accordion-item[open] .guide-accordion-arrow {
+  transform: rotate(180deg);
+  background: var(--pine-light);
+  color: var(--pine-green);
+  border-color: rgba(45, 76, 66, 0.3);
+}
+
+.guide-accordion-content {
+  padding: 0.5rem 0.6rem 0.4rem 0.6rem;
+  animation: fadeInAccordion 0.25s ease-out;
+}
+
+.guide-toggle-bar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.2rem;
+}
+
+.btn-toggle-all-guide {
+  background: var(--bg-card-sub);
+  border: 1px solid var(--border-light);
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  padding: 3px 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.btn-toggle-all-guide:hover {
+  background: var(--pine-light);
+  color: var(--pine-green);
+  border-color: rgba(45, 76, 66, 0.2);
+}
+
 .guide-header-title-row {
   display: flex;
   align-items: center;
