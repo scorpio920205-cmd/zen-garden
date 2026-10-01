@@ -555,7 +555,11 @@
               <span>補打卡之前時間（補填過往修持）</span>
             </label>
             <div id="backdatePickerWrap" style="display: none; width: 100%; margin-top: 0.5rem;">
-              <input type="datetime-local" id="formCheckinTime" class="form-control" style="width: 100%;">
+              <input type="datetime-local" id="formCheckinTime" class="form-control" style="width: 100%;" min="2026-09-29T00:00">
+              <div style="font-size: 0.78rem; color: #b78103; margin-top: 0.35rem; display: flex; align-items: center; gap: 4px;">
+                <span>📅</span>
+                <span>打卡自 2026/09/29 (二) 正式啟動，9/29 以前日期反白無法選擇</span>
+              </div>
             </div>
           </div>
 
