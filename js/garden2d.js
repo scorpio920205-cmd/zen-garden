@@ -370,17 +370,8 @@ async function setupURLQuery() {
         const backBtn = visitIndicator.querySelector('button');
 
         if (isAdminParam) {
-          // 指導法師巡視學員花園：明確提示法師巡視，按鈕必定返回管理後台 admin.html
-          if (titleEl) {
-            titleEl.innerHTML = `🔒 <strong>指導法師巡視：</strong>【${visitorStudentData.class_type}】${visitorStudentData.real_name || visitorStudentData.dharma_name}（${days} 天）`;
-            titleEl.title = `指導法師最高權限巡視：【${visitorStudentData.class_type}】${visitorStudentData.real_name || visitorStudentData.dharma_name} 的學員花園 ｜ 累積打卡 ${days} 天`;
-          }
-          if (backBtn) {
-            backBtn.textContent = '← 返回管理後台';
-            backBtn.style.background = '#ffd54f';
-            backBtn.style.color = '#172c26';
-            backBtn.onclick = () => { window.location.href = 'admin.html'; };
-          }
+          // 指導法師巡視學員花園：隱藏重複之浮動橫幅，避免覆蓋中央五階段中控列
+          if (visitIndicator) visitIndicator.style.display = 'none';
           if (stageDock) stageDock.style.display = 'flex';
           if (stageBanner) stageBanner.style.display = 'none';
           if (stageParam && STAGE_CONFIGS[stageParam]) {
@@ -388,6 +379,7 @@ async function setupURLQuery() {
           }
         } else {
           // 學員互相參觀：同學只會出現該學員對應之一張圖，未到天數不切換
+          if (visitIndicator) visitIndicator.style.display = 'flex';
           if (titleEl) {
             titleEl.textContent = `參觀：【${visitorStudentData.class_type}】${vDisplayName} 的花園（${days} 天）`;
             titleEl.title = `正在參觀學員花園：【${visitorStudentData.class_type}】${vDisplayName} 的精進花園（累積 ${days} 天）`;
@@ -414,21 +406,8 @@ async function setupURLQuery() {
     activeLotusStats = calculateFlowerRule(36); // 12朵盛開花
     activeSunflowerStats = calculateFlowerRule(45); // 15朵盛開花
 
-    if (visitIndicator) {
-      visitIndicator.style.display = 'flex';
-      const titleEl = document.getElementById('visitingFriendTitle');
-      const backBtn = visitIndicator.querySelector('button');
-      if (titleEl) {
-        titleEl.innerHTML = '🔒 <strong>指導法師：</strong>2D 花園全生長階段圖庫總覽';
-        titleEl.title = '指導法師最高權限：2D 花園全生長階段圖庫總覽（等差成長體系 · 可切換中央全部階段圖）';
-      }
-      if (backBtn) {
-        backBtn.textContent = '← 返回法師管理台';
-        backBtn.style.background = '#ffd54f';
-        backBtn.style.color = '#172c26';
-        backBtn.onclick = () => { window.location.href = 'admin.html'; };
-      }
-    }
+    // 指導法師全圖總覽：右上角已有「🔒 返回管理後台」，徹底隱藏重複的浮動提示橫幅，確保中央五階段切換鍵 100% 完整無阻
+    if (visitIndicator) visitIndicator.style.display = 'none';
 
     if (stageDock) stageDock.style.display = 'flex';
     if (stageBanner) stageBanner.style.display = 'none';
