@@ -389,7 +389,7 @@ async function setupURLQuery() {
         } else {
           // 學員互相參觀：同學只會出現該學員對應之一張圖，未到天數不切換
           if (titleEl) {
-            titleEl.textContent = `🌸 參觀：【${visitorStudentData.class_type}】${vDisplayName} 的花園（${days} 天）`;
+            titleEl.textContent = `參觀：【${visitorStudentData.class_type}】${vDisplayName} 的花園（${days} 天）`;
             titleEl.title = `正在參觀學員花園：【${visitorStudentData.class_type}】${vDisplayName} 的精進花園（累積 ${days} 天）`;
           }
           if (backBtn) {
