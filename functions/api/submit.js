@@ -39,18 +39,6 @@ export async function onRequestPost({ request, env }) {
     const cleanNo = (student_no || '').trim();
     const cleanRealName = (real_name || '').trim();
 
-    // 檢查打卡時間不得早於正式啟動日 2026-09-29
-    const formattedRecordTime = record_time ? record_time.replace('T', ' ').substring(0, 16) : new Date().toISOString().replace('T', ' ').substring(0, 16);
-    if (formattedRecordTime < '2026-09-29') {
-      return new Response(JSON.stringify({
-        success: false,
-        error: '打卡活動自 2026/09/29 (二) 正式啟動，不接受 2026-09-29 以前之補填打卡紀錄！'
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
     // 1. 查詢是否已有該學員（優先依學號，次依姓名/班級組別）
     let student = null;
 
@@ -137,6 +125,7 @@ export async function onRequestPost({ request, env }) {
     }
 
     // 2. 插入打卡明細 (支援歷史補填時間)
+    const formattedRecordTime = record_time || new Date().toISOString().replace('T', ' ').substring(0, 16);
     await db.prepare(`
       INSERT INTO checkins (student_id, record_time, class_type, group_name, dharma_name, practice_item, meditation_minutes, sutra_name, sutra_count, mantra_name, mantra_count, reflection_note)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)

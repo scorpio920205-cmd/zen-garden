@@ -20,7 +20,6 @@ let visitingStudentData = null;
 let audioCtx = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  purgeLegacyTestCheckins();
   initFormDateTime();
   checkLoginSession();
   setupQuoteWoodenSign();
@@ -1382,27 +1381,6 @@ function closeWoodenQuoteModal() {
   document.getElementById('woodenQuoteModal').style.display = 'none';
 }
 
-// 2026/09/29 正式開跑：清理客戶端殘留之 9/28 以前的測試打卡暫存
-function purgeLegacyTestCheckins() {
-  try {
-    const keys = ['zen_garden_checkins_v1', 'zen_garden_checkins_v2'];
-    keys.forEach(k => {
-      const raw = localStorage.getItem(k);
-      if (raw) {
-        const arr = JSON.parse(raw);
-        if (Array.isArray(arr)) {
-          const filtered = arr.filter(c => !c.record_time || c.record_time >= '2026-09-29');
-          if (filtered.length !== arr.length) {
-            localStorage.setItem(k, JSON.stringify(filtered));
-          }
-        }
-      }
-    });
-  } catch (e) {
-    console.warn('Purge legacy test checkins err:', e);
-  }
-}
-
 // 5. 每日修持打卡表單（精簡為：靜坐 ＋ 每日誦經，可自填，無卷數、無持咒）
 function initFormDateTime() {
   const now = new Date();
@@ -1416,8 +1394,7 @@ function initFormDateTime() {
   const el = document.getElementById('formCheckinTime');
   if (el) {
     el.value = val;
-    el.min = '2026-09-29T00:00'; // 2026/09/29 (二) 正式啟動，在此之前反白無法選擇
-    el.max = val; // 最多選到現在，可向前選歷史時間（最早至 2026-09-29）
+    el.max = val; // 最多選到現在，可向前選歷史時間
   }
 }
 
@@ -1461,12 +1438,6 @@ async function handleCheckinSubmit(e) {
     recordTime = new Date().toISOString().replace('T', ' ').substring(0, 16);
   } else {
     recordTime = recordTime.replace('T', ' ');
-  }
-
-  // 檢查打卡時間不得早於正式啟動日 2026-09-29
-  if (recordTime && recordTime < '2026-09-29 00:00') {
-    alert("打卡活動自 2026/09/29 (二) 正式啟動，無法選擇 9/29 以前的日期打卡！");
-    return;
   }
 
   const isMeditationChecked = document.getElementById('checkMeditation')?.checked;
