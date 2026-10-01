@@ -647,24 +647,69 @@ function updateUserHeaderUI(student) {
   const studentLabelEl = document.getElementById('statStudentLabel');
 
   const checkins = student.total_checkins || 0;
-  const meditation = student.total_meditation_mins || 0;
   const rejoices = student.rejoice_count || 0;
 
   if (checkinsEl) checkinsEl.textContent = checkins;
-  if (meditationEl) meditationEl.textContent = meditation;
   if (rejoicesEl) rejoicesEl.textContent = rejoices;
 
-  // 計算持誦經典部數 (統計該學員在打卡紀錄中有填寫經典的次數)
+  // 計算累積禪坐定境次數 ＆ 持誦經典部數
   try {
     const allRecords = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.checkins) || '[]');
     const studentRecords = allRecords.filter(r => 
-      (r.student_id && r.student_id === student.id) ||
+      (r.student_id && (r.student_id === student.id || r.student_id === student.student_no)) ||
       (r.real_name === student.real_name && r.class_type === student.class_type)
     );
-    const sutraCount = studentRecords.filter(r => r.sutra_name && r.sutra_name !== '').length;
-    if (sutrasEl) sutrasEl.textContent = sutraCount || checkins;
+
+    // 禪坐定境次數：打卡紀錄中含有禪坐/靜坐或禪坐時間 > 0 的次數
+    const meditationCount = studentRecords.filter(r => 
+      (r.meditation_minutes && parseInt(r.meditation_minutes) > 0) || 
+      (r.practice_item && (r.practice_item.includes('坐') || r.practice_item.includes('禪')))
+    ).length;
+    if (meditationEl) meditationEl.textContent = studentRecords.length > 0 ? meditationCount : checkins;
+
+    // 持誦經典部數：打卡紀錄中含有誦經的次數
+    const sutraCount = studentRecords.filter(r => 
+      (r.sutra_name && r.sutra_name.trim().length > 0) || 
+      (r.practice_item && r.practice_item.includes('經'))
+    ).length;
+    if (sutrasEl) sutrasEl.textContent = studentRecords.length > 0 ? sutraCount : checkins;
   } catch (e) {
+    if (meditationEl) meditationEl.textContent = checkins;
     if (sutrasEl) sutrasEl.textContent = checkins;
+  }
+
+  // 背景自動向雲端後端校驗最新打卡紀錄，精準更新禪坐定境次數與誦經部數
+  if (student && (student.student_no || student.real_name)) {
+    ZenAPI.isCloudflareBackendAvailable().then(isCloud => {
+      if (!isCloud) return;
+      const url = student.student_no
+        ? `/api/my-garden?student_no=${encodeURIComponent(student.student_no)}`
+        : `/api/my-garden?class=${encodeURIComponent(student.class_type || '')}&group=${encodeURIComponent(student.group_name || '')}&name=${encodeURIComponent(student.real_name)}`;
+      fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          if (data.success && Array.isArray(data.checkins)) {
+            const mCount = data.checkins.filter(r => 
+              (r.meditation_minutes && parseInt(r.meditation_minutes) > 0) || 
+              (r.practice_item && (r.practice_item.includes('坐') || r.practice_item.includes('禪')))
+            ).length;
+            if (meditationEl) meditationEl.textContent = mCount;
+
+            const sCount = data.checkins.filter(r => 
+              (r.sutra_name && r.sutra_name.trim().length > 0) || 
+              (r.practice_item && r.practice_item.includes('經'))
+            ).length;
+            if (sutrasEl) sutrasEl.textContent = sCount;
+
+            try {
+              const localRecords = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.checkins) || '[]');
+              const otherRecords = localRecords.filter(c => c.student_id !== student.id && c.real_name !== student.real_name);
+              localStorage.setItem(API_CONFIG.storageKeys.checkins, JSON.stringify([...data.checkins, ...otherRecords]));
+            } catch (err) {}
+          }
+        })
+        .catch(() => {});
+    });
   }
 
   // 計算自性花園生長境界階段

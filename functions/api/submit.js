@@ -144,13 +144,17 @@ export async function onRequestPost({ request, env }) {
       reflection_note
     ).run();
 
+    const updatedStudent = await db.prepare('SELECT * FROM students WHERE id = ?').bind(studentId).first();
+
     return new Response(JSON.stringify({
       success: true,
       message: '打卡成功！精進功德已注入蓮花',
-      student: {
+      student: updatedStudent || {
         id: studentId,
+        student_no: cleanNo,
         class_type,
         group_name,
+        real_name: cleanRealName,
         dharma_name,
         total_checkins: totalCheckins,
         lotus_level: lotusLevel
