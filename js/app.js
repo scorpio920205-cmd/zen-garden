@@ -983,7 +983,7 @@ const PROGRESSION_STAGES = [
   { stage: 2, duration: 61, cumulative: 110, name: "第二階段 (維持 61 天 · 庭園初展 · 石徑生機)", bg: "assets/images/stage_2_sprout.jpg" },
   { stage: 3, duration: 73, cumulative: 183, name: "第三階段 (維持 73 天 · 菩提成林 · 草房漸大)", bg: "assets/images/stage_3_forest_v2.jpg" },
   { stage: 4, duration: 85, cumulative: 268, name: "第四階段 (維持 85 天 · 丹楓金杏 · 秋收大草舍)", bg: "assets/images/stage_4_autumn_v2.jpg" },
-  { stage: 5, duration: 97, cumulative: 365, name: "第五階段 (維持 97 天 · 萬里雪境 · 禪房圓滿)", bg: "assets/images/stage_5_winter_v2.jpg" }
+  { stage: 5, duration: 97, cumulative: 365, name: "第五階段 (維持 97 天 · 夜睹明星 · 在安靜下來的時候看見自己的星)", bg: "assets/images/stage_5_night_star.jpg" }
 ];
 
 let manualPreviewStage = null;

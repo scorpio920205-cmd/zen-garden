@@ -73,14 +73,14 @@ const STAGE_CONFIGS = {
   },
   5: {
     id: 5,
-    name: "第五階段 · 冬藏圓滿",
-    subtext: "維持 97 天（累積 269 ~ 365+ 天）· 一整年修持圓滿！純白雪境，深林環抱，大草房禪舍溫暖安住，同位置澄澈蓮池，自性純淨圓融",
-    bg: "assets/images/stage_5_winter_v2.jpg",
-    season: "winter",
+    name: "第五階段 · 夜睹明星",
+    subtext: "維持 97 天（累積 269 ~ 365+ 天）· 一整年修持圓滿！在安靜下來的時候，看見那一顆屬於自己的星。夜睹明星，明心見性，功德圓融，自性花開。",
+    bg: "assets/images/stage_5_night_star.jpg",
+    season: "night",
     duration: 97,
     cumulative: 365,
     hotspots: [
-      { id: "winter_sign", x: 67, y: 46, name: "🏆 年滿大成牌", desc: "一整年精進不退！老和尚開示：人在哪裡，心就在哪裡。功德圓融，自性花開。", action: "quote" }
+      { id: "winter_sign", x: 67, y: 46, name: "🌟 夜睹明星牌", desc: "在安靜下來的時候，看見那一顆屬於自己的星。老和尚開示：人在哪裡，心就在哪裡。夜睹明星，明心見性，功德圓融，自性花開。", action: "quote" }
     ]
   }
 };
@@ -990,6 +990,9 @@ function generateAmbientParticles(season) {
   } else if (season === 'winter') {
     emojis = ['❄️', '❅', '❆', '✨'];
     count = 26;
+  } else if (season === 'night' || season === 'stars') {
+    emojis = ['✨', '⭐', '🌟', '💫'];
+    count = 20;
   } else if (season === 'summer') {
     emojis = ['🌸', '🪷', '✨', '🦋'];
     count = 14;
