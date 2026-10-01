@@ -641,6 +641,7 @@ function updateUserHeaderUI(student) {
   // ════ 更新精進打卡數量統計看板 ════
   const checkinsEl = document.getElementById('statCardCheckins');
   const meditationEl = document.getElementById('statCardMeditation');
+  const meditationMinsEl = document.getElementById('statCardMeditationMins');
   const sutrasEl = document.getElementById('statCardSutras');
   const rejoicesEl = document.getElementById('statCardRejoices');
   const stageEl = document.getElementById('statCardStage');
@@ -651,6 +652,7 @@ function updateUserHeaderUI(student) {
 
   if (checkinsEl) checkinsEl.textContent = checkins;
   if (rejoicesEl) rejoicesEl.textContent = rejoices;
+  if (meditationMinsEl) meditationMinsEl.textContent = student.total_meditation_mins || 0;
 
   // 計算累積禪坐定境次數 ＆ 持誦經典部數
   try {
@@ -666,6 +668,10 @@ function updateUserHeaderUI(student) {
       (r.practice_item && (r.practice_item.includes('坐') || r.practice_item.includes('禪')))
     ).length;
     if (meditationEl) meditationEl.textContent = studentRecords.length > 0 ? meditationCount : checkins;
+
+    // 累積禪坐時長
+    const totalMins = studentRecords.reduce((sum, r) => sum + (parseInt(r.meditation_minutes) || 0), 0) || (student.total_meditation_mins || 0);
+    if (meditationMinsEl) meditationMinsEl.textContent = totalMins;
 
     // 持誦經典部數：打卡紀錄中含有誦經的次數
     const sutraCount = studentRecords.filter(r => 
@@ -694,6 +700,9 @@ function updateUserHeaderUI(student) {
               (r.practice_item && (r.practice_item.includes('坐') || r.practice_item.includes('禪')))
             ).length;
             if (meditationEl) meditationEl.textContent = mCount;
+
+            const totalMins = data.checkins.reduce((sum, r) => sum + (parseInt(r.meditation_minutes) || 0), 0) || (student.total_meditation_mins || 0);
+            if (meditationMinsEl) meditationMinsEl.textContent = totalMins;
 
             const sCount = data.checkins.filter(r => 
               (r.sutra_name && r.sutra_name.trim().length > 0) || 
@@ -734,6 +743,229 @@ function updateUserHeaderUI(student) {
   if (typeof renderCollectionUI === 'function') {
     renderCollectionUI();
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 個人修持歷程與打卡明細查詢功能
+// 支援：靜坐次數、誦經次數、哪部經書、日期時間、累積禪坐定境時長、法師開示
+// ═══════════════════════════════════════════════════════════════
+
+let myHistoryActiveFilter = 'all'; // 'all' | 'meditation' | 'sutra'
+let myHistorySearchKeyword = '';
+let myHistoryCachedRecords = [];
+
+async function openMyHistoryModal(filterType = 'all') {
+  if (!currentStudent) return;
+
+  const modal = document.getElementById('myHistoryModal');
+  const badgeEl = document.getElementById('historyModalStudentBadge');
+  const searchInput = document.getElementById('historySearchInput');
+
+  if (badgeEl) {
+    const sName = currentStudent.dharma_name ? `${currentStudent.dharma_name}（${currentStudent.real_name}）` : currentStudent.real_name;
+    const sNo = currentStudent.student_no ? ` ｜ 學號：${currentStudent.student_no}` : ' ｜ 學號：未填';
+    badgeEl.textContent = `【${currentStudent.class_type}】${currentStudent.group_name} · ${sName}${sNo}`;
+  }
+
+  myHistoryActiveFilter = filterType;
+  myHistorySearchKeyword = '';
+  if (searchInput) searchInput.value = '';
+
+  updateHistoryFilterPills(filterType);
+
+  if (modal) modal.style.display = 'flex';
+
+  // 1. 先讀取本地快取打卡紀錄立即顯示
+  try {
+    const allRecords = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.checkins) || '[]');
+    myHistoryCachedRecords = allRecords.filter(r => 
+      (r.student_id && (r.student_id === currentStudent.id || r.student_id === currentStudent.student_no)) ||
+      (r.real_name === currentStudent.real_name && r.class_type === currentStudent.class_type)
+    );
+  } catch (e) {
+    myHistoryCachedRecords = [];
+  }
+
+  renderMyHistoryList();
+
+  // 2. 背景從雲端後端 /api/my-garden 即時抓取最新打卡明細
+  const isCloud = await ZenAPI.isCloudflareBackendAvailable();
+  if (isCloud && (currentStudent.student_no || currentStudent.real_name)) {
+    const url = currentStudent.student_no
+      ? `/api/my-garden?student_no=${encodeURIComponent(currentStudent.student_no)}`
+      : `/api/my-garden?class=${encodeURIComponent(currentStudent.class_type || '')}&group=${encodeURIComponent(currentStudent.group_name || '')}&name=${encodeURIComponent(currentStudent.real_name)}`;
+    
+    try {
+      const resp = await fetch(url);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.success && Array.isArray(data.checkins)) {
+          myHistoryCachedRecords = data.checkins;
+          try {
+            const localRecords = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.checkins) || '[]');
+            const otherRecords = localRecords.filter(c => c.student_id !== currentStudent.id && c.real_name !== currentStudent.real_name);
+            localStorage.setItem(API_CONFIG.storageKeys.checkins, JSON.stringify([...data.checkins, ...otherRecords]));
+          } catch (err) {}
+          renderMyHistoryList();
+        }
+      }
+    } catch (e) {
+      console.warn('雲端抓取個人歷史紀錄失敗', e);
+    }
+  }
+}
+
+function closeMyHistoryModal() {
+  const modal = document.getElementById('myHistoryModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function filterHistoryType(type, btnEl) {
+  myHistoryActiveFilter = type;
+  updateHistoryFilterPills(type);
+  renderMyHistoryList();
+}
+
+function updateHistoryFilterPills(activeType) {
+  const btnAll = document.getElementById('historyFilterAll');
+  const btnMeditation = document.getElementById('historyFilterMeditation');
+  const btnSutra = document.getElementById('historyFilterSutra');
+
+  [btnAll, btnMeditation, btnSutra].forEach(btn => btn?.classList.remove('active'));
+  if (activeType === 'meditation') btnMeditation?.classList.add('active');
+  else if (activeType === 'sutra') btnSutra?.classList.add('active');
+  else btnAll?.classList.add('active');
+}
+
+function handleHistorySearch(val) {
+  myHistorySearchKeyword = (val || '').trim().toLowerCase();
+  renderMyHistoryList();
+}
+
+function renderMyHistoryList() {
+  const container = document.getElementById('myHistoryListContainer');
+  const statCheckinsEl = document.getElementById('historyStatCheckins');
+  const statMeditationCountEl = document.getElementById('historyStatMeditationCount');
+  const statMeditationMinsEl = document.getElementById('historyStatMeditationMins');
+  const statSutraCountEl = document.getElementById('historyStatSutraCount');
+
+  if (!container) return;
+
+  // 計算匯總數據
+  const totalCheckins = myHistoryCachedRecords.length > 0 ? myHistoryCachedRecords.length : (currentStudent?.total_checkins || 0);
+  const meditationRecords = myHistoryCachedRecords.filter(r => 
+    (r.meditation_minutes && parseInt(r.meditation_minutes) > 0) || 
+    (r.practice_item && (r.practice_item.includes('坐') || r.practice_item.includes('禪')))
+  );
+  const meditationCount = myHistoryCachedRecords.length > 0 ? meditationRecords.length : totalCheckins;
+  
+  const totalMeditationMins = myHistoryCachedRecords.reduce((sum, r) => sum + (parseInt(r.meditation_minutes) || 0), 0) || (currentStudent?.total_meditation_mins || 0);
+
+  const sutraRecords = myHistoryCachedRecords.filter(r => 
+    (r.sutra_name && r.sutra_name.trim().length > 0) || 
+    (r.practice_item && r.practice_item.includes('經'))
+  );
+  const sutraCount = myHistoryCachedRecords.length > 0 ? sutraRecords.length : totalCheckins;
+
+  if (statCheckinsEl) statCheckinsEl.textContent = totalCheckins;
+  if (statMeditationCountEl) statMeditationCountEl.textContent = meditationCount;
+  if (statMeditationMinsEl) statMeditationMinsEl.textContent = totalMeditationMins;
+  if (statSutraCountEl) statSutraCountEl.textContent = sutraCount;
+
+  // 根據 activeFilter 與 searchKeyword 篩選紀錄
+  let filtered = [...myHistoryCachedRecords];
+
+  if (myHistoryActiveFilter === 'meditation') {
+    filtered = filtered.filter(r => 
+      (r.meditation_minutes && parseInt(r.meditation_minutes) > 0) || 
+      (r.practice_item && (r.practice_item.includes('坐') || r.practice_item.includes('禪')))
+    );
+  } else if (myHistoryActiveFilter === 'sutra') {
+    filtered = filtered.filter(r => 
+      (r.sutra_name && r.sutra_name.trim().length > 0) || 
+      (r.practice_item && r.practice_item.includes('經'))
+    );
+  }
+
+  if (myHistorySearchKeyword) {
+    filtered = filtered.filter(r => {
+      const matchSutra = (r.sutra_name && r.sutra_name.toLowerCase().includes(myHistorySearchKeyword));
+      const matchTime = (r.record_time && r.record_time.toLowerCase().includes(myHistorySearchKeyword));
+      const matchItem = (r.practice_item && r.practice_item.toLowerCase().includes(myHistorySearchKeyword));
+      const matchNote = (r.reflection_note && r.reflection_note.toLowerCase().includes(myHistorySearchKeyword));
+      const matchComment = (r.mentor_comment && r.mentor_comment.toLowerCase().includes(myHistorySearchKeyword));
+      return matchSutra || matchTime || matchItem || matchNote || matchComment;
+    });
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 2.5rem 1rem; color: var(--ink-muted);">
+        <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📜</div>
+        <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink-deep); margin-bottom: 4px;">查無相符之修持打卡紀錄</div>
+        <div style="font-size: 0.82rem;">若您剛剛完成打卡或補填時間，紀錄將即時呈現於此。</div>
+      </div>
+    `;
+    return;
+  }
+
+  // 渲染紀錄卡片
+  container.innerHTML = filtered.map(r => `
+    <div style="background: #ffffff; border: 1px solid var(--border-light); border-left: 4px solid var(--pine-green); border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 0.9rem; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
+      
+      <!-- 標題列：日期時間與修持項目 -->
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 0.65rem;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="background: #e8f5e9; color: #2e7d32; font-weight: 700; font-size: 0.78rem; padding: 2px 8px; border-radius: 4px;">
+            ${r.practice_item || '精進修持'}
+          </span>
+          <strong style="color: var(--ink-deep); font-size: 0.98rem; letter-spacing: 0.3px;">
+            📅 ${r.record_time}
+          </strong>
+        </div>
+        <div style="font-size: 0.82rem; color: var(--gold-bronze); font-weight: 600;">
+          ${r.meditation_minutes ? `🧘 靜坐 ${r.meditation_minutes} 分鐘` : ''}
+          ${(r.meditation_minutes && r.sutra_name) ? ' ｜ ' : ''}
+          ${r.sutra_name ? `📖 《${r.sutra_name}》${r.sutra_count ? `${r.sutra_count} 部` : ''}` : ''}
+        </div>
+      </div>
+
+      <!-- 詳細項目標籤塊：經書品名、禪坐時長、持咒品目 -->
+      ${(r.meditation_minutes || r.sutra_name || r.mantra_name) ? `
+        <div style="background: #fbfbfb; border: 1px solid #f1f3f2; border-radius: 6px; padding: 0.55rem 0.85rem; font-size: 0.88rem; color: var(--ink-base); margin-bottom: 0.65rem; display: flex; flex-wrap: wrap; gap: 14px; line-height: 1.5;">
+          ${r.meditation_minutes ? `
+            <span>🧘 <strong>禪坐定境時長：</strong><span style="color: #b45309; font-weight: 800;">${r.meditation_minutes}</span> 分鐘</span>
+          ` : ''}
+          ${r.sutra_name ? `
+            <span>📖 <strong>持誦經書品名：</strong>《<strong style="color: #0288d1;">${r.sutra_name}</strong>》${r.sutra_count ? `（${r.sutra_count} 部）` : ''}</span>
+          ` : ''}
+          ${r.mantra_name ? `
+            <span>📿 <strong>持咒名稱：</strong>${r.mantra_name}${r.mantra_count ? `（${r.mantra_count} 遍）` : ''}</span>
+          ` : ''}
+        </div>
+      ` : ''}
+
+      <!-- 用功省思 / 迴向隨感 -->
+      ${r.reflection_note ? `
+        <div style="background: #f9fbf9; border: 1px dashed rgba(45,76,66,0.22); border-radius: 6px; padding: 0.65rem 0.9rem; font-size: 0.88rem; line-height: 1.65; color: #374151; margin-bottom: 0.65rem;">
+          <strong style="color: var(--pine-green);">💭 用功隨感 / 迴向：</strong><br>
+          ${r.reflection_note}
+        </div>
+      ` : ''}
+
+      <!-- 指導法師慈悲批註開示 -->
+      ${r.mentor_comment ? `
+        <div style="background: #f4f9f7; border: 1.5px solid #a7f3d0; border-radius: 6px; padding: 0.7rem 0.95rem; font-size: 0.88rem; line-height: 1.65; color: #065f46;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+            <strong style="color: var(--pine-green); font-size: 0.9rem;">📜 指導法師慈悲開示：</strong>
+            <span style="font-size: 0.75rem; color: var(--ink-muted);">${r.commented_at ? `批註時間：${r.commented_at}` : ''}</span>
+          </div>
+          <div>${r.mentor_comment}</div>
+        </div>
+      ` : ''}
+
+    </div>
+  `).join('');
 }
 
 // ═══════════════════════════════════════════════════════════════

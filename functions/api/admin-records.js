@@ -24,7 +24,7 @@ export async function onRequestGet({ request, env }) {
     }
 
     const studentsResult = await db.prepare('SELECT * FROM students ORDER BY total_checkins DESC').all();
-    const checkinsResult = await db.prepare('SELECT * FROM checkins ORDER BY record_time DESC LIMIT 300').all();
+    const checkinsResult = await db.prepare('SELECT * FROM checkins ORDER BY record_time DESC LIMIT 1000').all();
 
     return new Response(JSON.stringify({
       success: true,

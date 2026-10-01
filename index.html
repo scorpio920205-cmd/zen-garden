@@ -157,6 +157,9 @@
           </div>
 
           <div class="app-nav-actions">
+            <button type="button" class="btn-secondary" onclick="openMyHistoryModal()" style="display: flex; align-items: center; gap: 4px; font-weight: 700;">
+              <span>📜</span> 我的修持歷程
+            </button>
             <a href="garden2d.html" class="btn-primary" style="padding: 0.45rem 1.1rem; font-size: 0.88rem; text-decoration: none;">
               <span>🌸</span> 進入 2D 開心花園
             </a>
@@ -206,17 +209,20 @@
 
     <!-- ════ 打卡修持數量統計看板 ════ -->
     <section class="practice-stats-strip" id="practiceStatsSection">
-      <div class="stats-panel-header">
+      <div class="stats-panel-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
           <span style="font-size: 1.25rem;">📊</span>
           <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--ink-deep);">個人精進修持數據統計</h2>
           <span id="statStudentLabel" style="font-size: 0.82rem; color: var(--gold-bronze);"></span>
         </div>
+        <button type="button" class="btn-secondary" onclick="openMyHistoryModal()" style="font-size: 0.82rem; padding: 0.35rem 0.9rem; font-weight: 700; border-color: var(--pine-green); color: var(--pine-green); background: #ffffff; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+          <span>🔍</span> 查閱修持歷程明細
+        </button>
       </div>
 
       <div class="stats-grid-row">
         <!-- 1. 累積打卡次數 -->
-        <div class="stat-metric-card">
+        <div class="stat-metric-card" onclick="openMyHistoryModal('all')" style="cursor: pointer;" title="點擊查閱個人全部修持歷程">
           <div class="stat-metric-icon" style="background: #e8f5e9; color: #2e7d32;">🪷</div>
           <div class="stat-metric-info">
             <div class="stat-metric-num" id="statCardCheckins">0</div>
@@ -225,7 +231,7 @@
         </div>
 
         <!-- 2. 累積禪坐定境次數 -->
-        <div class="stat-metric-card">
+        <div class="stat-metric-card" onclick="openMyHistoryModal('meditation')" style="cursor: pointer;" title="點擊查閱禪坐定境明細">
           <div class="stat-metric-icon" style="background: #fff8e1; color: #f57f17;">🧘</div>
           <div class="stat-metric-info">
             <div class="stat-metric-num"><span id="statCardMeditation">0</span> <small style="font-size:0.8rem; font-weight:normal;">次</small></div>
@@ -233,16 +239,25 @@
           </div>
         </div>
 
-        <!-- 3. 誦經修持部數 -->
-        <div class="stat-metric-card">
-          <div class="stat-metric-icon" style="background: #e1f5fe; color: #0288d1;">📖</div>
+        <!-- 3. 累積禪坐定境時長 -->
+        <div class="stat-metric-card" onclick="openMyHistoryModal('meditation')" style="cursor: pointer;" title="點擊查閱禪坐時長明細">
+          <div class="stat-metric-icon" style="background: #fff3e0; color: #e65100;">⏱️</div>
           <div class="stat-metric-info">
-            <div class="stat-metric-num" id="statCardSutras">0</div>
-            <div class="stat-metric-label">每日誦經受持部數</div>
+            <div class="stat-metric-num"><span id="statCardMeditationMins">0</span> <small style="font-size:0.8rem; font-weight:normal;">分</small></div>
+            <div class="stat-metric-label">累積禪坐定境時長</div>
           </div>
         </div>
 
-        <!-- 4. 隨喜讚嘆數 -->
+        <!-- 4. 每日誦經受持次數 -->
+        <div class="stat-metric-card" onclick="openMyHistoryModal('sutra')" style="cursor: pointer;" title="點擊查閱誦經受持明細（經書品名）">
+          <div class="stat-metric-icon" style="background: #e1f5fe; color: #0288d1;">📖</div>
+          <div class="stat-metric-info">
+            <div class="stat-metric-num"><span id="statCardSutras">0</span> <small style="font-size:0.8rem; font-weight:normal;">次</small></div>
+            <div class="stat-metric-label">每日誦經受持次數</div>
+          </div>
+        </div>
+
+        <!-- 5. 隨喜讚嘆數 -->
         <div class="stat-metric-card">
           <div class="stat-metric-icon" style="background: #fce4ec; color: #c2185b;">🙏</div>
           <div class="stat-metric-info">
@@ -251,7 +266,7 @@
           </div>
         </div>
 
-        <!-- 5. 自性修持階段 -->
+        <!-- 6. 自性修持階段 -->
         <div class="stat-metric-card" style="border-left: 4px solid var(--gold-bronze);">
           <div class="stat-metric-icon" style="background: #f6efe2; color: #8f6f3a;">🌱</div>
           <div class="stat-metric-info">
@@ -745,6 +760,67 @@
           🌸 確認補齊綁定
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- 個人修持歷程與打卡明細查詢彈窗 -->
+  <div class="zen-quote-overlay" id="myHistoryModal" style="display: none;" onclick="if(event.target===this) closeMyHistoryModal()">
+    <div class="zen-quote-dialog" style="max-width: 720px; width: 95%; max-height: 88vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: var(--radius-lg, 14px);">
+      
+      <!-- 彈窗頂部 -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.4rem; background: var(--bg-card); border-bottom: 1px solid var(--border-light);">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.3rem;">📜</span>
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--ink-deep); margin: 0;">個人精進修持歷程與打卡明細</h3>
+          </div>
+          <div id="historyModalStudentBadge" style="font-size: 0.84rem; color: var(--gold-bronze); margin-top: 4px; font-weight: 600;"></div>
+        </div>
+        <button type="button" onclick="closeMyHistoryModal()" style="background: none; border: none; font-size: 1.6rem; color: var(--ink-muted); cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+
+      <!-- 四項統計匯總條 -->
+      <div style="background: #fbfbfb; border-bottom: 1px solid var(--border-light); padding: 0.8rem 1.4rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem;">
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.5rem 0.8rem; text-align: center;">
+          <div style="font-size: 0.75rem; color: var(--ink-muted);">🪷 總打卡次數</div>
+          <div style="font-size: 1.15rem; font-weight: 800; color: var(--pine-green);"><span id="historyStatCheckins">0</span> <small style="font-size: 0.75rem; font-weight: normal;">次</small></div>
+        </div>
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.5rem 0.8rem; text-align: center;">
+          <div style="font-size: 0.75rem; color: var(--ink-muted);">🧘 靜坐定境次數</div>
+          <div style="font-size: 1.15rem; font-weight: 800; color: #b45309;"><span id="historyStatMeditationCount">0</span> <small style="font-size: 0.75rem; font-weight: normal;">次</small></div>
+        </div>
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.5rem 0.8rem; text-align: center;">
+          <div style="font-size: 0.75rem; color: var(--ink-muted);">⏱️ 累積定境時長</div>
+          <div style="font-size: 1.15rem; font-weight: 800; color: #b45309;"><span id="historyStatMeditationMins">0</span> <small style="font-size: 0.75rem; font-weight: normal;">分鐘</small></div>
+        </div>
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.5rem 0.8rem; text-align: center;">
+          <div style="font-size: 0.75rem; color: var(--ink-muted);">📖 誦經受持次數</div>
+          <div style="font-size: 1.15rem; font-weight: 800; color: #0288d1;"><span id="historyStatSutraCount">0</span> <small style="font-size: 0.75rem; font-weight: normal;">次</small></div>
+        </div>
+      </div>
+
+      <!-- 篩選與搜尋控制條 -->
+      <div style="display: flex; gap: 0.8rem; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 0.7rem 1.4rem; background: #ffffff; border-bottom: 1px solid var(--border-light);">
+        <div style="display: flex; gap: 6px;">
+          <button type="button" class="pill-option active" id="historyFilterAll" onclick="filterHistoryType('all', this)" style="padding: 4px 12px; font-size: 0.82rem;">全部</button>
+          <button type="button" class="pill-option" id="historyFilterMeditation" onclick="filterHistoryType('meditation', this)" style="padding: 4px 12px; font-size: 0.82rem;">🧘 靜坐</button>
+          <button type="button" class="pill-option" id="historyFilterSutra" onclick="filterHistoryType('sutra', this)" style="padding: 4px 12px; font-size: 0.82rem;">📖 誦經</button>
+        </div>
+        <div style="flex: 1; max-width: 260px; min-width: 160px;">
+          <input type="text" id="historySearchInput" class="form-control" placeholder="🔍 搜尋經書名稱或日期……" style="font-size: 0.84rem; padding: 0.35rem 0.75rem;" oninput="handleHistorySearch(this.value)">
+        </div>
+      </div>
+
+      <!-- 打卡紀錄明細列表容器 (滾動) -->
+      <div id="myHistoryListContainer" style="flex: 1; overflow-y: auto; padding: 1.2rem 1.4rem; background: #fafaf8;">
+        <!-- 由 app.js 動態渲染 -->
+      </div>
+
+      <!-- 彈窗底部關閉鈕 -->
+      <div style="padding: 0.8rem 1.4rem; background: #ffffff; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-secondary" onclick="closeMyHistoryModal()" style="padding: 0.45rem 1.4rem; font-size: 0.9rem;">關閉</button>
+      </div>
+
     </div>
   </div>
 

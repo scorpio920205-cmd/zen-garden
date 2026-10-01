@@ -143,6 +143,14 @@
           <div class="lbl">累積打卡修持次數</div>
         </div>
         <div class="admin-stat-card">
+          <div class="val" id="statTotalMeditationCount" style="color: #d97706;">0</div>
+          <div class="lbl">全班靜坐總次數</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="val" id="statTotalSutraCount" style="color: #0288d1;">0</div>
+          <div class="lbl">全班誦經總次數</div>
+        </div>
+        <div class="admin-stat-card">
           <div class="val" id="statTotalMeditation" style="color: var(--vermilion);">0</div>
           <div class="lbl">累積禪坐分鐘數</div>
         </div>
@@ -317,7 +325,9 @@
                 <th>真實姓名</th>
                 <th>法名</th>
                 <th>累積打卡</th>
-                <th>禪坐時長</th>
+                <th style="color: #d97706;">🧘 靜坐次數</th>
+                <th style="color: #0288d1;">📖 誦經次數</th>
+                <th>禪坐總時長</th>
                 <th>2D 生長境界</th>
                 <th>2D 花園巡視</th>
                 <th style="text-align: center; color: var(--vermilion);">最高權限維護</th>
@@ -336,6 +346,9 @@
           <div class="card-title-group">
             <h2><span>✍️</span> 學員修持心得串流 ＆ 法師線上慈悲批註</h2>
             <p>點擊每筆修持心得下方的開示輸入框，即可直接儲存批註，學員在個人專區即可同步檢閱開示。</p>
+          </div>
+          <div style="min-width: 260px;">
+            <input type="text" id="adminCheckinSearchInput" class="form-control" placeholder="🔍 搜尋心得、姓名、法名或經書品名……" oninput="handleAdminCheckinSearch(this.value)" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
           </div>
         </div>
 

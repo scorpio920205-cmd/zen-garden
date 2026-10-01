@@ -148,19 +148,39 @@ async function loadAdminDashboardData() {
   renderCheckinsStream();
 }
 
+let adminCheckinSearchKeyword = '';
+
 function updateDashboardStats() {
   const dayCount = allStudentsCache.filter(s => s.class_type === '日高').length;
   const nightCount = allStudentsCache.filter(s => s.class_type === '夜高').length;
   const totalMins = allStudentsCache.reduce((sum, s) => sum + (s.total_meditation_mins || 0), 0);
 
+  // 全體靜坐次數
+  const totalMeditationCount = allCheckinsCache.filter(c => 
+    (c.meditation_minutes && parseInt(c.meditation_minutes) > 0) || 
+    (c.practice_item && (c.practice_item.includes('坐') || c.practice_item.includes('禪')))
+  ).length;
+
+  // 全體誦經次數
+  const totalSutraCount = allCheckinsCache.filter(c => 
+    (c.sutra_name && c.sutra_name.trim().length > 0) || 
+    (c.practice_item && c.practice_item.includes('經'))
+  ).length;
+
   document.getElementById('statTotalStudents').textContent = allStudentsCache.length;
   document.getElementById('statDayStudents').textContent = dayCount;
   document.getElementById('statNightStudents').textContent = nightCount;
   document.getElementById('statTotalCheckins').textContent = allCheckinsCache.length;
+  if (document.getElementById('statTotalMeditationCount')) {
+    document.getElementById('statTotalMeditationCount').textContent = totalMeditationCount;
+  }
+  if (document.getElementById('statTotalSutraCount')) {
+    document.getElementById('statTotalSutraCount').textContent = totalSutraCount;
+  }
   document.getElementById('statTotalMeditation').textContent = totalMins;
 }
 
-// 渲染學員總覽名錄 (含真實姓名、學號、生長境界、花園巡視與最高權限刪除)
+// 渲染學員總覽名錄 (含真實姓名、學號、靜坐次數、誦經次數、生長境界、花園巡視與最高權限刪除)
 function renderStudentTable() {
   const tbody = document.getElementById('studentsTableBody');
   if (!tbody) return;
@@ -168,7 +188,7 @@ function renderStudentTable() {
   const filtered = allStudentsCache.filter(s => !currentAdminClassFilter || s.class_type === currentAdminClassFilter);
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:2rem; color:var(--ink-muted);">查無學員資料</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding:2rem; color:var(--ink-muted);">查無學員資料</td></tr>`;
     return;
   }
 
@@ -187,6 +207,25 @@ function renderStudentTable() {
       stageBadge = `<span class="stage-badge stage-badge-1">🌱 第1階 善念 (${checkins}/49天)</span>`;
     }
 
+    // 計算該學員的靜坐次數與誦經次數
+    const studentCheckins = allCheckinsCache.filter(c => 
+      c.student_id == s.id || 
+      (c.real_name === s.real_name && c.class_type === s.class_type)
+    );
+
+    const sMeditationCount = studentCheckins.filter(c => 
+      (c.meditation_minutes && parseInt(c.meditation_minutes) > 0) || 
+      (c.practice_item && (c.practice_item.includes('坐') || c.practice_item.includes('禪')))
+    ).length;
+
+    const sSutraCount = studentCheckins.filter(c => 
+      (c.sutra_name && c.sutra_name.trim().length > 0) || 
+      (c.practice_item && c.practice_item.includes('經'))
+    ).length;
+
+    const displayMeditationCount = studentCheckins.length > 0 ? sMeditationCount : (s.total_checkins || 0);
+    const displaySutraCount = studentCheckins.length > 0 ? sSutraCount : (s.total_sutra_recs || 0);
+
     return `
     <tr id="student-row-${s.id}">
       <td><span class="badge-class">${s.class_type}</span></td>
@@ -195,7 +234,9 @@ function renderStudentTable() {
       <td style="font-weight:600; color:var(--ink-deep);">${s.real_name}</td>
       <td style="color:var(--gold-bronze); font-weight:600;">${s.dharma_name || '（未填）'}</td>
       <td><strong>${s.total_checkins}</strong> 次</td>
-      <td>${s.total_meditation_mins} 分</td>
+      <td><strong style="color: #d97706;">${displayMeditationCount}</strong> 次</td>
+      <td><strong style="color: #0288d1;">${displaySutraCount}</strong> 次</td>
+      <td>${s.total_meditation_mins || 0} 分</td>
       <td>${stageBadge}</td>
       <td>
         <a href="garden2d.html?admin=1&visitor=1&id=${s.id}" target="_blank" class="btn-secondary" style="padding:0.25rem 0.75rem; font-size:0.8rem; border-color:var(--pine-green); color:var(--pine-green); font-weight:600; white-space:nowrap;">
@@ -228,15 +269,32 @@ async function handleDeleteStudent(studentId, dharmaName, realName) {
   }
 }
 
-// 渲染打卡紀錄與法師線上批註 (含最高權限單筆刪除功能)
+function handleAdminCheckinSearch(val) {
+  adminCheckinSearchKeyword = (val || '').trim().toLowerCase();
+  renderCheckinsStream();
+}
+
+// 渲染打卡紀錄與法師線上批註 (含最高權限單筆刪除功能與搜尋過濾)
 function renderCheckinsStream() {
   const container = document.getElementById('adminCheckinStream');
   if (!container) return;
 
-  const filtered = allCheckinsCache.filter(c => !currentAdminClassFilter || c.class_type === currentAdminClassFilter);
+  const filtered = allCheckinsCache.filter(c => {
+    if (currentAdminClassFilter && c.class_type !== currentAdminClassFilter) return false;
+    if (adminCheckinSearchKeyword) {
+      const matchName = (c.dharma_name && c.dharma_name.toLowerCase().includes(adminCheckinSearchKeyword)) ||
+                        (c.real_name && c.real_name.toLowerCase().includes(adminCheckinSearchKeyword)) ||
+                        (c.group_name && c.group_name.toLowerCase().includes(adminCheckinSearchKeyword));
+      const matchSutra = (c.sutra_name && c.sutra_name.toLowerCase().includes(adminCheckinSearchKeyword));
+      const matchNote = (c.reflection_note && c.reflection_note.toLowerCase().includes(adminCheckinSearchKeyword));
+      const matchTime = (c.record_time && c.record_time.toLowerCase().includes(adminCheckinSearchKeyword));
+      if (!matchName && !matchSutra && !matchNote && !matchTime) return false;
+    }
+    return true;
+  });
 
   if (filtered.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding:2.5rem; color:var(--ink-muted);">尚無修持紀錄</div>`;
+    container.innerHTML = `<div style="text-align:center; padding:2.5rem; color:var(--ink-muted);">尚無相符之修持打卡紀錄</div>`;
     return;
   }
 
