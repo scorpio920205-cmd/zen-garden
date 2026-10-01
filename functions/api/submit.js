@@ -108,32 +108,12 @@ export async function onRequestPost({ request, env }) {
       // 全新學員建檔
       const insertResult = await db.prepare(`
         INSERT INTO students (student_no, class_type, group_name, real_name, dharma_name, total_checkins, total_meditation_mins, total_sutra_recs, lotus_level, rejoice_count)
-        VALUES (?, ?, ?, ?, ?, 1, ?, ?, 1, 0)
-      `).bind(cleanNo, class_type, group_name, cleanRealName, dharma_name || '', addMins, addSutra).run();
+        VALUES (?, ?, ?, ?, ?, 0, 0, 0, 1, 0)
+      `).bind(cleanNo, class_type, group_name, cleanRealName, dharma_name || '').run();
 
       studentId = insertResult.meta.last_row_id;
     } else {
       studentId = student.id;
-      totalCheckins = (student.total_checkins || 0) + 1;
-      
-      // 計算蓮花等級
-      if (totalCheckins >= 30) lotusLevel = 5;
-      else if (totalCheckins >= 20) lotusLevel = 4;
-      else if (totalCheckins >= 10) lotusLevel = 3;
-      else if (totalCheckins >= 3) lotusLevel = 2;
-      else lotusLevel = 1;
-
-      await db.prepare(`
-        UPDATE students 
-        SET total_checkins = total_checkins + 1,
-            total_meditation_mins = total_meditation_mins + ?,
-            total_sutra_recs = total_sutra_recs + ?,
-            lotus_level = ?,
-            dharma_name = CASE WHEN ? != '' THEN ? ELSE dharma_name END,
-            student_no = CASE WHEN ? != '' THEN ? ELSE student_no END,
-            updated_at = datetime('now', '+8 hours')
-        WHERE id = ?
-      `).bind(addMins, addSutra, lotusLevel, dharma_name || '', dharma_name || '', student_no || '', student_no || '', studentId).run();
     }
 
     // 2. 插入打卡明細 (支援歷史補填時間)
@@ -154,6 +134,37 @@ export async function onRequestPost({ request, env }) {
       parseInt(mantra_count) || 0,
       reflection_note
     ).run();
+
+    // 重新結算學員真實修持天數 (不重複打卡天數，確保每位同修自 2026/09/29 起公平踏實晉階) 與累積時數
+    const daysRow = await db.prepare(`
+      SELECT 
+        COUNT(DISTINCT substr(record_time, 1, 10)) as distinct_days,
+        COALESCE(SUM(meditation_minutes), 0) as sum_mins,
+        COALESCE(SUM(sutra_count), 0) as sum_sutras
+      FROM checkins WHERE student_id = ?
+    `).bind(studentId).first();
+
+    const distinctDays = daysRow ? (daysRow.distinct_days || 1) : 1;
+    const totalMins = daysRow ? daysRow.sum_mins : addMins;
+    const totalSutras = daysRow ? daysRow.sum_sutras : addSutra;
+
+    if (distinctDays >= 30) lotusLevel = 5;
+    else if (distinctDays >= 20) lotusLevel = 4;
+    else if (distinctDays >= 10) lotusLevel = 3;
+    else if (distinctDays >= 3) lotusLevel = 2;
+    else lotusLevel = 1;
+
+    await db.prepare(`
+      UPDATE students 
+      SET total_checkins = ?,
+          total_meditation_mins = ?,
+          total_sutra_recs = ?,
+          lotus_level = ?,
+          dharma_name = CASE WHEN ? != '' THEN ? ELSE dharma_name END,
+          student_no = CASE WHEN ? != '' THEN ? ELSE student_no END,
+          updated_at = datetime('now', '+8 hours')
+      WHERE id = ?
+    `).bind(distinctDays, totalMins, totalSutras, lotusLevel, dharma_name || '', dharma_name || '', cleanNo, cleanNo, studentId).run();
 
     const updatedStudent = await db.prepare('SELECT * FROM students WHERE id = ?').bind(studentId).first();
 

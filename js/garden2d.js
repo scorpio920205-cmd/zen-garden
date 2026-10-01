@@ -26,7 +26,7 @@ const STAGE_CONFIGS = {
   1: {
     id: 1,
     name: "第一階段 · 春生初萌",
-    subtext: "維持 49 天（累積 1 ~ 49 天）· 初耕心地，澄澈池水與無泥草皮，善法金種深植心田",
+    subtext: "2026/09/29 ～ 2026/11/16（累積 1 ~ 49 天 · 維持 49 天）· 初耕心地，澄澈池水與無泥草皮，善法金種深植心田",
     bg: "assets/images/stage_1_seed.jpg",
     season: "spring",
     duration: 49,
@@ -38,7 +38,7 @@ const STAGE_CONFIGS = {
   2: {
     id: 2,
     name: "第二階段 · 庭園初展",
-    subtext: "維持 61 天（累積 50 ~ 110 天 · 每階+12天等差成長）· 庭園開展，石徑延展，池面澄明，菩提生機日盛",
+    subtext: "2026/11/17 ～ 2027/01/16（累積 50 ~ 110 天 · 維持 61 天）· 庭園開展，石徑延展，池面澄明，菩提生機日盛",
     bg: "assets/images/stage_2_sprout.jpg",
     season: "spring",
     duration: 61,
@@ -50,7 +50,7 @@ const STAGE_CONFIGS = {
   3: {
     id: 3,
     name: "第三階段 · 菩提成林",
-    subtext: "維持 73 天（累積 111 ~ 183 天 · 每階+12天等差成長）· 茂林修竹，樹林漸密，草房日益寬廣，同位置澄澈蓮池，甘露法流不息",
+    subtext: "2027/01/17 ～ 2027/03/30（累積 111 ~ 183 天 · 維持 73 天）· 茂林修竹，樹林漸密，草房日益寬廣，同位置澄澈蓮池，甘露法流不息",
     bg: "assets/images/stage_3_forest_v2.jpg",
     season: "summer",
     duration: 73,
@@ -62,7 +62,7 @@ const STAGE_CONFIGS = {
   4: {
     id: 4,
     name: "第四階段 · 金秋豐收",
-    subtext: "維持 85 天（累積 184 ~ 268 天 · 每階+12天等差成長）· 丹楓金杏，秋林深密，草房擴建為莊嚴大禪堂，同位置澄澈蓮池，行一切善法心中無住",
+    subtext: "2027/03/31 ～ 2027/06/23（累積 184 ~ 268 天 · 維持 85 天）· 丹楓金杏，秋林深密，草房擴建為莊嚴大禪堂，同位置澄澈蓮池，行一切善法心中無住",
     bg: "assets/images/stage_4_autumn_v2.jpg",
     season: "autumn",
     duration: 85,
@@ -74,7 +74,7 @@ const STAGE_CONFIGS = {
   5: {
     id: 5,
     name: "第五階段 · 夜睹明星",
-    subtext: "維持 97 天（累積 269 ~ 365+ 天）· 一整年修持圓滿！在安靜下來的時候，看見那一顆屬於自己的星。夜睹明星，明心見性，功德圓融，自性花開。",
+    subtext: "2027/06/24 ～ 2027/09/28+（累積 269 ~ 365+ 天 · 維持 97 天）· 一整年修持圓滿！在安靜下來的時候，看見那一顆屬於自己的星。夜睹明星，明心見性，功德圓融，自性花開。",
     bg: "assets/images/stage_5_night_star.jpg",
     season: "night",
     duration: 97,
