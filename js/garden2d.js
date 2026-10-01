@@ -620,48 +620,101 @@ function renderGarden2DFlowers(stageKey) {
     </defs>
   `;
 
+  // 動態切換水池大小 (第 1 階段為小水池，第 2~5 階段為寬闊大雙室水池，蓮花不用擠在一起)
+  const pondWrap = document.getElementById('garden2dPondFlowers');
+  const isExpandedPond = (stageKey >= 2);
+  if (pondWrap) {
+    if (isExpandedPond) {
+      pondWrap.style.left = '7.5%';
+      pondWrap.style.top = '48%';
+      pondWrap.style.width = '33%';
+      pondWrap.style.height = '46%';
+    } else {
+      pondWrap.style.left = '8.5%';
+      pondWrap.style.top = '51%';
+      pondWrap.style.width = '23.5%';
+      pondWrap.style.height = '23.5%';
+    }
+  }
+  if (pondSvg) {
+    pondSvg.setAttribute('viewBox', isExpandedPond ? '0 0 280 240' : '0 0 240 180');
+  }
+
   // A. 池塘蓮花渲染 (動態按學員累積的蓮花朵數自然分佈於池面：每3天1朵盛開花，餘數1初萌種子，餘數2含苞待放)
   let lotusHTML = defsHTML;
-  // 背景浮水碧綠荷葉 (精緻錯落佈局，襯托微型聖蓮，不搶視覺焦點)
-  lotusHTML += `
-    <ellipse cx="60" cy="118" rx="26" ry="12" fill="url(#lotusLeafGrad)" opacity="0.9"/>
-    <ellipse cx="152" cy="122" rx="28" ry="13" fill="url(#lotusLeafGrad)" opacity="0.9"/>
-    <ellipse cx="108" cy="142" rx="24" ry="11" fill="url(#lotusLeafGrad)" opacity="0.92"/>
-    <ellipse cx="38" cy="88" rx="20" ry="9" fill="url(#lotusLeafGrad)" opacity="0.85"/>
-    <ellipse cx="188" cy="90" rx="22" ry="10" fill="url(#lotusLeafGrad)" opacity="0.85"/>
-    <ellipse cx="118" cy="65" rx="18" ry="8" fill="url(#lotusLeafGrad)" opacity="0.8"/>
-  `;
+  if (isExpandedPond) {
+    // 2~5 階段雙室大水池荷葉
+    lotusHTML += `
+      <ellipse cx="85" cy="80" rx="22" ry="10" fill="url(#lotusLeafGrad)" opacity="0.85"/>
+      <ellipse cx="185" cy="78" rx="24" ry="11" fill="url(#lotusLeafGrad)" opacity="0.85"/>
+      <ellipse cx="135" cy="58" rx="20" ry="9" fill="url(#lotusLeafGrad)" opacity="0.8"/>
+      <ellipse cx="90" cy="165" rx="30" ry="14" fill="url(#lotusLeafGrad)" opacity="0.9"/>
+      <ellipse cx="200" cy="168" rx="32" ry="15" fill="url(#lotusLeafGrad)" opacity="0.9"/>
+      <ellipse cx="145" cy="195" rx="28" ry="13" fill="url(#lotusLeafGrad)" opacity="0.92"/>
+      <ellipse cx="145" cy="138" rx="24" ry="11" fill="url(#lotusLeafGrad)" opacity="0.88"/>
+    `;
+  } else {
+    // 1 階段小水池荷葉
+    lotusHTML += `
+      <ellipse cx="60" cy="118" rx="26" ry="12" fill="url(#lotusLeafGrad)" opacity="0.9"/>
+      <ellipse cx="152" cy="122" rx="28" ry="13" fill="url(#lotusLeafGrad)" opacity="0.9"/>
+      <ellipse cx="108" cy="142" rx="24" ry="11" fill="url(#lotusLeafGrad)" opacity="0.92"/>
+      <ellipse cx="38" cy="88" rx="20" ry="9" fill="url(#lotusLeafGrad)" opacity="0.85"/>
+      <ellipse cx="188" cy="90" rx="22" ry="10" fill="url(#lotusLeafGrad)" opacity="0.85"/>
+      <ellipse cx="118" cy="65" rx="18" ry="8" fill="url(#lotusLeafGrad)" opacity="0.8"/>
+    `;
+  }
 
   // ═══════════════════════════════════════════════════════════════
-  // 縮小蓮花比例（精巧微型化，完美契合石圈水池，盛開直徑約 28~36px）
-  // 24 個深淺立體透視座標，遠小近大，放數十朵依然疏朗空靈
+  // 蓮花座標佈局（1 階段精緻微型化；2~5 階段雙室開闊分佈，絕不擠在一起）
   // ═══════════════════════════════════════════════════════════════
-  const POND_LOTUS_COORDS = [
-    // 1. 核心自然開展區（優先放置前 6 朵）
+  const POND_LOTUS_COORDS = isExpandedPond ? [
+    // 2~5 階段大池子：分佈於上下兩池室，開闊疏朗，絕不擁擠
+    { cx: 135, cy: 75, scale: 1.05 },
+    { cx: 95, cy: 70, scale: 0.95 },
+    { cx: 175, cy: 72, scale: 0.98 },
+    { cx: 115, cy: 55, scale: 0.88 },
+    { cx: 155, cy: 56, scale: 0.88 },
+    { cx: 75, cy: 85, scale: 0.92 },
+    { cx: 195, cy: 88, scale: 0.94 },
+    { cx: 135, cy: 98, scale: 1.02 },
+
+    { cx: 145, cy: 160, scale: 1.15 },
+    { cx: 105, cy: 152, scale: 1.10 },
+    { cx: 185, cy: 155, scale: 1.12 },
+    { cx: 125, cy: 180, scale: 1.18 },
+    { cx: 165, cy: 182, scale: 1.16 },
+    { cx: 80, cy: 140, scale: 1.05 },
+    { cx: 210, cy: 145, scale: 1.08 },
+    { cx: 145, cy: 130, scale: 1.08 },
+    { cx: 105, cy: 125, scale: 1.02 },
+    { cx: 185, cy: 128, scale: 1.04 },
+    { cx: 135, cy: 202, scale: 1.15 },
+    { cx: 175, cy: 200, scale: 1.12 },
+    { cx: 95, cy: 170, scale: 1.10 },
+    { cx: 195, cy: 172, scale: 1.10 },
+    { cx: 65, cy: 160, scale: 1.02 },
+    { cx: 225, cy: 165, scale: 1.04 }
+  ] : [
+    // 1 階段小水池
     { cx: 120, cy: 95, scale: 1.05 },
     { cx: 80, cy: 88, scale: 0.98 },
     { cx: 160, cy: 90, scale: 1.02 },
     { cx: 100, cy: 115, scale: 1.12 },
     { cx: 142, cy: 118, scale: 1.10 },
     { cx: 115, cy: 72, scale: 0.90 },
-
-    // 2. 次階擴展區（第 7 ~ 12 朵）
     { cx: 62, cy: 105, scale: 1.04 },
     { cx: 178, cy: 106, scale: 1.05 },
     { cx: 86, cy: 68, scale: 0.88 },
     { cx: 152, cy: 70, scale: 0.90 },
     { cx: 122, cy: 135, scale: 1.15 },
     { cx: 90, cy: 130, scale: 1.12 },
-
-    // 3. 繁盛全景區（第 13 ~ 18 朵）
     { cx: 155, cy: 132, scale: 1.12 },
     { cx: 48, cy: 92, scale: 0.96 },
     { cx: 192, cy: 94, scale: 0.98 },
     { cx: 100, cy: 55, scale: 0.84 },
     { cx: 138, cy: 56, scale: 0.85 },
     { cx: 70, cy: 78, scale: 0.92 },
-
-    // 4. 滿池功德區（第 19 ~ 24 朵）
     { cx: 170, cy: 80, scale: 0.94 },
     { cx: 135, cy: 82, scale: 0.98 },
     { cx: 105, cy: 85, scale: 1.00 },
