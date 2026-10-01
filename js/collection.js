@@ -26,6 +26,21 @@ function loadStudentCollectionData() {
     console.error("Failed to parse collection data", e);
   }
 
+  // 2026/09/29 正式開跑：前測抽卡資料重置（方案 A：9/28以前測試抽卡歸零重抽，迎新5張重新啟動）
+  if (data && !data.officialLaunchReset_20260929) {
+    data = {
+      collectedIds: [],
+      cardCounts: {},
+      drawsUsed: 0,
+      initialBonus: 5,
+      initialClaimed: true,
+      pityCounter: 0,
+      officialLaunchReset_20260929: true
+    };
+    saveStudentCollectionData(data);
+    return data;
+  }
+
   if (!data) {
     data = {
       collectedIds: [],
@@ -33,7 +48,8 @@ function loadStudentCollectionData() {
       drawsUsed: 0,
       initialBonus: 5, // 一開始登入免費贈送 5 張
       initialClaimed: true,
-      pityCounter: 0
+      pityCounter: 0,
+      officialLaunchReset_20260929: true
     };
     saveStudentCollectionData(data);
   } else if (!data.initialClaimed) {
@@ -75,7 +91,11 @@ function getGardenCompletedFlowerCount() {
       : 'zen_garden_checkins_v2';
     const rawCheckins = localStorage.getItem(storageKey);
     const allCheckins = rawCheckins ? JSON.parse(rawCheckins) : [];
-    const studentCheckins = allCheckins.filter(c => c.student_id == student.student_no || c.student_id == student.id);
+    // 方案 A：只採計 2026-09-29 起的正式打卡紀錄
+    const studentCheckins = allCheckins.filter(c => 
+      (c.student_id == student.student_no || c.student_id == student.id) &&
+      (!c.record_time || c.record_time >= '2026-09-29')
+    );
 
     if (studentCheckins.length > 0) {
       const lotusCount = studentCheckins.filter(c => 
