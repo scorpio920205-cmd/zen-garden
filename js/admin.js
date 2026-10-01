@@ -324,24 +324,10 @@ function renderCheckinsStream() {
       </div>
 
       ${c.reflection_note ? `
-        <div style="background:var(--bg-card-sub); padding:0.9rem 1.2rem; border-radius:var(--radius-sm); font-size:0.92rem; line-height:1.8; margin-bottom:0.8rem;">
+        <div style="background:var(--bg-card-sub); padding:0.9rem 1.2rem; border-radius:var(--radius-sm); font-size:0.92rem; line-height:1.8;">
           <strong>學員修持反思：</strong>${c.reflection_note}
         </div>
       ` : ''}
-
-      <!-- 指導法師批註開示區 -->
-      <div id="commentBoxWrap-${c.id}" style="background:#f4f9f7; border:1px solid rgba(45,76,66,0.2); border-radius:var(--radius-md); padding:1rem;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-          <strong style="color:var(--pine-green); font-size:0.92rem;">📜 指導法師慈悲開示：</strong>
-          <span style="font-size:0.78rem; color:var(--ink-muted);">${c.commented_at ? `已批註：${c.commented_at}` : '尚未批註'}</span>
-        </div>
-        <textarea id="commentInput-${c.id}" class="form-control" style="background:#ffffff; font-size:0.9rem;" placeholder="輸入法師對該學員的修持指導或關懷開示……">${c.mentor_comment || ''}</textarea>
-        <div style="margin-top:0.6rem; display:flex; justify-content:flex-end;">
-          <button type="button" class="btn-primary" style="padding:0.35rem 1.2rem; font-size:0.85rem;" onclick="saveMentorComment(${c.id})">
-            💾 儲存法師開示
-          </button>
-        </div>
-      </div>
     </div>
   `).join('');
 }
