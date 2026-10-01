@@ -143,20 +143,22 @@
   </nav>
 
   <!-- 累積花朵常態提示 (已去除目前境界與第一張圖文字) -->
-  <div style="position: absolute; bottom: 86px; left: 32px; z-index: 40; pointer-events: none;">
-    <div style="background: rgba(35, 20, 26, 0.88); backdrop-filter: blur(8px); border-left: 4px solid #e91e63; border-radius: 6px; padding: 5px 14px; color: #ffffff; font-size: 0.84rem; display: flex; align-items: center; gap: 14px; width: fit-content; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-      <span>🪷 蓮池已累積：<strong id="badgeLotusNum" style="color: #f8bbd0; font-size: 0.95rem;">0</strong> 朵</span>
+  <div class="garden-bottom-flower-wrap">
+    <div class="garden-bottom-flower-badge">
+      <span>🪷 蓮池已累積：<strong id="badgeLotusNum" style="color: #f8bbd0; font-size: 0.95rem;">0</strong></span>
       <span style="opacity: 0.4;">｜</span>
-      <span>🌻 草皮已累積：<strong id="badgeSunflowerNum" style="color: #ffe082; font-size: 0.95rem;">0</strong> 朵</span>
+      <span>🌻 草皮已累積：<strong id="badgeSunflowerNum" style="color: #ffe082; font-size: 0.95rem;">0</strong></span>
     </div>
   </div>
 
-  <!-- 參觀學員花園提示橫幅 -->
-  <div id="visitingFriendIndicator" style="display: none; position: absolute; top: 125px; left: 50%; transform: translateX(-50%); z-index: 55; background: rgba(26, 40, 32, 0.92); backdrop-filter: blur(10px); border: 2px solid #ffd54f; border-radius: 9999px; padding: 6px 20px; color: #ffffff; align-items: center; gap: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.4);">
-    <span style="font-size: 1.15rem;">🌸</span>
-    <span id="visitingFriendTitle" style="font-weight: 600; font-size: 0.95rem;">正在參觀學員花園：【日高】傳覺 的精進花園</span>
-    <span style="font-size: 0.76rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 9999px;">🛡️ 隱私安全防護</span>
-    <button type="button" onclick="returnToMyGarden()" style="background: #ffd54f; color: #172c26; border: none; border-radius: 9999px; padding: 4px 14px; font-weight: 700; font-size: 0.85rem; cursor: pointer;">
+  <!-- 參觀學員花園提示橫幅 (自適應各尺寸螢幕，避免遮擋中央花園) -->
+  <div id="visitingFriendIndicator" class="visiting-friend-indicator" style="display: none;">
+    <div class="visiting-indicator-content">
+      <span class="visiting-indicator-icon">🌸</span>
+      <span id="visitingFriendTitle" class="visiting-indicator-title">正在參觀學員花園：【日高】傳覺 的精進花園</span>
+      <span class="visiting-indicator-badge">🛡️ 隱私安全</span>
+    </div>
+    <button type="button" class="visiting-indicator-btn" onclick="returnToMyGarden()">
       ← 返回我的花園
     </button>
   </div>

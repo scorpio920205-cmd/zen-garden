@@ -573,6 +573,104 @@ body.garden-2d-body {
 }
 
 /* ════════════════════════════════
+   參觀學員花園提示浮動橫幅 (自適應各尺寸螢幕，避免遮擋中央花園)
+   ════════════════════════════════ */
+.visiting-friend-indicator {
+  position: absolute;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 55;
+  background: rgba(26, 40, 32, 0.94);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid #ffd54f;
+  border-radius: 9999px;
+  padding: 5px 16px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  max-width: 90vw;
+  box-sizing: border-box;
+}
+
+.visiting-indicator-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.visiting-indicator-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.visiting-indicator-title {
+  font-weight: 600;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.visiting-indicator-badge {
+  font-size: 0.72rem;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.visiting-indicator-btn {
+  background: #ffd54f;
+  color: #172c26;
+  border: none;
+  border-radius: 9999px;
+  padding: 4px 12px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.visiting-indicator-btn:hover {
+  background: #ffca28;
+  transform: scale(1.03);
+}
+
+/* 底部蓮花/太陽花常態統計浮標 */
+.garden-bottom-flower-wrap {
+  position: absolute;
+  bottom: 86px;
+  left: 32px;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.garden-bottom-flower-badge {
+  background: rgba(35, 20, 26, 0.88);
+  backdrop-filter: blur(8px);
+  border-left: 4px solid #e91e63;
+  border-radius: 6px;
+  padding: 5px 14px;
+  color: #ffffff;
+  font-size: 0.84rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ════════════════════════════════
    蓮花與太陽花 · 三階段成花圖型典藏展彈窗
    ════════════════════════════════ */
 .flower-modal-backdrop {
@@ -1127,5 +1225,89 @@ body.garden-2d-body {
 
   .flower-stage-cards {
     grid-template-columns: 1fr;
+  }
+
+  /* 手機版：參觀橫幅縮小並適配，絕對不成為遮蔽中央的巨大橢圓蛋形 */
+  .visiting-friend-indicator {
+    top: 78px;
+    width: auto;
+    max-width: calc(100vw - 20px);
+    padding: 4px 10px;
+    border-radius: 20px;
+    gap: 6px;
+    border-width: 1px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .visiting-indicator-content {
+    gap: 5px;
+    max-width: calc(100% - 75px);
+  }
+
+  .visiting-indicator-icon {
+    font-size: 0.95rem;
+  }
+
+  .visiting-indicator-title {
+    font-size: 0.76rem;
+    max-width: 180px;
+  }
+
+  /* 手機版隱私小標籤隱藏，避免文字擠壓換行 */
+  .visiting-indicator-badge {
+    display: none;
+  }
+
+  .visiting-indicator-btn {
+    padding: 3px 8px;
+    font-size: 0.74rem;
+  }
+
+  /* 手機版底部蓮池統計浮標定位調整，靠左底，單行不折行 */
+  .garden-bottom-flower-wrap {
+    bottom: 16px;
+    left: 12px;
+  }
+
+  .garden-bottom-flower-badge {
+    font-size: 0.74rem;
+    padding: 3px 10px;
+    gap: 8px;
+    border-radius: 4px;
+  }
+}
+
+/* 手機橫向螢幕 (Landscape) 專屬：避免佔據花園中央視野 */
+@media (max-height: 520px) {
+  .visiting-friend-indicator {
+    top: 48px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    max-width: 80vw;
+  }
+
+  .visiting-indicator-title {
+    font-size: 0.75rem;
+    max-width: 240px;
+  }
+
+  .visiting-indicator-badge {
+    display: none;
+  }
+
+  .visiting-indicator-btn {
+    padding: 2px 8px;
+    font-size: 0.72rem;
+  }
+
+  .garden-bottom-flower-wrap {
+    bottom: 8px;
+    left: 12px;
+  }
+
+  .garden-bottom-flower-badge {
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    gap: 6px;
   }
 }
