@@ -59,6 +59,52 @@ export async function onRequestPost({ request, env }) {
       });
     }
 
+    // 專用動作：批次補齊學員學號（依通訊錄核對，不新增未登入者）
+    if (action === 'batch_update_student_no') {
+      const { updates } = body;
+      if (!Array.isArray(updates) || updates.length === 0) {
+        return new Response(JSON.stringify({ success: false, error: '缺少更新清單' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      const results = [];
+      for (const item of updates) {
+        let updateQuery = "UPDATE students SET student_no = ?, updated_at = datetime('now', '+8 hours')";
+        const params = [String(item.student_no).trim()];
+
+        if (item.real_name) {
+          updateQuery += ", real_name = ?";
+          params.push(String(item.real_name).trim());
+        }
+        if (item.dharma_name) {
+          updateQuery += ", dharma_name = ?";
+          params.push(String(item.dharma_name).trim());
+        }
+
+        updateQuery += " WHERE id = ?";
+        params.push(item.id);
+
+        await db.prepare(updateQuery).bind(...params).run();
+
+        if (item.dharma_name) {
+          await db.prepare("UPDATE checkins SET dharma_name = ? WHERE student_id = ?").bind(String(item.dharma_name).trim(), item.id).run();
+        }
+
+        results.push({ id: item.id, student_no: item.student_no, real_name: item.real_name || undefined });
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        message: `成功為 ${results.length} 位已登入學員補齊學號！`,
+        updated_count: results.length,
+        results
+      }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     // 一般修改單筆紀錄分鐘數
     if (!checkin_id || meditation_minutes === undefined) {
       return new Response(JSON.stringify({ success: false, error: '缺少參數' }), {
