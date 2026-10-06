@@ -348,7 +348,7 @@ async function setupURLQuery() {
     const res = await ZenAPI.getVisitedGardenDetail(studentId);
     if (res.success && res.garden) {
       visitorStudentData = res.garden;
-      const vDisplayName = visitorStudentData.dharma_name || (visitorStudentData.real_name ? visitorStudentData.real_name[0] + '居士' : '精進學員');
+      const vDisplayName = visitorStudentData.dharma_name || (visitorStudentData.real_name ? visitorStudentData.real_name[0] + '師兄' : '精進同修');
       nameEl.textContent = `${vDisplayName} 的學員花園`;
       classEl.textContent = visitorStudentData.class_type;
 

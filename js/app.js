@@ -1644,7 +1644,7 @@ async function visitFriendGarden(studentId) {
     const banner = document.getElementById('visitorNoticeBanner');
     if (banner) {
       banner.style.display = 'flex';
-      const displayName = visitingStudentData.dharma_name || (visitingStudentData.real_name ? visitingStudentData.real_name[0] + '居士' : '精進學員');
+      const displayName = visitingStudentData.dharma_name || (visitingStudentData.real_name ? visitingStudentData.real_name[0] + '師兄' : '精進同修');
       document.getElementById('visitorGardenTitle').textContent = `正在參觀：【${visitingStudentData.class_type}】${displayName} 的學員花園`;
       document.getElementById('visitorRejoiceCount').textContent = visitingStudentData.rejoice_count || 0;
     }

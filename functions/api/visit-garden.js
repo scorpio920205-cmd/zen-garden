@@ -22,9 +22,9 @@ export async function onRequestGet({ request, env }) {
       });
     }
 
-    // 嚴格脫敏：不查詢 real_name 與 student_no
+    // 嚴格脫敏：真實全名與學號絕不對公眾端開放；若無填寫法名則顯示「姓氏 ＋ 師兄」
     const garden = await db.prepare(`
-      SELECT id, class_type, group_name, dharma_name, total_checkins, total_meditation_mins, lotus_level, rejoice_count
+      SELECT id, class_type, group_name, real_name, dharma_name, total_checkins, total_meditation_mins, lotus_level, rejoice_count
       FROM students
       WHERE id = ?
     `).bind(id).first();
@@ -36,9 +36,26 @@ export async function onRequestGet({ request, env }) {
       });
     }
 
+    let displayName = '精進同修';
+    if (garden.dharma_name && garden.dharma_name.trim()) {
+      displayName = garden.dharma_name.trim();
+    } else if (garden.real_name && garden.real_name.trim()) {
+      displayName = garden.real_name.trim().charAt(0) + '師兄';
+    }
+
     return new Response(JSON.stringify({
       success: true,
-      garden
+      garden: {
+        id: garden.id,
+        class_type: garden.class_type,
+        group_name: garden.group_name,
+        dharma_name: displayName,
+        display_name: displayName,
+        total_checkins: garden.total_checkins,
+        total_meditation_mins: garden.total_meditation_mins,
+        lotus_level: garden.lotus_level,
+        rejoice_count: garden.rejoice_count
+      }
     }), {
       headers: { 'Content-Type': 'application/json' }
     });

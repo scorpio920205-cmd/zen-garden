@@ -525,7 +525,7 @@ const ZenAPI = {
         class_type: s.class_type,
         // group_name 可選顯示或保留組別代號
         group_name: s.group_name,
-        dharma_name: s.dharma_name || (s.real_name ? s.real_name[0] + '居士' : "精進同修"),
+        dharma_name: s.dharma_name || (s.real_name ? s.real_name[0] + '師兄' : "精進同修"),
         // 絕對隱藏學號與真實姓名：
         // real_name: undefined,
         // student_no: undefined,
@@ -798,5 +798,24 @@ const ZenAPI = {
       success: true,
       message: "此筆修持紀錄已成功刪除，學員總計數據已重新校正！"
     };
+  },
+
+  // 11. 最高權限：修改單筆打卡之靜坐分鐘數並重新校正總統計
+  async updateCheckinMinutes(checkinId, meditationMinutes, pwd) {
+    const isCloud = await this.isCloudflareBackendAvailable();
+    if (isCloud) {
+      try {
+        const resp = await fetch('/api/update-checkin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ checkin_id: checkinId, meditation_minutes: meditationMinutes, pwd })
+        });
+        return await resp.json();
+      } catch (e) {
+        console.warn('雲端修改分鐘數失敗', e);
+      }
+    }
+    return { success: false, error: '系統連線異常' };
   }
 };
+

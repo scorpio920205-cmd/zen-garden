@@ -310,8 +310,11 @@ function renderCheckinsStream() {
           <div style="font-size:0.82rem; color:var(--gold-bronze); font-weight:500;">
             📅 修持時間：${c.record_time}
           </div>
-          <!-- 最高權限刪除單筆紀錄按鈕 -->
-          <button type="button" class="btn-secondary" style="padding:0.2rem 0.6rem; font-size:0.75rem; border-color:#e57373; color:#c62828; background:#fff; font-weight:600;" onclick="handleDeleteCheckin(${c.id}, '${c.dharma_name}', '${c.practice_item}', '${c.record_time}')" title="指導法師最高權限：刪除此筆修持紀錄">
+          <!-- 最高權限修改與刪除單筆紀錄按鈕 -->
+          <button type="button" class="btn-secondary" style="padding:0.2rem 0.6rem; font-size:0.75rem; border-color:var(--pine-green); color:var(--pine-green); background:#fff; font-weight:600;" onclick="handleEditCheckinMinutes(${c.id}, ${c.meditation_minutes || 0})" title="指導法師最高權限：修改靜坐分鐘數">
+            ✏️ 修改分鐘
+          </button>
+          <button type="button" class="btn-secondary" style="padding:0.2rem 0.6rem; font-size:0.75rem; border-color:#e57373; color:#c62828; background:#fff; font-weight:600;" onclick="handleDeleteCheckin(${c.id}, '${c.dharma_name || c.real_name || ''}', '${c.practice_item}', '${c.record_time}')" title="指導法師最高權限：刪除此筆修持紀錄">
             🗑️ 刪除紀錄
           </button>
         </div>
@@ -330,6 +333,26 @@ function renderCheckinsStream() {
       ` : ''}
     </div>
   `).join('');
+}
+
+// 最高權限：修改單筆打卡之靜坐分鐘數
+async function handleEditCheckinMinutes(checkinId, currentMins) {
+  const input = prompt(`【指導法師最高權限】\n請輸入更正後的靜坐分鐘數：`, currentMins);
+  if (input === null) return;
+  const newMins = parseInt(input);
+  if (isNaN(newMins) || newMins < 0) {
+    alert("請輸入有效的正整數分鐘數！");
+    return;
+  }
+
+  const pwd = sessionStorage.getItem(ADMIN_STORAGE_KEY) || 'ZhongTai#2026';
+  const res = await ZenAPI.updateCheckinMinutes(checkinId, newMins, pwd);
+  if (res.success) {
+    alert(`✅ 靜坐分鐘數已更正為 ${newMins} 分！\n學員累積總分鐘數已同步校正為 ${res.new_total_mins} 分。`);
+    await loadAdminDashboardData();
+  } else {
+    alert(`❌ 修改失敗：${res.error || '請稍後重試'}`);
+  }
 }
 
 // 最高權限：刪除單筆打卡紀錄
