@@ -1548,13 +1548,77 @@ function saveQRCodeAsImage() {
   ctx.font = 'italic 13px "Noto Serif TC", "PingFang TC", sans-serif';
   ctx.fillText('「人在哪裡，心就在哪裡」', 200, 490);
 
+  const fileName = `${s.real_name}_${s.student_no}_報到證.png`;
+
+  // 策略 1：支援原生手機 Web Share API (iOS Safari / Android 可直接按「儲存影像」存入手機相簿)
+  if (navigator.canShare && badgeCanvas.toBlob) {
+    try {
+      const blob = await new Promise(resolve => badgeCanvas.toBlob(resolve, 'image/png'));
+      if (blob) {
+        const file = new File([blob], fileName, { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: '普慶精舍 · 法會修持報到證',
+            text: `學員：${s.real_name}（學號：${s.student_no}）`,
+            files: [file]
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+      console.log('Web Share 失敗，轉用彈出預覽存圖:', e);
+    }
+  }
+
+  // 策略 2：展示長按存圖預覽彈窗 (針對 LINE 內嵌瀏覽器或不支援直接下載的環境)
   const dataUrl = badgeCanvas.toDataURL('image/png');
-  const link = document.createElement('a');
-  link.download = `${s.real_name}_${s.student_no}_報到證.png`;
-  link.href = dataUrl;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  showBadgeImageSaveModal2D(dataUrl, fileName);
+}
+
+function showBadgeImageSaveModal2D(imgSrc, fileName) {
+  let saveModal = document.getElementById('qrImageSaveModal');
+  if (!saveModal) {
+    saveModal = document.createElement('div');
+    saveModal.id = 'qrImageSaveModal';
+    saveModal.className = 'modal-backdrop';
+    saveModal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 1rem;';
+    saveModal.onclick = (e) => {
+      if (e.target === saveModal || e.target.closest('.save-modal-close-btn')) {
+        saveModal.style.display = 'none';
+      }
+    };
+    saveModal.innerHTML = `
+      <div style="background: #ffffff; border-radius: 16px; max-width: 360px; width: 100%; padding: 1.2rem; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative;">
+        <button type="button" class="save-modal-close-btn" style="position: absolute; top: 8px; right: 10px; background: none; border: none; font-size: 1.5rem; color: #888; cursor: pointer;">&times;</button>
+        <h4 style="margin: 0 0 6px; font-size: 1.05rem; color: #1e3830; font-weight: 800;">📱 儲存報到證</h4>
+        <p style="font-size: 0.82rem; color: #c2410c; margin: 0 0 10px; font-weight: 700; background: #fff7ed; padding: 4px 8px; border-radius: 6px;">
+          👉 手機請「手指長按圖片」➜ 點選「儲存影像 / 加入照片」即可存入相簿！
+        </p>
+        <div style="border-radius: 10px; overflow: hidden; border: 1px solid #e5e7eb; margin-bottom: 12px;">
+          <img id="qrSaveModalImg" src="" alt="報到證" style="width: 100%; display: block;">
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: center;">
+          <a id="qrSaveModalDownloadA" href="" download="" class="btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.85rem; text-decoration: none; border-radius: 8px; background: #2d4c42; color: #fff; display: inline-block;">
+            📥 點此下載
+          </a>
+          <button type="button" class="btn-secondary save-modal-close-btn" style="flex: 1; padding: 0.5rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid #2d4c42; background: #fff; color: #2d4c42;">
+            關閉
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(saveModal);
+  }
+
+  const imgEl = saveModal.querySelector('#qrSaveModalImg');
+  const aEl = saveModal.querySelector('#qrSaveModalDownloadA');
+  if (imgEl) imgEl.src = imgSrc;
+  if (aEl) {
+    aEl.href = imgSrc;
+    aEl.download = fileName;
+  }
+  saveModal.style.display = 'flex';
 }
 
 function showStudentEditNoView() {
