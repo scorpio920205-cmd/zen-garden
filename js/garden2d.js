@@ -351,6 +351,8 @@ async function setupURLQuery() {
       const vDisplayName = visitorStudentData.dharma_name || (visitorStudentData.real_name ? visitorStudentData.real_name[0] + '師兄' : '精進同修');
       nameEl.textContent = `${vDisplayName} 的學員花園`;
       classEl.textContent = visitorStudentData.class_type;
+      const hudQrBtn = document.getElementById('hudQrBtn');
+      if (hudQrBtn) hudQrBtn.style.display = 'none';
 
       const days = visitorStudentData.total_checkins || 0;
       daysEl.textContent = Math.max(1, days);
@@ -403,6 +405,8 @@ async function setupURLQuery() {
     nameEl.textContent = '指導法師 巡檢全圖';
     classEl.textContent = '指導法師';
     daysEl.textContent = '全';
+    const hudQrBtn = document.getElementById('hudQrBtn');
+    if (hudQrBtn) hudQrBtn.style.display = 'none';
     activeLotusStats = calculateFlowerRule(36); // 12朵盛開花
     activeSunflowerStats = calculateFlowerRule(45); // 15朵盛開花
 
@@ -1377,4 +1381,265 @@ function handle2DLogout() {
       window.location.href = 'index.html';
     }
   }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 8. 學員卡、報到 QR Code 與學號管理
+// ═══════════════════════════════════════════════════════════
+let studentQRCodeInstance = null;
+
+function handleBrandStudentNoClick(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  if (isVisitor) return;
+  openStudentCardModal();
+}
+
+function openStudentCardModal() {
+  const s = currentStudentData;
+  if (!s) return;
+  const modal = document.getElementById('bindStudentNoModal');
+  if (!modal) return;
+
+  const classTagEl = document.getElementById('studentMenuClassTag');
+  const nameEl = document.getElementById('studentMenuName');
+  const dharmaEl = document.getElementById('studentMenuDharma');
+  const noValEl = document.getElementById('studentMenuNoVal');
+
+  if (classTagEl) classTagEl.textContent = `${s.class_type || ''} ${s.group_name || ''}`;
+  if (nameEl) nameEl.textContent = s.real_name || '精進學員';
+  if (dharmaEl) dharmaEl.textContent = s.dharma_name ? `（${s.dharma_name}）` : '';
+  if (noValEl) {
+    if (s.student_no) {
+      noValEl.textContent = s.student_no;
+      noValEl.style.color = '#166534';
+    } else {
+      noValEl.textContent = '尚未綁定（點下方修改學號補填）';
+      noValEl.style.color = '#dc2626';
+    }
+  }
+
+  showStudentMenuDefaultView();
+  modal.style.display = 'flex';
+}
+
+function closeStudentCardModal() {
+  const modal = document.getElementById('bindStudentNoModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function showStudentMenuDefaultView() {
+  const menuPanel = document.getElementById('studentCardMenuPanel');
+  const qrPanel = document.getElementById('studentQRCodePanel');
+  const editPanel = document.getElementById('studentEditNoPanel');
+
+  if (menuPanel) menuPanel.style.display = 'block';
+  if (qrPanel) qrPanel.style.display = 'none';
+  if (editPanel) editPanel.style.display = 'none';
+}
+
+function showStudentQRCodeView() {
+  const s = currentStudentData;
+  if (!s) return;
+
+  if (!s.student_no || s.student_no.trim() === '') {
+    alert('您目前尚未綁定學號，請先完成學號綁定後即可生成專屬報到 QR Code！');
+    showStudentEditNoView();
+    return;
+  }
+
+  const menuPanel = document.getElementById('studentCardMenuPanel');
+  const qrPanel = document.getElementById('studentQRCodePanel');
+  const editPanel = document.getElementById('studentEditNoPanel');
+
+  if (menuPanel) menuPanel.style.display = 'none';
+  if (qrPanel) qrPanel.style.display = 'block';
+  if (editPanel) editPanel.style.display = 'none';
+
+  const nameEl = document.getElementById('qrCardStudentName');
+  const classDharmaEl = document.getElementById('qrCardClassDharma');
+  const noEl = document.getElementById('qrCardStudentNoNumber');
+
+  if (nameEl) nameEl.textContent = s.real_name || '精進學員';
+  if (classDharmaEl) {
+    classDharmaEl.textContent = `【${s.class_type}】${s.group_name}組${s.dharma_name ? ` · 法名：${s.dharma_name}` : ''}`;
+  }
+  if (noEl) noEl.textContent = s.student_no;
+
+  generateStudentQRCode(s.student_no);
+}
+
+function generateStudentQRCode(studentNo) {
+  const container = document.getElementById('studentQRCodeContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (typeof QRCode === 'undefined') {
+    container.innerHTML = '<div style="padding: 2.5rem 1rem; color: #888; font-size: 0.9rem;">QR Code 模組載入中……</div>';
+    return;
+  }
+
+  try {
+    studentQRCodeInstance = new QRCode(container, {
+      text: String(studentNo).trim(),
+      width: 200,
+      height: 200,
+      colorDark: '#121815',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } catch (err) {
+    console.error('QR Code 生成失敗:', err);
+    container.innerHTML = `<div style="padding: 2rem 1rem; color: #c62828; font-size: 0.9rem;">生成失敗：${err.message}</div>`;
+  }
+}
+
+function saveQRCodeAsImage() {
+  const s = currentStudentData;
+  if (!s || !s.student_no) return;
+  const container = document.getElementById('studentQRCodeContainer');
+  const canvas = container?.querySelector('canvas');
+  const img = container?.querySelector('img');
+
+  const badgeCanvas = document.createElement('canvas');
+  badgeCanvas.width = 400;
+  badgeCanvas.height = 540;
+  const ctx = badgeCanvas.getContext('2d');
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 400, 540);
+
+  ctx.strokeStyle = '#2d4c42';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(10, 10, 380, 520);
+
+  ctx.fillStyle = '#2d4c42';
+  ctx.fillRect(10, 10, 380, 70);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('普慶精舍 · 法會修持報到證', 200, 52);
+
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 24px "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", sans-serif';
+  const nameText = `${s.real_name}${s.dharma_name ? ` (${s.dharma_name})` : ''}`;
+  ctx.fillText(nameText, 200, 120);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '16px sans-serif';
+  ctx.fillText(`【${s.class_type}】${s.group_name}組`, 200, 148);
+
+  const qrSource = canvas || img;
+  if (qrSource) {
+    ctx.drawImage(qrSource, 100, 168, 200, 200);
+  }
+
+  ctx.fillStyle = '#2d4c42';
+  ctx.font = 'bold 28px Consolas, Courier, monospace';
+  ctx.fillText(s.student_no, 200, 410);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '13px sans-serif';
+  ctx.fillText('出示此證供執事人員掃描簽到', 200, 445);
+
+  ctx.fillStyle = '#d97706';
+  ctx.font = 'italic 13px "Noto Serif TC", "PingFang TC", sans-serif';
+  ctx.fillText('「人在哪裡，心就在哪裡」', 200, 490);
+
+  const dataUrl = badgeCanvas.toDataURL('image/png');
+  const link = document.createElement('a');
+  link.download = `${s.real_name}_${s.student_no}_報到證.png`;
+  link.href = dataUrl;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function showStudentEditNoView() {
+  const s = currentStudentData;
+  if (!s) return;
+  const menuPanel = document.getElementById('studentCardMenuPanel');
+  const qrPanel = document.getElementById('studentQRCodePanel');
+  const editPanel = document.getElementById('studentEditNoPanel');
+
+  if (menuPanel) menuPanel.style.display = 'none';
+  if (qrPanel) qrPanel.style.display = 'none';
+  if (editPanel) editPanel.style.display = 'block';
+
+  const nameEl = document.getElementById('bindStudentProfileName');
+  const inputEl = document.getElementById('inputBindStudentNo');
+  const errEl = document.getElementById('bindStudentNoErr');
+
+  if (nameEl) {
+    nameEl.textContent = `【${s.class_type}】${s.group_name} · ${s.real_name}${s.dharma_name ? `（${s.dharma_name}）` : ''}`;
+  }
+  if (inputEl) {
+    inputEl.value = s.student_no || '';
+    setTimeout(() => {
+      inputEl.focus();
+      inputEl.select();
+    }, 100);
+  }
+  if (errEl) errEl.style.display = 'none';
+}
+
+async function executeBindStudentNo() {
+  const s = currentStudentData;
+  if (!s) return;
+  const inputEl = document.getElementById('inputBindStudentNo');
+  const errEl = document.getElementById('bindStudentNoErr');
+  const cleanNo = (inputEl?.value || '').trim();
+
+  if (!cleanNo) {
+    if (errEl) {
+      errEl.textContent = '請輸入要綁定的 9 碼學號';
+      errEl.style.display = 'block';
+    }
+    inputEl?.focus();
+    return;
+  }
+
+  const students = await ZenAPI.getAllStudents();
+  const existingByNo = students.find(item => 
+    item.student_no && 
+    item.student_no.trim().toLowerCase() === cleanNo.toLowerCase() &&
+    item.real_name !== s.real_name
+  );
+
+  if (existingByNo) {
+    if (errEl) {
+      errEl.innerHTML = `⚠️ 學號【${cleanNo}】已登記對應姓名【${existingByNo.real_name}】（${existingByNo.class_type} ${existingByNo.group_name}）。<br>學號對應姓名為唯一，請確認是否輸入錯誤！`;
+      errEl.style.display = 'block';
+    }
+    inputEl?.focus();
+    return;
+  }
+
+  const targetStudent = { ...s, student_no: cleanNo };
+  const updateRes = await ZenAPI.updateStudent(targetStudent);
+
+  if (updateRes && updateRes.error) {
+    if (errEl) {
+      errEl.innerHTML = `⚠️ ${updateRes.error}`;
+      errEl.style.display = 'block';
+    }
+    inputEl?.focus();
+    return;
+  }
+
+  currentStudentData = (updateRes && updateRes.id) ? updateRes : targetStudent;
+  localStorage.setItem('zen_garden_logged_student_v2', JSON.stringify(currentStudentData));
+  localStorage.setItem(API_CONFIG.storageKeys.currentStudent, JSON.stringify(currentStudentData));
+
+  const noValEl = document.getElementById('studentMenuNoVal');
+  if (noValEl) {
+    noValEl.textContent = currentStudentData.student_no;
+    noValEl.style.color = '#166534';
+  }
+
+  alert(`✨ 學號綁定更正成功！\n\n學號【${cleanNo}】已成功綁定至【${currentStudentData.class_type} ${currentStudentData.group_name} · ${currentStudentData.real_name}】。\n過往修持紀錄完整保留！`);
+
+  showStudentQRCodeView();
 }

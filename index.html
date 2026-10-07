@@ -729,41 +729,168 @@
     </div>
   </div>
 
-  <!-- 補填學號互動彈窗 (點擊「學號：未填」時彈出) -->
-  <div class="zen-quote-overlay" id="bindStudentNoModal" style="display: none;" onclick="if(event.target===this) closeBindStudentNoModal()">
-    <div class="zen-quote-dialog" style="max-width: 440px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 0.8rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <span style="font-size: 1.3rem;">✏️</span>
-          <h3 id="bindModalTitle" style="font-size: 1.15rem; font-weight: 700; color: var(--ink-deep); margin: 0;">補填綁定學號</h3>
+  <!-- ════ 學員卡與學號管理互動彈窗 (點擊「學號」時彈出：出示報到 QR Code ｜ 修改學號) ════ -->
+  <div class="zen-quote-overlay" id="bindStudentNoModal" style="display: none;" onclick="if(event.target===this) closeStudentCardModal()">
+    <div class="zen-quote-dialog" style="max-width: 460px; width: 92%; padding: 1.8rem; border-radius: 20px;">
+      
+      <!-- 視圖 1：功能選單 (Panel 1: Action Menu) -->
+      <div id="studentCardMenuPanel">
+        <!-- 頂部學員證小卡 -->
+        <div class="student-id-badge-header">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 1.4rem;">🪷</span>
+              <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--ink-deep); margin: 0;">學員修持報到卡</h3>
+            </div>
+            <button type="button" onclick="closeStudentCardModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--ink-muted); cursor: pointer; line-height: 1;">&times;</button>
+          </div>
+          
+          <div class="student-id-badge-info">
+            <div class="badge-profile-row">
+              <span class="badge-class-pill" id="studentMenuClassTag">日高 B3</span>
+              <span class="badge-student-name" id="studentMenuName">精進學員</span>
+              <span class="badge-dharma-name" id="studentMenuDharma"></span>
+            </div>
+            <div class="badge-no-row">
+              <span class="badge-no-label">目前學號：</span>
+              <span class="badge-no-val" id="studentMenuNoVal">尚未綁定</span>
+            </div>
+          </div>
         </div>
-        <button type="button" onclick="closeBindStudentNoModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--ink-muted); cursor: pointer;">&times;</button>
-      </div>
 
-      <div style="margin: 1.2rem 0;">
-        <p id="bindModalDesc" style="font-size: 0.88rem; color: #4b5563; line-height: 1.6; margin-bottom: 0.8rem;">
-          您好，<strong id="bindStudentProfileName" style="color: var(--pine-green);"></strong>！<br>
-          為您先前輸入的修持紀錄補齊學號，過往打卡總數與蓮花等級將<strong>完整保留</strong>，日後即可僅憑學號一鍵快速登入！
-        </p>
+        <!-- 兩個核心選項按鈕 -->
+        <div style="display: flex; flex-direction: column; gap: 12px; margin: 1.3rem 0;">
+          
+          <!-- 選項 1：出示 9 碼數字 QRcode -->
+          <button type="button" class="student-action-card-btn" onclick="showStudentQRCodeView()" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.2rem; background: #f0fdf4; border: 2px solid #86efac; border-radius: 14px; text-align: left; cursor: pointer; transition: all 0.2s ease;">
+            <div style="font-size: 1.8rem; background: #ffffff; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); flex-shrink: 0;">
+              📱
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 1.05rem; font-weight: 700; color: #166534; display: flex; align-items: center; gap: 6px;">
+                <span>出示報到 QR Code</span>
+                <span style="font-size: 0.72rem; background: #22c55e; color: #fff; padding: 1px 7px; border-radius: 10px; font-weight: 600;">9碼數字</span>
+              </div>
+              <div style="font-size: 0.82rem; color: #4b5563; margin-top: 3px; line-height: 1.4;">
+                法會快速報到、實體禪修上課條碼機掃描專用
+              </div>
+            </div>
+            <span style="font-size: 1.3rem; color: #166534;">➔</span>
+          </button>
 
-        <div id="bindStudentNoErr" style="display: none; background: #fee2e2; border: 1px solid #f87171; border-radius: 8px; padding: 0.5rem 0.8rem; color: #b91c1c; font-size: 0.84rem; margin-bottom: 0.8rem; font-weight: 600; line-height: 1.5;"></div>
+          <!-- 選項 2：改學號 -->
+          <button type="button" class="student-action-card-btn" onclick="showStudentEditNoView()" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.2rem; background: #fefce8; border: 2px solid #fde047; border-radius: 14px; text-align: left; cursor: pointer; transition: all 0.2s ease;">
+            <div style="font-size: 1.8rem; background: #ffffff; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); flex-shrink: 0;">
+              ✏️
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 1.05rem; font-weight: 700; color: #854d0e;">
+                修改 / 補填學號
+              </div>
+              <div style="font-size: 0.82rem; color: #4b5563; margin-top: 3px; line-height: 1.4;">
+                更正綁定之學號，歷史修持打卡與花園完整保留
+              </div>
+            </div>
+            <span style="font-size: 1.3rem; color: #854d0e;">➔</span>
+          </button>
 
-        <div class="form-group" style="margin-bottom: 0;">
-          <label class="form-label" for="inputBindStudentNo" style="font-size: 0.88rem; font-weight: 700; margin-bottom: 0.4rem; display: block;">
-            請輸入學號 <strong style="color: var(--vermilion);">*</strong>
-          </label>
-          <input type="text" id="inputBindStudentNo" class="form-control" placeholder="例如：NT2026-088" style="font-size: 1rem; padding: 0.65rem 0.9rem;" autocomplete="off" onkeydown="if(event.key==='Enter') executeBindStudentNo()">
+        </div>
+
+        <!-- 關閉按鈕 -->
+        <div style="display: flex; justify-content: flex-end;">
+          <button type="button" class="btn-secondary" onclick="closeStudentCardModal()" style="padding: 0.5rem 1.4rem; font-size: 0.9rem;">
+            關閉
+          </button>
         </div>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button type="button" class="btn-secondary" onclick="closeBindStudentNoModal()" style="padding: 0.5rem 1.2rem; font-size: 0.9rem;">
-          取消
-        </button>
-        <button type="button" class="btn-primary" onclick="executeBindStudentNo()" style="padding: 0.5rem 1.4rem; font-size: 0.9rem;">
-          🌸 確認補齊綁定
-        </button>
+      <!-- 視圖 2：出示 9 碼數字 QRcode (Panel 2: QR Code Display) -->
+      <div id="studentQRCodePanel" style="display: none;">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 0.8rem; margin-bottom: 1rem;">
+          <button type="button" onclick="showStudentMenuDefaultView()" style="background: none; border: none; font-size: 0.9rem; font-weight: 700; color: var(--pine-green); cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0;">
+            ◀ 返回選項
+          </button>
+          <h3 style="font-size: 1.12rem; font-weight: 700; color: var(--ink-deep); margin: 0;">法會報到 QR Code</h3>
+          <button type="button" onclick="closeStudentCardModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--ink-muted); cursor: pointer; line-height: 1;">&times;</button>
+        </div>
+
+        <!-- 實體報到卡樣式 -->
+        <div class="student-qr-card-frame" style="background: linear-gradient(145deg, #ffffff, #f7faf8); border: 2px solid #bbf7d0; border-radius: 16px; padding: 1.3rem 1.2rem; text-align: center; box-shadow: 0 4px 16px rgba(45,76,66,0.08);">
+          <div style="display: inline-block; background: #e8f5e9; color: #2e7d32; font-size: 0.78rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-bottom: 6px;">
+            普慶精舍 · 實體活動報到
+          </div>
+          <div style="font-size: 1.2rem; font-weight: 800; color: var(--ink-deep); margin-bottom: 2px;" id="qrCardStudentName">
+            精進學員
+          </div>
+          <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem;" id="qrCardClassDharma">
+            日高 · 法名：傳某
+          </div>
+
+          <!-- QR Code 容器 -->
+          <div style="display: flex; justify-content: center; align-items: center; margin: 0 auto; background: #ffffff; padding: 10px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); width: 220px; height: 220px; border: 1px solid #e5e7eb;">
+            <div id="studentQRCodeContainer" style="width: 200px; height: 200px;"></div>
+          </div>
+
+          <!-- 9 碼數字大字展示 -->
+          <div style="margin-top: 1rem;">
+            <div style="font-size: 0.8rem; color: #6b7280; font-weight: 600;">9 碼學員編號</div>
+            <div id="qrCardStudentNoNumber" style="font-size: 1.7rem; font-weight: 800; letter-spacing: 4px; font-family: 'Consolas', 'Courier New', monospace; color: #166534; margin: 2px 0 6px;">
+              000000000
+            </div>
+          </div>
+
+          <div style="font-size: 0.78rem; color: #64748b; line-height: 1.5; margin-top: 6px;">
+            💡 請向執事人員出示此畫面，供掃描機快速識別簽到
+          </div>
+        </div>
+
+        <!-- 底部按鈕 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; gap: 8px;">
+          <button type="button" class="btn-secondary" onclick="saveQRCodeAsImage()" style="display: flex; align-items: center; gap: 6px; font-size: 0.88rem; padding: 0.5rem 1rem;">
+            <span>💾</span> 儲存 QR Code 圖片
+          </button>
+          <button type="button" class="btn-primary" onclick="closeStudentCardModal()" style="padding: 0.5rem 1.4rem; font-size: 0.9rem;">
+            完成
+          </button>
+        </div>
       </div>
+
+      <!-- 視圖 3：改學號表單 (Panel 3: Edit Student No) -->
+      <div id="studentEditNoPanel" style="display: none;">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 0.8rem; margin-bottom: 1rem;">
+          <button type="button" onclick="showStudentMenuDefaultView()" style="background: none; border: none; font-size: 0.9rem; font-weight: 700; color: var(--pine-green); cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0;">
+            ◀ 返回選項
+          </button>
+          <h3 id="bindModalTitle" style="font-size: 1.15rem; font-weight: 700; color: var(--ink-deep); margin: 0;">修改 / 補填學號</h3>
+          <button type="button" onclick="closeStudentCardModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--ink-muted); cursor: pointer; line-height: 1;">&times;</button>
+        </div>
+
+        <div style="margin: 1.2rem 0;">
+          <p id="bindModalDesc" style="font-size: 0.88rem; color: #4b5563; line-height: 1.6; margin-bottom: 0.8rem;">
+            您好，<strong id="bindStudentProfileName" style="color: var(--pine-green);"></strong>！<br>
+            更正學號後，過往修持打卡總數與蓮花成長將<strong>完整保留</strong>，日後即可憑新學號一鍵快速登入！
+          </p>
+
+          <div id="bindStudentNoErr" style="display: none; background: #fee2e2; border: 1px solid #f87171; border-radius: 8px; padding: 0.5rem 0.8rem; color: #b91c1c; font-size: 0.84rem; margin-bottom: 0.8rem; font-weight: 600; line-height: 1.5;"></div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="inputBindStudentNo" style="font-size: 0.88rem; font-weight: 700; margin-bottom: 0.4rem; display: block;">
+              請輸入 9 碼學號 <strong style="color: var(--vermilion);">*</strong>
+            </label>
+            <input type="text" id="inputBindStudentNo" class="form-control" placeholder="例如：114023672" style="font-size: 1.1rem; padding: 0.65rem 0.9rem; letter-spacing: 2px; font-family: monospace;" autocomplete="off" onkeydown="if(event.key==='Enter') executeBindStudentNo()">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn-secondary" onclick="showStudentMenuDefaultView()" style="padding: 0.5rem 1.2rem; font-size: 0.9rem;">
+            取消
+          </button>
+          <button type="button" class="btn-primary" onclick="executeBindStudentNo()" style="padding: 0.5rem 1.4rem; font-size: 0.9rem;">
+            🌸 確認更正綁定
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -962,6 +1089,7 @@
   <script src="js/api.js"></script>
   <script src="js/cards-data.js"></script>
   <script src="js/collection.js"></script>
+  <script src="js/qrcode.min.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

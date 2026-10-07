@@ -512,20 +512,204 @@ function handleLogout() {
   }
 }
 
-// 點擊頂部「學號：未填」或「學號」跳出補填/更正學號視窗
+let studentQRCodeInstance = null;
+
+// 點擊頂部「學號」跳出學員卡功能選單（出示報到 QR Code ｜ 修改學號）
 function handleBrandStudentNoClick(e) {
   if (e) {
     e.preventDefault();
     e.stopPropagation();
   }
-  openBindStudentNoModal();
+  openStudentCardModal();
 }
 
-function openBindStudentNoModal() {
+// 開啟學員卡彈窗（預設顯示雙選項選單）
+function openStudentCardModal() {
   if (!currentStudent) return;
   const modal = document.getElementById('bindStudentNoModal');
-  const titleEl = document.getElementById('bindModalTitle');
-  const descEl = document.getElementById('bindModalDesc');
+  if (!modal) return;
+
+  // 更新選單上的基本資料
+  const classTagEl = document.getElementById('studentMenuClassTag');
+  const nameEl = document.getElementById('studentMenuName');
+  const dharmaEl = document.getElementById('studentMenuDharma');
+  const noValEl = document.getElementById('studentMenuNoVal');
+
+  if (classTagEl) classTagEl.textContent = `${currentStudent.class_type} ${currentStudent.group_name}`;
+  if (nameEl) nameEl.textContent = currentStudent.real_name || '精進學員';
+  if (dharmaEl) dharmaEl.textContent = currentStudent.dharma_name ? `（${currentStudent.dharma_name}）` : '';
+  if (noValEl) {
+    if (currentStudent.student_no) {
+      noValEl.textContent = currentStudent.student_no;
+      noValEl.style.color = '#166534';
+    } else {
+      noValEl.textContent = '尚未綁定（點下方修改學號補填）';
+      noValEl.style.color = '#dc2626';
+    }
+  }
+
+  showStudentMenuDefaultView();
+  modal.style.display = 'flex';
+}
+
+function closeStudentCardModal() {
+  const modal = document.getElementById('bindStudentNoModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function closeBindStudentNoModal() {
+  closeStudentCardModal();
+}
+
+// 視圖 1：顯示雙選項功能選單
+function showStudentMenuDefaultView() {
+  const menuPanel = document.getElementById('studentCardMenuPanel');
+  const qrPanel = document.getElementById('studentQRCodePanel');
+  const editPanel = document.getElementById('studentEditNoPanel');
+
+  if (menuPanel) menuPanel.style.display = 'block';
+  if (qrPanel) qrPanel.style.display = 'none';
+  if (editPanel) editPanel.style.display = 'none';
+}
+
+// 視圖 2：出示 9 碼數字 QR Code
+function showStudentQRCodeView() {
+  if (!currentStudent) return;
+
+  // 若尚未綁定學號，提示並自動引導至修改學號面板
+  if (!currentStudent.student_no || currentStudent.student_no.trim() === '') {
+    alert('您目前尚未綁定學號，請先完成學號綁定後即可生成專屬報到 QR Code！');
+    showStudentEditNoView();
+    return;
+  }
+
+  const menuPanel = document.getElementById('studentCardMenuPanel');
+  const qrPanel = document.getElementById('studentQRCodePanel');
+  const editPanel = document.getElementById('studentEditNoPanel');
+
+  if (menuPanel) menuPanel.style.display = 'none';
+  if (qrPanel) qrPanel.style.display = 'block';
+  if (editPanel) editPanel.style.display = 'none';
+
+  // 更新報到卡內容
+  const nameEl = document.getElementById('qrCardStudentName');
+  const classDharmaEl = document.getElementById('qrCardClassDharma');
+  const noEl = document.getElementById('qrCardStudentNoNumber');
+
+  if (nameEl) nameEl.textContent = currentStudent.real_name || '精進學員';
+  if (classDharmaEl) {
+    classDharmaEl.textContent = `【${currentStudent.class_type}】${currentStudent.group_name}組${currentStudent.dharma_name ? ` · 法名：${currentStudent.dharma_name}` : ''}`;
+  }
+  if (noEl) noEl.textContent = currentStudent.student_no;
+
+  // 生成 QR Code
+  generateStudentQRCode(currentStudent.student_no);
+}
+
+// 產生 QR Code 實例
+function generateStudentQRCode(studentNo) {
+  const container = document.getElementById('studentQRCodeContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (typeof QRCode === 'undefined') {
+    container.innerHTML = '<div style="padding: 2.5rem 1rem; color: #888; font-size: 0.9rem;">QR Code 模組載入中……</div>';
+    return;
+  }
+
+  try {
+    studentQRCodeInstance = new QRCode(container, {
+      text: String(studentNo).trim(),
+      width: 200,
+      height: 200,
+      colorDark: '#121815',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } catch (err) {
+    console.error('QR Code 生成失敗:', err);
+    container.innerHTML = `<div style="padding: 2rem 1rem; color: #c62828; font-size: 0.9rem;">生成失敗：${err.message}</div>`;
+  }
+}
+
+// 儲存 QR Code 證卡為圖片（方便存入手機相簿出示）
+function saveQRCodeAsImage() {
+  if (!currentStudent || !currentStudent.student_no) return;
+  const container = document.getElementById('studentQRCodeContainer');
+  const canvas = container?.querySelector('canvas');
+  const img = container?.querySelector('img');
+
+  const badgeCanvas = document.createElement('canvas');
+  badgeCanvas.width = 400;
+  badgeCanvas.height = 540;
+  const ctx = badgeCanvas.getContext('2d');
+
+  // 背景
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 400, 540);
+
+  // 外框
+  ctx.strokeStyle = '#2d4c42';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(10, 10, 380, 520);
+
+  // 頂部橫幅
+  ctx.fillStyle = '#2d4c42';
+  ctx.fillRect(10, 10, 380, 70);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('普慶精舍 · 法會修持報到證', 200, 52);
+
+  // 學員姓名與班級
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 24px "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", sans-serif';
+  const nameText = `${currentStudent.real_name}${currentStudent.dharma_name ? ` (${currentStudent.dharma_name})` : ''}`;
+  ctx.fillText(nameText, 200, 120);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '16px sans-serif';
+  ctx.fillText(`【${currentStudent.class_type}】${currentStudent.group_name}組`, 200, 148);
+
+  // 繪製 QR Code (從 canvas 或 img 取得)
+  const qrSource = canvas || img;
+  if (qrSource) {
+    ctx.drawImage(qrSource, 100, 168, 200, 200);
+  }
+
+  // 9 碼學號大字
+  ctx.fillStyle = '#2d4c42';
+  ctx.font = 'bold 28px Consolas, Courier, monospace';
+  ctx.fillText(currentStudent.student_no, 200, 410);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '13px sans-serif';
+  ctx.fillText('出示此證供執事人員掃描簽到', 200, 445);
+
+  ctx.fillStyle = '#d97706';
+  ctx.font = 'italic 13px "Noto Serif TC", "PingFang TC", sans-serif';
+  ctx.fillText('「人在哪裡，心就在哪裡」', 200, 490);
+
+  const dataUrl = badgeCanvas.toDataURL('image/png');
+  const link = document.createElement('a');
+  link.download = `${currentStudent.real_name}_${currentStudent.student_no}_報到證.png`;
+  link.href = dataUrl;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// 視圖 3：修改/補填學號
+function showStudentEditNoView() {
+  if (!currentStudent) return;
+  const menuPanel = document.getElementById('studentCardMenuPanel');
+  const qrPanel = document.getElementById('studentQRCodePanel');
+  const editPanel = document.getElementById('studentEditNoPanel');
+
+  if (menuPanel) menuPanel.style.display = 'none';
+  if (qrPanel) qrPanel.style.display = 'none';
+  if (editPanel) editPanel.style.display = 'block';
+
   const nameEl = document.getElementById('bindStudentProfileName');
   const inputEl = document.getElementById('inputBindStudentNo');
   const errEl = document.getElementById('bindStudentNoErr');
@@ -533,33 +717,17 @@ function openBindStudentNoModal() {
   if (nameEl) {
     nameEl.textContent = `【${currentStudent.class_type}】${currentStudent.group_name} · ${currentStudent.real_name}${currentStudent.dharma_name ? `（${currentStudent.dharma_name}）` : ''}`;
   }
-
-  if (currentStudent.student_no) {
-    if (titleEl) titleEl.textContent = '更正綁定學號';
-    if (descEl) descEl.innerHTML = `您好，<strong style="color: var(--pine-green);">${currentStudent.real_name}</strong>！<br>您當前綁定的學號為【<strong>${currentStudent.student_no}</strong>】。<br>學號對應姓名為唯一，若需更正請於下方輸入：`;
-    if (inputEl) inputEl.value = currentStudent.student_no;
-  } else {
-    if (titleEl) titleEl.textContent = '補填綁定學號';
-    if (descEl) descEl.innerHTML = `您好，<strong style="color: var(--pine-green);">${currentStudent.real_name}</strong>！<br>為您先前輸入的修持紀錄補齊學號，過往打卡總數與蓮花等級將<strong>完整保留</strong>，日後即可僅憑學號一鍵快速登入！`;
-    if (inputEl) inputEl.value = '';
-  }
-
-  if (errEl) errEl.style.display = 'none';
-
-  if (modal) {
-    modal.style.display = 'flex';
+  if (inputEl) {
+    inputEl.value = currentStudent.student_no || '';
     setTimeout(() => {
-      inputEl?.focus();
-      inputEl?.select();
+      inputEl.focus();
+      inputEl.select();
     }, 100);
   }
+  if (errEl) errEl.style.display = 'none';
 }
 
-function closeBindStudentNoModal() {
-  const modal = document.getElementById('bindStudentNoModal');
-  if (modal) modal.style.display = 'none';
-}
-
+// 執行修改/補填學號送出
 async function executeBindStudentNo() {
   if (!currentStudent) return;
   const inputEl = document.getElementById('inputBindStudentNo');
@@ -568,7 +736,7 @@ async function executeBindStudentNo() {
 
   if (!cleanNo) {
     if (errEl) {
-      errEl.textContent = '請輸入要綁定的學號';
+      errEl.textContent = '請輸入要綁定的 9 碼學號';
       errEl.style.display = 'block';
     }
     inputEl?.focus();
@@ -610,9 +778,18 @@ async function executeBindStudentNo() {
   localStorage.setItem(API_CONFIG.storageKeys.currentStudent, JSON.stringify(currentStudent));
 
   updateUserHeaderUI(currentStudent);
-  closeBindStudentNoModal();
 
-  alert(`✨ 補齊學號成功！\n\n學號【${cleanNo}】已成功綁定至【${currentStudent.class_type} ${currentStudent.group_name} · ${currentStudent.real_name}】。\n過往 ${currentStudent.total_checkins || 0} 次修持紀錄完整保留，雲端資料庫已即時同步，日後在電腦或手機皆可憑此學號一鍵快速登入！`);
+  // 同步更新選單與報到卡資訊
+  const noValEl = document.getElementById('studentMenuNoVal');
+  if (noValEl) {
+    noValEl.textContent = currentStudent.student_no;
+    noValEl.style.color = '#166534';
+  }
+
+  alert(`✨ 學號綁定更正成功！\n\n學號【${cleanNo}】已成功綁定至【${currentStudent.class_type} ${currentStudent.group_name} · ${currentStudent.real_name}】。\n過往 ${currentStudent.total_checkins || 0} 次修持紀錄完整保留！`);
+
+  // 自動展示其專屬 9 碼 QR Code
+  showStudentQRCodeView();
 }
 
 // 更新頂部登入者狀態與統計數據看板
@@ -622,13 +799,13 @@ function updateUserHeaderUI(student) {
   const brandStudentNoEl = document.getElementById('brandStudentNo');
   if (brandStudentNoEl) {
     if (student.student_no) {
-      brandStudentNoEl.innerHTML = `學號：${student.student_no}`;
+      brandStudentNoEl.innerHTML = `<span>📱</span> 學號：${student.student_no}`;
       brandStudentNoEl.style.cursor = 'pointer';
-      brandStudentNoEl.title = `學號：${student.student_no}（點擊可查看或更正）`;
+      brandStudentNoEl.title = `學號：${student.student_no}（點擊出示報到 QR Code 或改學號）`;
     } else {
-      brandStudentNoEl.innerHTML = `學號：未填 <span style="font-size: 0.68rem; background: #fee2e2; color: #b91c1c; padding: 1px 6px; border-radius: 4px; font-weight: 700; margin-left: 2px;">✏️ 點此補填</span>`;
+      brandStudentNoEl.innerHTML = `學號：未填 <span style="font-size: 0.68rem; background: #fee2e2; color: #b91c1c; padding: 1px 6px; border-radius: 4px; font-weight: 700; margin-left: 2px;">✏️ 點此填寫</span>`;
       brandStudentNoEl.style.cursor = 'pointer';
-      brandStudentNoEl.title = '尚未綁定學號，點擊此處立即補填學號！';
+      brandStudentNoEl.title = '尚未綁定學號，點擊可補填學號以出示報到 QR Code！';
     }
   }
   if (nameEl) {

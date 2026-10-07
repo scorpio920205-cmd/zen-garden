@@ -1643,3 +1643,95 @@ body::before {
 .stage-badge-4 { background: #ede7f6; color: #4527a0; border: 1px solid #d1c4e9; }
 .stage-badge-season { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
 
+/* ═══════════════════════════════════════════════════════════
+   學員卡、報到 QR Code 與功能選單樣式
+   ═══════════════════════════════════════════════════════════ */
+.student-id-badge-header {
+  background: linear-gradient(135deg, #f0fdf4 0%, #f7faf8 100%);
+  border: 1px solid #bbf7d0;
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.2rem;
+}
+
+.student-id-badge-info .badge-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.badge-class-pill {
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: var(--pine-green);
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.badge-student-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ink-deep);
+}
+
+.badge-dharma-name {
+  font-size: 0.92rem;
+  color: var(--gold-bronze);
+  font-weight: 700;
+}
+
+.student-id-badge-info .badge-no-row {
+  font-size: 0.88rem;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge-no-val {
+  font-family: Consolas, 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 1px;
+}
+
+.student-action-card-btn {
+  width: 100%;
+  box-sizing: border-box;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.student-action-card-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(45,76,66,0.12);
+}
+
+.student-action-card-btn:active {
+  transform: translateY(0);
+}
+
+#brandStudentNo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(45, 76, 66, 0.08);
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--pine-green);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(45, 76, 66, 0.15);
+}
+
+#brandStudentNo:hover {
+  background: rgba(45, 76, 66, 0.16);
+  border-color: var(--pine-green);
+  transform: translateY(-1px);
+}
+
