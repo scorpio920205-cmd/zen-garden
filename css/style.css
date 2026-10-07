@@ -451,6 +451,20 @@ body::before {
   letter-spacing: 0.15em;
 }
 
+.app-header-user-section {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.app-user-profile-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+}
+
 .app-nav-actions {
   display: flex;
   align-items: center;
@@ -1734,4 +1748,64 @@ body::before {
   border-color: var(--pine-green);
   transform: translateY(-1px);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   手機版專屬優化：縮小頂部「我的修持歷程、進入2D花園、參觀花園」按鈕
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .app-header-inner {
+    padding: 0.6rem 0.85rem;
+    gap: 0.5rem;
+  }
+
+  .app-header-user-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+  }
+
+  .app-user-profile-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.88rem;
+  }
+
+  .app-nav-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.35rem;
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 0.15rem;
+  }
+
+  /* 將原本過大的按鈕調整為精緻緊湊尺寸，橫向排布且不擠壓變形 */
+  .app-nav-actions .btn-secondary,
+  .app-nav-actions .btn-primary,
+  .app-nav-actions button,
+  .app-nav-actions a {
+    padding: 0.38rem 0.55rem !important;
+    font-size: 0.78rem !important;
+    letter-spacing: 0 !important;
+    border-radius: 8px !important;
+    white-space: nowrap !important;
+    flex: 1 1 auto;
+    text-align: center;
+    justify-content: center;
+    min-width: 0;
+    gap: 3px !important;
+  }
+
+  /* 登出按鈕維持小巧精緻 */
+  .app-nav-actions button[onclick="handleLogout()"] {
+    flex: 0 0 auto;
+    padding: 0.38rem 0.65rem !important;
+  }
+}
+
 
