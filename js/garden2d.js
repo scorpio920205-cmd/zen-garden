@@ -1550,28 +1550,7 @@ function saveQRCodeAsImage() {
 
   const fileName = `${s.real_name}_${s.student_no}_報到證.png`;
 
-  // 策略 1：支援原生手機 Web Share API (iOS Safari / Android 可直接按「儲存影像」存入手機相簿)
-  if (navigator.canShare && badgeCanvas.toBlob) {
-    try {
-      const blob = await new Promise(resolve => badgeCanvas.toBlob(resolve, 'image/png'));
-      if (blob) {
-        const file = new File([blob], fileName, { type: 'image/png' });
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: '普慶精舍 · 法會修持報到證',
-            text: `學員：${s.real_name}（學號：${s.student_no}）`,
-            files: [file]
-          });
-          return;
-        }
-      }
-    } catch (e) {
-      if (e.name === 'AbortError') return;
-      console.log('Web Share 失敗，轉用彈出預覽存圖:', e);
-    }
-  }
-
-  // 策略 2：展示長按存圖預覽彈窗 (針對 LINE 內嵌瀏覽器或不支援直接下載的環境)
+  // 直接展示長按存圖預覽彈窗 (100% 避開 iOS「此網站正在嘗試開啟外部應用程式」阻擋，手機長按直接存入相簿)
   const dataUrl = badgeCanvas.toDataURL('image/png');
   showBadgeImageSaveModal2D(dataUrl, fileName);
 }
