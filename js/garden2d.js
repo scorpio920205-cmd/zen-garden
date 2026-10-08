@@ -440,59 +440,46 @@ async function setupURLQuery() {
     } catch (e) {}
   }
 
-  // 永續 Session 保護機制：若本地無 session，自動接續既有學員或示範學員，永不讓使用者按返回時跳出登入
-  if (!s) {
-    const students = JSON.parse(localStorage.getItem(API_CONFIG.storageKeys.students) || '[]');
-    s = (students.length > 0) ? students[0] : (typeof INITIAL_DEMO_STUDENTS !== 'undefined' ? INITIAL_DEMO_STUDENTS[0] : null);
+  // 若使用者未登入（無 session），安全導回首頁登入
+  if (!s || !s.real_name) {
+    window.location.href = 'index.html';
+    return;
   }
 
-  if (s) {
-    currentStudentData = s;
-    // 雙向回存確保一致
-    localStorage.setItem('zen_garden_logged_student_v2', JSON.stringify(s));
-    localStorage.setItem(API_CONFIG.storageKeys.currentStudent, JSON.stringify(s));
+  currentStudentData = s;
+  // 雙向回存確保一致
+  localStorage.setItem('zen_garden_logged_student_v2', JSON.stringify(s));
+  localStorage.setItem(API_CONFIG.storageKeys.currentStudent, JSON.stringify(s));
 
-    nameEl.textContent = s.dharma_name ? `${s.dharma_name} 的花園` : (s.real_name ? `${s.real_name} 的花園` : '我的花園');
-    classEl.textContent = s.class_type ? `${s.class_type} ${s.group_name || ''}` : '日高';
-    const checkinCount = s.total_checkins || 0;
-    daysEl.textContent = Math.max(1, checkinCount);
+  // 顯示學員名稱：優先法名，無則使用姓氏+師兄，或全名
+  const displayName = s.dharma_name || (s.real_name ? s.real_name[0] + '師兄' : '精進學員');
+  nameEl.textContent = `${displayName} 的花園`;
+  classEl.textContent = s.class_type ? `${s.class_type} ${s.group_name || ''}` : '日高';
+  const checkinCount = s.total_checkins || 0;
+  daysEl.textContent = Math.max(1, checkinCount);
 
-    // 依 3 天 1 朵規則嚴格計算本人累積的蓮花與太陽花
-    const stats = getStudentPracticeStats(s.id, checkinCount);
-    activeLotusStats = stats.lotusRule;
-    activeSunflowerStats = stats.sunflowerRule;
+  // 依 3 天 1 朵規則嚴格計算本人累積的蓮花與太陽花
+  const stats = getStudentPracticeStats(s.id, checkinCount);
+  activeLotusStats = stats.lotusRule;
+  activeSunflowerStats = stats.sunflowerRule;
 
-    // 動態更新累積菩提功德金與可用甘露法水
-    const meritEl = document.getElementById('hudMeritPoints');
-    if (meritEl) meritEl.textContent = checkinCount * 100 + (s.total_meditation_mins || 0);
-    const dewEl = document.getElementById('hudDewDrops');
-    if (dewEl) dewEl.textContent = Math.max(3, checkinCount * 2);
+  // 動態更新累積菩提功德金與可用甘露法水
+  const meritEl = document.getElementById('hudMeritPoints');
+  if (meritEl) meritEl.textContent = checkinCount * 100 + (s.total_meditation_mins || 0);
+  const dewEl = document.getElementById('hudDewDrops');
+  if (dewEl) dewEl.textContent = Math.max(3, checkinCount * 2);
 
-    // 同學端嚴格鎖定：依目前打卡天數對應唯一一張圖
-    const earnedStage = getStageKeyFromDays(checkinCount);
-    currentStageKey = earnedStage;
+  // 同學端嚴格鎖定：依目前打卡天數對應唯一一張圖
+  const earnedStage = getStageKeyFromDays(checkinCount);
+  currentStageKey = earnedStage;
 
-    // 隱藏切換中控列，只顯示同學修行境界牌
-    if (stageDock) stageDock.style.display = 'none';
-    if (stageBanner) {
-      stageBanner.style.display = 'flex';
-      const info = getNextStageInfo(checkinCount);
-      const txtEl = document.getElementById('studentStageText');
-      if (txtEl) txtEl.textContent = info.text;
-    }
-  } else {
-    nameEl.textContent = '傳心 的花園';
-    classEl.textContent = '日高';
-    daysEl.textContent = '1';
-    currentStageKey = 1;
-    activeLotusStats = calculateFlowerRule(1);
-    activeSunflowerStats = calculateFlowerRule(1);
-    if (stageDock) stageDock.style.display = 'none';
-    if (stageBanner) {
-      stageBanner.style.display = 'flex';
-      const txtEl = document.getElementById('studentStageText');
-      if (txtEl) txtEl.textContent = '目前境界：第 1 張圖（維持 49 天）· 累積打卡 1 天 ｜ 距第 2 張圖（110天）還差 49 天';
-    }
+  // 隱藏切換中控列，只顯示同學修行境界牌
+  if (stageDock) stageDock.style.display = 'none';
+  if (stageBanner) {
+    stageBanner.style.display = 'flex';
+    const info = getNextStageInfo(checkinCount);
+    const txtEl = document.getElementById('studentStageText');
+    if (txtEl) txtEl.textContent = info.text;
   }
 
   // 執行花園渲染
